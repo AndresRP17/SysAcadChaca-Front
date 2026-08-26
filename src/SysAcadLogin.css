@@ -55,12 +55,13 @@
   border: 1px solid var(--sysacad-border);
   background-color: var(--sysacad-surface);
   color: var(--sysacad-text-primary);
+  border-color: var(--sysacad-navy);
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .sysacad-theme-toggle:hover {
-  border-color: var(--sysacad-navy);
+  border-color: black;
 }
 
 /* Layout general */
