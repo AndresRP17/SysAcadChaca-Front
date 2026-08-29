@@ -146,7 +146,7 @@ export default function SysAcadLogin() {
             </form>
 
             <p className="sysacad-footer-note">
-              ¿Problemas para acceder? Comunicate con Bedelía de tu facultad.
+              ¿Problemas para acceder? Comunicate con la secretaria de la facultad.
             </p>
           </div>
         </div>
