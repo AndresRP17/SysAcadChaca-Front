@@ -1,0 +1,393 @@
+/* La paleta de colores (--navy, --bg, --surface, etc.) vive en
+   src/styles/theme.css, compartida por toda la app. */
+.users-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--text-primary);
+}
+
+/* Encabezado */
+.users-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.users-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.users-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  margin: 0;
+}
+
+.users-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 4px 0 0 0;
+}
+
+/* Barra de herramientas: búsqueda + filtros */
+.users-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.users-search-input {
+  flex: 1;
+  min-width: 220px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  background: var(--surface);
+  color: var(--text-primary);
+  transition: border-color 0.15s ease;
+}
+
+.users-search-input:focus {
+  border-color: var(--navy);
+}
+
+.users-filter-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.users-filter-btn {
+  padding: 8px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.users-filter-btn:hover {
+  border-color: var(--navy);
+}
+
+.users-filter-btn--active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #ffffff;
+}
+
+/* Tabla (escritorio) */
+.users-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  font-size: 14px;
+}
+
+.users-th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.users-th--actions {
+  text-align: right;
+}
+
+.users-row {
+  border-bottom: 1px solid var(--border);
+}
+
+.users-row:last-child {
+  border-bottom: none;
+}
+
+.users-row:hover {
+  background: var(--bg);
+}
+
+.users-td {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+.users-td--mono {
+  font-family: "Courier New", monospace;
+  color: var(--text-secondary);
+}
+
+.users-td--actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.users-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 32px 16px;
+}
+
+/* Badges de rol y estado */
+.users-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.users-badge--navy {
+  background: var(--navy);
+  color: #ffffff;
+}
+
+.users-badge--gray {
+  background: var(--bg);
+  color: var(--text-secondary);
+}
+
+.users-badge--active {
+  background: #e7f3ea;
+  color: #2f7a41;
+}
+
+.users-badge--inactive {
+  background: #f5e7e3;
+  color: var(--error);
+}
+
+/* Botones de acción de la fila */
+.users-action-btn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: var(--navy);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.users-action-btn:hover {
+  text-decoration: underline;
+}
+
+.users-action-btn--danger {
+  color: var(--error);
+}
+
+/* Botones generales (reutilizados en header y modales) */
+.users-btn {
+  padding: 10px 18px;
+  border-radius: 4px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.users-btn--primary {
+  background: var(--navy);
+  color: #ffffff;
+}
+
+.users-btn--primary:hover {
+  background: var(--navy-dark);
+}
+
+.users-btn--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.users-btn--ghost:hover {
+  border-color: var(--text-secondary);
+}
+
+.users-btn--danger {
+  background: var(--error);
+  color: #ffffff;
+}
+
+.users-btn--danger:hover {
+  filter: brightness(0.92);
+}
+
+/* Formulario de los modales */
+.users-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.users-form-row {
+  display: flex;
+  gap: 14px;
+}
+
+.users-form-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.users-form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.users-form-input {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.users-form-input:focus {
+  border-color: var(--navy);
+}
+
+.users-form-error {
+  font-size: 13px;
+  color: var(--error);
+  margin: 0;
+}
+
+.users-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.users-confirm-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 4px 0;
+}
+
+/* Responsive: en mobile la tabla se convierte en tarjetas apiladas.
+   Cada <td> muestra su nombre de columna arriba (chico y gris) y el
+   valor debajo (más grande), gracias a data-label (ver UserRow.jsx)
+   y al content: attr(data-label) de acá abajo. */
+@media (max-width: 700px) {
+  .users-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .users-table-wrapper {
+    border: none;
+    overflow-x: visible;
+  }
+
+  .users-table,
+  .users-table thead,
+  .users-table tbody,
+  .users-table tr,
+  .users-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .users-table thead {
+    display: none;
+  }
+
+  .users-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    padding: 4px 16px;
+  }
+
+  .users-table .users-td {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    font-size: 14px;
+  }
+
+  .users-row .users-td:last-child {
+    border-bottom: none;
+  }
+
+  .users-td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  .users-table .users-td--actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    padding-top: 14px;
+  }
+
+  .users-td--actions::before {
+    display: none;
+  }
+
+  .users-action-btn {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 16px;
+    font-size: 13px;
+  }
+
+  .users-action-btn:hover {
+    text-decoration: none;
+    background: var(--bg);
+  }
+
+  .users-action-btn--danger {
+    border-color: var(--error);
+  }
+
+  .users-form-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+}

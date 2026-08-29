@@ -1,29 +1,5 @@
-/* Paleta institucional UTN: blanco, negro y azul marino (del logo) */
-.sysacad-page[data-theme="light"] {
-  --sysacad-navy: #24344a;
-  --sysacad-navy-dark: #17222f;
-  --sysacad-bg: #f6f6f5;
-  --sysacad-surface: #ffffff;
-  --sysacad-text-primary: #111111;
-  --sysacad-text-secondary: #5b5f66;
-  --sysacad-text-muted: #a8a8a3;
-  --sysacad-border: #dcdcd8;
-  --sysacad-error: #b5482f;
-  --sysacad-panel-logo-bg: #ffffff;
-}
-
-.sysacad-page[data-theme="dark"] {
-  --sysacad-navy: #33465f;
-  --sysacad-navy-dark: #24344a;
-  --sysacad-bg: #14181d;
-  --sysacad-surface: #1b2027;
-  --sysacad-text-primary: #f2f2f0;
-  --sysacad-text-secondary: #b7bbc2;
-  --sysacad-text-muted: #6c717a;
-  --sysacad-border: #2b313a;
-  --sysacad-error: #e5735a;
-  --sysacad-panel-logo-bg: #ffffff;
-}
+/* La paleta de colores (--navy, --bg, --surface, etc.) ahora vive en
+   src/styles/theme.css, compartida por toda la app. */
 
 * {
   box-sizing: border-box;
@@ -34,7 +10,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--sysacad-bg);
+  background-color: var(--bg);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   transition: background-color 0.2s ease;
 }
@@ -43,25 +19,6 @@
   display: flex;
   justify-content: flex-end;
   margin-bottom: 12px;
-}
-
-.sysacad-theme-toggle {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 1px solid var(--sysacad-border);
-  background-color: var(--sysacad-surface);
-  color: var(--sysacad-text-primary);
-  border-color: var(--sysacad-navy);
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.sysacad-theme-toggle:hover {
-  border-color: black;
 }
 
 /* Layout general */
@@ -79,7 +36,7 @@
   width: 42%;
   flex-direction: column;
   justify-content: space-between;
-  background-color: var(--sysacad-navy);
+  background-color: var(--navy);
   color: #ffffff;
   padding: 56px 48px;
   overflow: hidden;
@@ -111,7 +68,7 @@
   width: 92px;
   height: 92px;
   object-fit: contain;
-  background: var(--sysacad-panel-logo-bg);
+  background: var(--panel-logo-bg);
   border-radius: 8px;
   padding: 8px;
   margin: 0 auto 28px auto;
@@ -171,7 +128,7 @@
 }
 
 .sysacad-mobile-logo {
-  width: 132px;
+  width: 52px;
   height: 52px;
   object-fit: contain;
 }
@@ -179,14 +136,14 @@
 .sysacad-wordmark-sm {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 22px;
-  color: var(--sysacad-text-primary);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .sysacad-eyebrow-sm {
   font-size: 11px;
   letter-spacing: 0.15em;
-  color: var(--sysacad-text-secondary);
+  color: var(--text-secondary);
   margin: 2px 0 0 0;
   text-transform: uppercase;
 }
@@ -194,13 +151,13 @@
 .sysacad-title {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 30px;
-  color: var(--sysacad-text-primary);
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 }
 
 .sysacad-subtitle {
   font-size: 14px;
-  color: var(--sysacad-text-secondary);
+  color: var(--text-secondary);
   margin: 0 0 36px 0;
 }
 
@@ -220,7 +177,7 @@
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.05em;
-  color: var(--sysacad-text-secondary);
+  color: var(--text-secondary);
   margin-bottom: 6px;
 }
 
@@ -237,29 +194,29 @@
 
 .sysacad-link {
   font-size: 12px;
-  color: var(--sysacad-text-secondary);
+  color: var(--text-secondary);
   text-decoration: none;
   transition: color 0.15s ease;
 }
 
 .sysacad-link:hover {
-  color: var(--sysacad-text-primary);
+  color: var(--text-primary);
 }
 
 .sysacad-input-row {
   display: flex;
   align-items: center;
-  border-bottom: 2px solid var(--sysacad-border);
+  border-bottom: 2px solid var(--border);
   transition: border-color 0.15s ease;
 }
 
 .sysacad-input-row--focused {
-  border-color: var(--sysacad-navy);
+  border-color: var(--navy);
 }
 
 .sysacad-prefix {
   font-size: 14px;
-  color: var(--sysacad-text-secondary);
+  color: var(--text-secondary);
   padding-right: 8px;
   font-family: "Courier New", monospace;
 }
@@ -271,11 +228,11 @@
   outline: none;
   padding: 10px 0;
   font-size: 18px;
-  color: var(--sysacad-text-primary);
+  color: var(--text-primary);
 }
 
 .sysacad-input::placeholder {
-  color: var(--sysacad-text-muted);
+  color: var(--text-muted);
 }
 
 .sysacad-input--mono {
@@ -291,7 +248,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--sysacad-text-secondary);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   padding-left: 8px;
@@ -299,12 +256,12 @@
 }
 
 .sysacad-eye-btn:hover {
-  color: var(--sysacad-text-primary);
+  color: var(--text-primary);
 }
 
 .sysacad-error {
   font-size: 14px;
-  color: var(--sysacad-error);
+  color: var(--error);
   margin: 0;
 }
 
@@ -316,13 +273,13 @@
   cursor: pointer;
   user-select: none;
   font-size: 14px;
-  color: var(--sysacad-text-secondary);
+  color: var(--text-secondary);
 }
 
 .sysacad-checkbox {
   width: 16px;
   height: 16px;
-  accent-color: var(--sysacad-navy);
+  accent-color: var(--navy);
 }
 
 .sysacad-submit {
@@ -330,7 +287,7 @@
   padding: 13px 0;
   border-radius: 2px;
   border: none;
-  background-color: var(--sysacad-navy);
+  background-color: var(--navy);
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
@@ -340,31 +297,31 @@
 }
 
 .sysacad-submit:hover {
-  background-color: var(--sysacad-navy-dark);
+  background-color: var(--navy-dark);
 }
 
 .sysacad-footer-note {
   margin-top: 40px;
   font-size: 12px;
   text-align: center;
-  color: var(--sysacad-text-muted);
+  color: var(--text-muted);
 }
 
 /* Footer con redes sociales */
 .sysacad-footer {
-  border-top: 1px solid var(--sysacad-border);
+  border-top: 1px solid var(--border);
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  background-color: var(--sysacad-surface);
+  background-color: var(--surface);
   transition: background-color 0.2s ease;
 }
 
 .sysacad-footer-copy {
   font-size: 12px;
-  color: var(--sysacad-text-secondary);
+  color: var(--text-secondary);
   margin: 0;
   text-align: center;
 }
@@ -376,14 +333,14 @@
 }
 
 .sysacad-social-link {
-  color: var(--sysacad-text-secondary);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   transition: color 0.15s ease;
 }
 
 .sysacad-social-link:hover {
-  color: var(--sysacad-text-primary);
+  color: var(--text-primary);
 }
 
 /* Responsive */
