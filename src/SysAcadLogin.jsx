@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Eye, EyeOff, Sun, Moon } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { SiInstagram, SiFacebook, SiX, SiYoutube } from "@icons-pack/react-simple-icons";
+import ThemeToggle from "./components/common/ThemeToggle";
 import utnLogo from "./utn-logo.jpg";
 import "./SysAcadLogin.css";
 
 export default function SysAcadLogin() {
-  const [darkMode, setDarkMode] = useState(false);
   const [legajo, setLegajo] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +24,7 @@ export default function SysAcadLogin() {
   };
 
   return (
-    <div className="sysacad-page" data-theme={darkMode ? "dark" : "light"}>
+    <div className="sysacad-page">
       <div className="sysacad-wrapper">
         {/* Panel institucional */}
         <div className="sysacad-panel">
@@ -49,16 +49,7 @@ export default function SysAcadLogin() {
         {/* Panel de login */}
         <div className="sysacad-form-side">
           <div className="sysacad-form-box">
-            <div className="sysacad-toggle-row">
-              <button
-                type="button"
-                onClick={() => setDarkMode((d) => !d)}
-                aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-                className="sysacad-theme-toggle"
-              >
-                {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-              </button>
-            </div>
+            
 
             <div className="sysacad-mobile-header">
               <img src={utnLogo} alt="UTN San Nicolás - Aula Chacabuco" className="sysacad-mobile-logo" />
@@ -74,7 +65,9 @@ export default function SysAcadLogin() {
             <form onSubmit={handleSubmit} noValidate className="sysacad-form">
               {/* Legajo */}
               <div className="sysacad-field">
-                
+                <label htmlFor="legajo" className="sysacad-label">
+                  LEGAJO
+                </label>
                 <div
                   className={
                     "sysacad-input-row" +
@@ -103,7 +96,9 @@ export default function SysAcadLogin() {
                   <label htmlFor="password" className="sysacad-label">
                     CONTRASEÑA
                   </label>
-                  
+                  <a href="#" className="sysacad-link">
+                    ¿Olvidaste tu contraseña?
+                  </a>
                 </div>
                 <div
                   className={
@@ -151,7 +146,7 @@ export default function SysAcadLogin() {
             </form>
 
             <p className="sysacad-footer-note">
-              ¿Problemas para acceder? Comunicate con la secretaria de tu facultad.
+              ¿Problemas para acceder? Comunicate con la secretaria de la facultad.
             </p>
           </div>
         </div>
