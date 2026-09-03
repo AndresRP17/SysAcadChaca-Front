@@ -1,38 +1,44 @@
-/* Tema global de SysAcad: se aplica en el <html>, así que cualquier
-   página o componente puede usar estas variables sin redefinirlas. */
 
 :root {
-  --navy: #24344a;
-  --navy-dark: #eaeff6;
-  --bg: #f6f6f5;
+  /* Colores principales - MODO CLARO */
+  --navy: #1a2a4a;
+  --navy-dark: #0d1a33;
+  --navy-light: #2a4a6a;
+  
+  --bg: #f8f9fa;
   --surface: #ffffff;
-  --border: #0a0a09;
-  --text-primary: #111111;
-  --text-secondary: #141111;
-  --text-muted: #0e0e0c;
-  --error: #b5482f;
-  --panel-logo-bg: #ffffff;
+  
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a4a6a;
+  --text-muted: #9ca3af;
+  
+  --border: #e5e7eb;
+  
+  --error: #dc2626;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  
+  --panel-logo-bg: rgba(255, 255, 255, 0.1);
 }
 
+/* TEMA OSCURO */
 [data-theme="dark"] {
-  --navy: #33465f;
-  --navy-dark: #24344a;
-  --bg: #14181d;
-  --surface: #1b2027;
-  --border: #e5e8ec;
-  --text-primary: #f2f2f0;
-  --text-secondary: #e7e9ed;
-  --text-muted: #ebeef2;
-  --error: #e5735a;
-  --panel-logo-bg: #ffffff;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background-color: var(--bg);
-  transition: background-color 0.2s ease;
+  --navy: #2a3a5a;
+  --navy-dark: #1a2a4a;
+  --navy-light: #3a5a7a;
+  
+  --bg: #111827;
+  --surface: #1f2937;
+  
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  
+  --border: #374151;
+  
+  --error: #f87171;
+  --success: #34d399;
+  --warning: #fbbf24;
+  
+  --panel-logo-bg: rgba(255, 255, 255, 0.05);
 }

@@ -1,0 +1,166 @@
+.user-profile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 20px;
+    cursor: pointer;
+    /* sin background ni border: siempre transparente, en cualquier estado */
+}
+
+.user-profile-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.user-profile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-profile-info h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+.user-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #60a5fa;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    margin-top: 4px;
+}
+
+/* Flechita que indica "hay más opciones acá" */
+.user-profile::after {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-right: 1.5px solid #64748b;
+    border-bottom: 1.5px solid #64748b;
+    transform: rotate(45deg);
+    margin-left: 2px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+/* Al hacer hover, la flecha gira y se aclara: pista de que se abrió algo */
+.user-profile:hover::after {
+    transform: rotate(225deg);
+    border-color: #cbd5e1;
+}
+
+
+/* ===== VARIANTE: topbar ===== */
+.user-profile.topbar {
+    padding: 10px 15px;
+}
+
+.user-profile.topbar .user-profile-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+}
+
+.user-profile.topbar .user-profile-info h4 {
+    font-size: 13px;
+}
+
+.user-profile.topbar .user-role {
+    font-size: 10px;
+    padding: 1px 8px;
+}
+
+@media (max-width: 768px) {
+    .user-profile.topbar .user-profile-info {
+        display: none;
+    }
+
+    /* en mobile, sin nombre visible, no hace falta la flecha */
+    .user-profile.topbar::after {
+        display: none;
+    }
+}
+
+
+/* ===== DROPDOWN ===== */
+.user-profile-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    padding: 6px;
+    z-index: 950;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+
+.user-profile:hover .user-profile-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+}
+
+.dropdown-item.danger {
+    color: #fca5a5;
+}
+
+.dropdown-item.danger:hover {
+    background: rgba(248, 113, 113, 0.12);
+    color: #fca5a5;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 6px 4px;
+}

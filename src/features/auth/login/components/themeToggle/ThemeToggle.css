@@ -1,0 +1,42 @@
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--surface, #ffffff);
+  color: var(--text-primary, #1a1a2e);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--bg, #f8f9fa);
+  border-color: var(--text-muted, #9ca3af);
+  transform: scale(1.02);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.theme-toggle-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .theme-toggle-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .theme-toggle-label {
+    display: none; /* Oculta el texto en móviles muy pequeños */
+  }
+}
