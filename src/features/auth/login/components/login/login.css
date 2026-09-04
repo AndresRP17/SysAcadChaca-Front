@@ -1,0 +1,416 @@
+.sysacad-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg);
+  transition: background-color 0.2s ease;
+}
+
+.sysacad-wrapper {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+/* Panel izquierdo */
+.sysacad-panel {
+  position: relative;
+  width: 42%;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--navy);
+  color: #ffffff;
+  padding: 48px;
+  overflow: hidden;
+  justify-content: space-between;
+}
+
+.sysacad-panel-texture {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: repeating-linear-gradient(
+    135deg,
+    #ffffff 0px,
+    #ffffff 1px,
+    transparent 1px,
+    transparent 26px
+  );
+}
+
+.sysacad-panel-top {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.sysacad-panel-logo {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  background: var(--panel-logo-bg);
+  border-radius: 8px;
+  padding: 8px;
+  margin: 0 auto 28px auto;
+}
+
+.sysacad-wordmark {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 44px;
+  line-height: 1.1;
+  margin: 0;
+  color: #ffffff;
+  text-align: center;
+}
+
+.sysacad-panel-text {
+  margin: 16px auto 0 auto;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  max-width: 280px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.sysacad-panel-bottom {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.sysacad-panel-note {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  max-width: 260px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* Panel derecho - Formulario */
+.sysacad-form-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background-color: var(--bg);
+}
+
+.sysacad-form-box {
+  width: 100%;
+  max-width: 380px;
+  background-color: var(--surface);
+  padding: 40px 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.sysacad-mobile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.sysacad-mobile-logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+.sysacad-wordmark-sm {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.sysacad-eyebrow-sm {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--text-secondary);
+  margin: 2px 0 0 0;
+  text-transform: uppercase;
+}
+
+.sysacad-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.sysacad-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 28px 0;
+}
+
+/* Formulario */
+.sysacad-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sysacad-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.sysacad-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.sysacad-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.sysacad-label-row .sysacad-label {
+  margin-bottom: 0;
+}
+
+.sysacad-link {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.sysacad-link:hover {
+  color: var(--text-primary);
+}
+
+.sysacad-input-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid var(--border);
+  transition: border-color 0.15s ease;
+  padding: 4px 0;
+}
+
+.sysacad-input-row--focused {
+  border-color: var(--navy);
+}
+
+.sysacad-prefix {
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding-right: 8px;
+  font-family: "Courier New", monospace;
+}
+
+.sysacad-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 10px 0;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.sysacad-input::placeholder {
+  color: var(--text-muted);
+}
+
+.sysacad-input--mono {
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.15em;
+}
+
+.sysacad-input--mono::placeholder {
+  letter-spacing: normal;
+}
+
+.sysacad-eye-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  padding: 8px 0 8px 8px;
+  transition: color 0.15s ease;
+}
+
+.sysacad-eye-btn:hover {
+  color: var(--text-primary);
+}
+
+.sysacad-error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  border: 1px solid #fecaca;
+}
+
+.sysacad-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.sysacad-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--navy);
+  cursor: pointer;
+}
+
+.sysacad-submit {
+  margin-top: 4px;
+  padding: 14px 0;
+  border-radius: 6px;
+  border: none;
+  background-color: var(--navy);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.sysacad-submit:hover:not(:disabled) {
+  background-color: var(--navy-dark);
+}
+
+.sysacad-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.sysacad-footer-note {
+  margin-top: 28px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+
+
+
+
+
+/* Desktop (≥768px) - Panel visible, sin scroll */
+@media (min-width: 768px) {
+  .sysacad-panel {
+    display: flex;
+  }
+
+  .sysacad-mobile-header {
+    display: none;
+  }
+
+  .sysacad-form-side {
+    padding: 40px 48px;
+  }
+
+  .sysacad-form-box {
+    padding: 40px 40px;
+  }
+
+  
+  /* Sin scroll en desktop */
+  .sysacad-page {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+  
+  .sysacad-wrapper {
+    height: calc(100vh - 73px);
+    overflow: hidden;
+  }
+}
+
+/* Móvil (<768px) - Solo formulario, con scroll */
+@media (max-width: 767px) {
+  .sysacad-form-box {
+    padding: 24px 16px;
+    box-shadow: none;
+    background-color: transparent;
+  }
+
+  .sysacad-form-side {
+    padding: 20px 16px;
+  }
+
+  .sysacad-panel {
+    display: none;
+  }
+
+  .sysacad-mobile-header {
+    display: flex;
+  }
+
+  .sysacad-title {
+    font-size: 24px;
+  }
+  
+  /* Scroll en móvil */
+  .sysacad-page {
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .sysacad-wrapper {
+    min-height: auto;
+  }
+}
+
+/* Pantallas grandes (≥1024px) */
+@media (min-width: 1024px) {
+  .sysacad-panel {
+    width: 45%;
+  }
+
+  .sysacad-form-side {
+    padding: 40px 64px;
+  }
+
+  .sysacad-form-box {
+    max-width: 420px;
+    padding: 48px 48px;
+  }
+}
+
+.sysacad-theme-toggle-wrapper {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  .sysacad-theme-toggle-wrapper {
+    top: 12px;
+    right: 16px;
+  }
+}
