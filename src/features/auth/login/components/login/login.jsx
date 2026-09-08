@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Sun, Moon } from "lucide-react";
 import { SiInstagram, SiFacebook, SiX, SiYoutube } from "@icons-pack/react-simple-icons";
 import { useAuth } from "../../../../../context/AuthContext";
+import { useTheme } from "../../../../../context/ThemeContext";
 import { getDefaultRouteForRole } from "../../../../layout/roleLinks";
 import utnLogo from "./utn-logo.jpg";
 import "./login.css";
@@ -10,6 +11,7 @@ import "./login.css";
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [legajo, setLegajo] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -64,7 +66,14 @@ export default function Login() {
         {/* Panel de login */}
         <div className="sysacad-form-side">
           <div className="sysacad-form-box">
-            
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+              className="sysacad-theme-toggle"
+            >
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
 
             <div className="sysacad-mobile-header">
               <img src={utnLogo} alt="UTN San Nicolás - Aula Chacabuco" className="sysacad-mobile-logo" />
