@@ -1,4 +1,5 @@
 import { useState } from "react";
+<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Sun, Moon } from "lucide-react";
 import { SiInstagram, SiFacebook, SiX, SiYoutube } from "@icons-pack/react-simple-icons";
@@ -12,6 +13,17 @@ export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme();
+=======
+import ThemeToggle from "../themeToggle/ThemeToggle";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import utnLogo from "./utn-logo.jpg";
+import "./login.css";
+import { useAuth } from '../../../../../context/AuthContext';
+
+import { useNavigate } from 'react-router-dom';
+
+export default function Login() {
+>>>>>>> origin/develop
   const [legajo, setLegajo] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -20,12 +32,24 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+<<<<<<< HEAD
+=======
+
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+
+>>>>>>> origin/develop
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+
+    // Validación de campos vacíos
     if (!legajo.trim() || !password.trim()) {
       setError("Completá email y contraseña para continuar.");
       return;
     }
+<<<<<<< HEAD
     setError("");
     setLoading(true);
     try {
@@ -35,6 +59,28 @@ export default function Login() {
       navigate(getDefaultRouteForRole(user?.role));
     } catch (err) {
       setError(err.message);
+=======
+
+    setLoading(true);
+
+    try {
+      // Acá va la lógica de autenticación con el service
+      // Asumiendo que el login espera email y password, 
+      // y que el legajo funciona como email o username
+      await login(legajo, password);
+      console.log('Login exitoso');
+      navigate('/appointments'); // o la ruta que corresponda
+    } catch (err) {
+      console.error('Error al iniciar sesión:', err);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data?.title ||
+        err.response?.data?.error ||
+        err.message ||
+        'Error al iniciar sesión. Verificá tus credenciales.';
+
+      setError(errorMessage);
+>>>>>>> origin/develop
     } finally {
       setLoading(false);
     }
@@ -42,6 +88,12 @@ export default function Login() {
 
   return (
     <div className="sysacad-page">
+      <div className="sysacad-theme-toggle-wrapper">
+        <ThemeToggle />
+      </div>
+
+
+
       <div className="sysacad-wrapper">
         {/* Panel institucional */}
         <div className="sysacad-panel">
@@ -66,6 +118,7 @@ export default function Login() {
         {/* Panel de login */}
         <div className="sysacad-form-side">
           <div className="sysacad-form-box">
+<<<<<<< HEAD
             <button
               type="button"
               onClick={toggleDarkMode}
@@ -74,6 +127,8 @@ export default function Login() {
             >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+=======
+>>>>>>> origin/develop
 
             <div className="sysacad-mobile-header">
               <img src={utnLogo} alt="UTN San Nicolás - Aula Chacabuco" className="sysacad-mobile-logo" />
@@ -85,6 +140,24 @@ export default function Login() {
 
             <h2 className="sysacad-title">Bienvenido de nuevo</h2>
             <p className="sysacad-subtitle">Ingresá con tu legajo para continuar.</p>
+
+            {/* Mensaje de error con el estilo del segundo login */}
+            {error && (
+              <div className="sysacad-error-message" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: '#fee2e2',
+                color: '#991b1b',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                fontSize: '14px'
+              }}>
+                <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                <span>{error}</span>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} noValidate className="sysacad-form">
               {/* Email (el login real todavía no soporta legajo, solo email) */}
@@ -150,8 +223,6 @@ export default function Login() {
                 </div>
               </div>
 
-              {error && <p className="sysacad-error">{error}</p>}
-
               <label className="sysacad-checkbox-row">
                 <input
                   type="checkbox"
@@ -159,11 +230,20 @@ export default function Login() {
                   onChange={(e) => setRemember(e.target.checked)}
                   className="sysacad-checkbox"
                 />
-                <span>Recordarme en este equipo</span>
+                <span>Recordarme</span>
               </label>
 
+<<<<<<< HEAD
               <button type="submit" className="sysacad-submit" disabled={loading}>
                 {loading ? "INGRESANDO..." : "INGRESAR"}
+=======
+              <button
+                type="submit"
+                className="sysacad-submit"
+                disabled={loading}
+              >
+                {loading ? 'INGRESANDO...' : 'INGRESAR'}
+>>>>>>> origin/develop
               </button>
             </form>
 
@@ -174,26 +254,8 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Footer con redes sociales */}
-      <footer className="sysacad-footer">
-        <p className="sysacad-footer-copy">
-          © {new Date().getFullYear()} UTN Facultad Regional San Nicolás — Aula Chacabuco
-        </p>
-        <div className="sysacad-social-row">
-          <a href="#" aria-label="Instagram" className="sysacad-social-link">
-            <SiInstagram size={18} color="currentColor" />
-          </a>
-          <a href="#" aria-label="Facebook" className="sysacad-social-link">
-            <SiFacebook size={18} color="currentColor" />
-          </a>
-          <a href="#" aria-label="X (Twitter)" className="sysacad-social-link">
-            <SiX size={16} color="currentColor" />
-          </a>
-          <a href="#" aria-label="YouTube" className="sysacad-social-link">
-            <SiYoutube size={18} color="currentColor" />
-          </a>
-        </div>
-      </footer>
+
+
     </div>
   );
 }

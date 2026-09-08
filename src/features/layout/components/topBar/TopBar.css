@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .topbar {
   display: flex;
   align-items: center;
@@ -5,6 +6,22 @@
   padding: 12px 24px;
   background: var(--surface);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 15%, transparent);
+=======
+
+.topbar {
+  position: sticky;
+  top: 0;
+  height: 64px;
+  background: var(--surface, #111827);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 900;
+  flex-shrink: 0;
+>>>>>>> origin/develop
 }
 
 .topbar-left {
@@ -13,6 +30,7 @@
   gap: 12px;
 }
 
+<<<<<<< HEAD
 .topbar-title {
   font-size: 1.1rem;
   margin: 0;
@@ -38,3 +56,212 @@
     display: block;
   }
 }
+=======
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary, #9ca3af);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: var(--bg, rgba(255, 255, 255, 0.06));
+  color: var(--text-primary, #f8fafc);
+}
+
+.topbar-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #f8fafc);
+  margin: 0;
+  text-transform: capitalize;
+}
+
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--bg, rgba(255, 255, 255, 0.05));
+  border-radius: 8px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+  transition: all 0.2s ease;
+  color: var(--text-muted, #6b7280);
+  margin-right: 4px;
+}
+
+.topbar-search:focus-within {
+  border-color: var(--navy, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: var(--bg, rgba(255, 255, 255, 0.08));
+}
+
+.topbar-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 4px 0;
+  font-size: 14px;
+  color: var(--text-primary, #f8fafc);
+  width: 150px;
+}
+
+.topbar-search-input::placeholder {
+  color: var(--text-muted, #6b7280);
+}
+
+
+
+.topbar-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary, #9ca3af);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.topbar-icon-btn:hover {
+  background: var(--bg, rgba(255, 255, 255, 0.06));
+  color: var(--text-primary, #f8fafc);
+}
+
+.topbar-icon-btn--notif {
+  position: relative;
+}
+
+.topbar-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Estilos para el dropdown del UserProfile */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary, #d1d5db);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.dropdown-item:hover {
+  background: var(--bg, rgba(255, 255, 255, 0.06));
+  color: var(--text-primary, #f8fafc);
+}
+
+.dropdown-item.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border, rgba(255, 255, 255, 0.06));
+  margin: 4px 8px;
+}
+
+
+/* tablets y pantallas medianas */
+@media (max-width: 1024px) {
+  .topbar-search {
+    display: none;
+  }
+}
+
+/* mobile */
+@media (max-width: 768px) {
+  .topbar {
+    height: 56px;
+    padding: 0 12px;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .topbar-title {
+    font-size: 15px;
+  }
+
+  .topbar-icon-btn--notif {
+    display: none;
+  }
+
+  .topbar-search {
+    display: none;
+  }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 480px) {
+  .topbar {
+    height: 50px;
+    padding: 0 10px;
+  }
+
+  .topbar-title {
+    font-size: 13px;
+  }
+
+  .mobile-menu-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .mobile-menu-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .topbar-icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .topbar-icon-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+>>>>>>> origin/develop

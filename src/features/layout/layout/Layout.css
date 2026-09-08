@@ -1,6 +1,7 @@
 .layout {
   display: flex;
   min-height: 100vh;
+<<<<<<< HEAD
   background: var(--bg);
 }
 
@@ -15,10 +16,41 @@
 
 .layout-body.collapsed {
   margin-left: 64px;
+=======
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  z-index: 1000;
+}
+
+.sidebar.collapsed {
+  width: 68px;
+}
+
+.layout-body {
+ display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: 240px;
+  min-height: 100vh;
+  width: calc(100% - 240px);
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.layout-body.collapsed {
+  margin-left: 68px;
+  width: calc(100% - 68px);
+>>>>>>> origin/develop
 }
 
 .main-content {
   flex: 1;
+<<<<<<< HEAD
   padding: 24px;
 }
 
@@ -27,9 +59,74 @@
   margin: 0 auto;
 }
 
+=======
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(8, 144, 178, 0),
+      transparent 70%
+    ),
+    #0b1220;
+}
+
+.content {
+  padding: 1rem;
+  width: 100%;
+  overflow-x: auto;
+  color: #e2e8f0;
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #f8fafc;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-right: 0.5rem;
+  border-radius: 0.375rem;
+}
+
+
+>>>>>>> origin/develop
 @media (max-width: 768px) {
   .layout-body,
   .layout-body.collapsed {
     margin-left: 0;
+<<<<<<< HEAD
   }
 }
+=======
+    width: 100%;
+  }
+}
+
+
+
+@media (max-width: 768px) {
+  /* Muestra el botón de menú en el TopBar */
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* El cuerpo ocupa todo el ancho de la pantalla */
+  .layout-body,
+  .layout-body.collapsed {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* El Sidebar pasa a ser un menú desplegable (Off-Canvas) */
+  .sidebar {
+    width: 240px !important;
+    transform: translateX(0); /* Abierto */
+  }
+
+  /* Cuando está colapsado en móvil, se oculta completamente a la izquierda */
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+  }
+}
+>>>>>>> origin/develop

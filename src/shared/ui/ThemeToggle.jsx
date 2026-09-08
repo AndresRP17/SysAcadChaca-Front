@@ -1,5 +1,5 @@
 import { Sun, Moon } from "lucide-react";
-import { useTheme } from "../../context/ThemeContext";
+import { useTheme } from "../../../../../context/ThemeContext";
 import "./ThemeToggle.css";
 
 export default function ThemeToggle() {
@@ -12,7 +12,10 @@ export default function ThemeToggle() {
       aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
       className="theme-toggle-btn"
     >
-      {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+      {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+      <span className="theme-toggle-label">
+        {darkMode ? "Claro" : "Oscuro"}
+      </span>
     </button>
   );
 }

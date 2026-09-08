@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import axios from "axios";
 
 export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8087";
@@ -8,11 +9,21 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
+=======
+import axios from 'axios';
+export const api = axios.create({
+  baseURL: '/api',
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+>>>>>>> origin/develop
   if (token) {
     config.headers.Authorization = token;
   }
   return config;
 });
+<<<<<<< HEAD
 
 api.interceptors.response.use(
   (response) => response,
@@ -27,3 +38,5 @@ api.interceptors.response.use(
     return Promise.reject(new Error(message));
   },
 );
+=======
+>>>>>>> origin/develop

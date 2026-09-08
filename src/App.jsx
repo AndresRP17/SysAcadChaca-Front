@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { RouterProvider } from "react-router-dom";
 import { router } from "./app/routes/index.jsx";
 import "./styles/theme.css";
@@ -5,3 +6,13 @@ import "./styles/theme.css";
 export default function App() {
   return <RouterProvider router={router} />;
 }
+=======
+import { RouterProvider } from 'react-router-dom'
+import { router } from './app/routes/index.jsx'
+import "./styles/App.css";
+
+
+export default function App() {
+  return <RouterProvider router={router} />
+}
+>>>>>>> origin/develop
