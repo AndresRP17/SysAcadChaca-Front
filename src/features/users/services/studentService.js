@@ -1,7 +1,7 @@
 import { api } from "../../../shared/api/api";
 
 export async function getStudents() {
-  const { data } = await api.get("/students");
+  const { data } = await api.get("/students?size=1000");
   return data;
 }
 

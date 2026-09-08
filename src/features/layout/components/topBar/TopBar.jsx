@@ -8,6 +8,7 @@ import "./TopBar.css";
 const PAGE_TITLES = {
   usuarios: "Usuarios",
   planes: "Planes de estudio",
+  cursadas: "Cursadas",
   alumno: "Vista alumno",
 };
 
