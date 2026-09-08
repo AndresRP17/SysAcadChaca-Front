@@ -1,9 +1,16 @@
 import { useState } from "react";
+<<<<<<< Updated upstream:src/SysAcadLogin.jsx
 import { Eye, EyeOff } from "lucide-react";
 import { SiInstagram, SiFacebook, SiX, SiYoutube } from "@icons-pack/react-simple-icons";
 import ThemeToggle from "./components/common/ThemeToggle";
 import utnLogo from "./utn-logo.jpg";
 import "./SysAcadLogin.css";
+=======
+import ThemeToggle from "../themeToggle/ThemeToggle";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import "./login.css";
+import { useAuth } from '../../../../../context/AuthContext';
+>>>>>>> Stashed changes:src/features/auth/login/components/login/login.jsx
 
 export default function SysAcadLogin() {
   const [legajo, setLegajo] = useState("");
@@ -30,7 +37,6 @@ export default function SysAcadLogin() {
         <div className="sysacad-panel">
           <div className="sysacad-panel-texture" />
           <div className="sysacad-panel-top">
-            <img src={utnLogo} alt="UTN San Nicolás - Aula Chacabuco" className="sysacad-panel-logo" />
             <h1 className="sysacad-wordmark">SysAcad</h1>
             <p className="sysacad-panel-text">
               Tu gestión académica, en un solo lugar: notas, inscripciones y
@@ -40,8 +46,7 @@ export default function SysAcadLogin() {
 
           <div className="sysacad-panel-bottom">
             <p className="sysacad-panel-note">
-              Acceso exclusivo para alumnos y personal del Aula Chacabuco —
-              UTN Facultad Regional San Nicolás.
+              Acceso exclusivo para alumnos y personal del Aula Chacabuco
             </p>
           </div>
         </div>
@@ -52,7 +57,6 @@ export default function SysAcadLogin() {
             
 
             <div className="sysacad-mobile-header">
-              <img src={utnLogo} alt="UTN San Nicolás - Aula Chacabuco" className="sysacad-mobile-logo" />
               <div>
                 <h1 className="sysacad-wordmark-sm">SysAcad</h1>
                 <p className="sysacad-eyebrow-sm">Aula Chacabuco</p>
