@@ -2,7 +2,7 @@ import { api } from "../../../shared/api/api";
 import { buildParams } from "../../../shared/utils/formatters";
 
 export async function getStudyPlans(programId) {
-  const qs = buildParams({ program_id: programId });
+  const qs = buildParams({ program_id: programId, size: 1000 });
   const { data } = await api.get(`/study-plans?${qs}`);
   return data;
 }

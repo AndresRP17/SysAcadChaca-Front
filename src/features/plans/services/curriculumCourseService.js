@@ -2,7 +2,7 @@ import { api } from "../../../shared/api/api";
 import { buildParams } from "../../../shared/utils/formatters";
 
 export async function getCurriculumCourses(studyPlanId) {
-  const qs = buildParams({ study_plan_id: studyPlanId });
+  const qs = buildParams({ study_plan_id: studyPlanId, size: 1000 });
   const { data } = await api.get(`/curriculum-courses?${qs}`);
   return data;
 }

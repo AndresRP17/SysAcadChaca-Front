@@ -1,7 +1,9 @@
 import { api } from "../../../shared/api/api";
 
 export async function getPrograms() {
-  const { data } = await api.get("/programs");
+  // El backend pagina con size=10 por defecto; forzamos un tope alto para
+  // no truncar la lista en silencio (no hay UI de paginación todavía).
+  const { data } = await api.get("/programs?size=1000");
   return data;
 }
 

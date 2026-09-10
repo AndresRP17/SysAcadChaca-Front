@@ -1,22 +1,25 @@
 // Qué ve cada rol en la barra de navegación y a dónde lo mandamos después
 // del login. Administrador tiene acceso total (según roles.description en
-// el backend); Bedel no administra carreras/materias/planes/usuarios, así
-// que no ve esas pantallas; Docente y Bedel todavía no tienen vistas
-// propias construidas, por eso su lista queda vacía por ahora.
+// el backend); Bedel gestiona comisiones/aulas/horarios/mesas de examen
+// (IsAdministradorValidatorService/assertHasAnyRole en Classroom/Section/
+// SectionSchedule ya lo permite en el backend) pero no administra
+// carreras/materias/planes/usuarios; Docente todavía no tiene ninguna
+// vista propia construida, por eso su lista queda vacía por ahora.
 export const LINKS_BY_ROLE = {
-  Administrador: ["usuarios", "planes"],
+  Administrador: ["usuarios", "planes", "cursadas"],
   Alumno: ["alumno"],
   Docente: [],
-  Bedel: [],
+  Bedel: ["cursadas"],
 };
 
 export function getDefaultRouteForRole(role) {
   const keys = LINKS_BY_ROLE[role] ?? [];
   if (keys.includes("usuarios")) return "/usuarios";
   if (keys.includes("planes")) return "/planes";
+  if (keys.includes("cursadas")) return "/cursadas";
   if (keys.includes("alumno")) return "/alumno";
-  // Docente y Bedel todavía no tienen ninguna vista propia — mandarlos a
-  // /usuarios (o cualquier ruta con guard) generaría un loop de redirects.
+  // Docente todavía no tiene ninguna vista propia — mandarlo a una ruta
+  // con guard generaría un loop de redirects.
   return "/sin-acceso";
 }
 
