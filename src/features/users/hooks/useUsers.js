@@ -74,13 +74,21 @@ export function useUsers() {
   }, [rawUsers, searchTerm, roleFilter]);
 
   async function addUser(data) {
+  try {
     if (data.rol === "Alumno") {
       await createStudent(data.payload);
     } else {
       await createTeacher(data.payload);
     }
     await reload();
+  } catch (e) {
+    // devuelve los errores de validación al componente
+    if (e.response?.status === 422) {
+      throw e.response.data; // { error, errors: { campo: mensaje } }
+    }
+    throw e;
   }
+}
 
   async function updateUser(user, data) {
     if (user.kind === "student") {

@@ -23,7 +23,9 @@ api.interceptors.response.use(
       window.location.href = "/";
     }
 
-    const message = error.response?.data?.error || error.message || "Ocurrió un error";
-    return Promise.reject(new Error(message));
+    return Promise.reject(error);
+    //se perdia el error, de esta forma queda disponible a toda la app
+    // const message = error.response?.data?.error || error.message || "Ocurrió un error";
+    // return Promise.reject(new Error(message));
   },
 );

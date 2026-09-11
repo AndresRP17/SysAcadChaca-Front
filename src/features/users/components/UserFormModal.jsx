@@ -19,7 +19,8 @@ const EMPTY_FORM = {
 export default function UserFormModal({ open, mode, initialData, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [studyPlans, setStudyPlans] = useState([]);
-  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [generalError, setGeneralError] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -44,43 +45,61 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
     } else {
       setForm(EMPTY_FORM);
     }
-    setError("");
+
+    setFieldErrors({});
+    setGeneralError("");
   }, [open, mode, initialData]);
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!form.email.trim() || !form.first_name.trim() || !form.last_name.trim() || !form.national_id.trim()) {
-      setError("Completá email, nombre, apellido y DNI.");
-      return;
-    }
-    if (mode === "create" && form.password.length < 8) {
-      setError("La contraseña debe tener al menos 8 caracteres.");
-      return;
-    }
+    // Limpiar errores previos
+    setFieldErrors({});
+    setGeneralError("");
 
     const base = {
       email: form.email,
       first_name: form.first_name,
       last_name: form.last_name,
       national_id: form.national_id,
-      // en edición, si no se toca la contraseña se manda vacía y el backend la deja como está
       password: form.password || (mode === "create" ? "" : null),
     };
 
     const payload =
       form.rol === "Alumno"
-        ? { ...base, study_plan_id: Number(form.study_plan_id), enrollment_number: form.enrollment_number, enrollment_date: form.enrollment_date }
-        : { ...base, employee_number: form.employee_number, degree: form.degree };
+        ? {
+          ...base,
+          study_plan_id: Number(form.study_plan_id),
+          enrollment_number: form.enrollment_number,
+          enrollment_date: form.enrollment_date,
+        }
+        : {
+          ...base,
+          employee_number: form.employee_number,
+          degree: form.degree,
+        };
 
     try {
       await onSubmit({ rol: form.rol, payload });
     } catch (err) {
-      setError(err.message);
+      const backendErrors = err?.response?.data?.errors ?? err?.errors;
+      
+      if (backendErrors) {
+        setFieldErrors(backendErrors);
+        setGeneralError(err?.response?.data?.error ?? "Datos invalidos");
+      } else {
+        setGeneralError(err?.message ?? "Error inesperado");
+      }
     }
   }
 
@@ -111,6 +130,9 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
               onChange={(e) => handleChange("first_name", e.target.value)}
               className="users-form-input"
             />
+            {fieldErrors.first_name && (
+              <p className="users-form-error">{fieldErrors.first_name}</p>
+            )}
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Apellido</label>
@@ -120,6 +142,9 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
               onChange={(e) => handleChange("last_name", e.target.value)}
               className="users-form-input"
             />
+            {fieldErrors.last_name && (
+              <p className="users-form-error">{fieldErrors.last_name}</p>
+            )}
           </div>
         </div>
 
@@ -132,6 +157,9 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
               onChange={(e) => handleChange("email", e.target.value)}
               className="users-form-input"
             />
+            {fieldErrors.email && (
+              <p className="users-form-error">{fieldErrors.email}</p>
+            )}
           </div>
           <div className="users-form-field">
             <label className="users-form-label">DNI</label>
@@ -141,6 +169,9 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
               onChange={(e) => handleChange("national_id", e.target.value)}
               className="users-form-input"
             />
+            {fieldErrors.national_id && (
+              <p className="users-form-error">{fieldErrors.national_id}</p>
+            )}
           </div>
         </div>
 
@@ -154,6 +185,9 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
             onChange={(e) => handleChange("password", e.target.value)}
             className="users-form-input"
           />
+          {fieldErrors.password && (
+            <p className="users-form-error">{fieldErrors.password}</p>
+          )}
         </div>
 
         {form.rol === "Alumno" ? (
@@ -172,7 +206,11 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
                   </option>
                 ))}
               </select>
+              {fieldErrors.study_plan_id && (
+                <p className="users-form-error">{fieldErrors.study_plan_id}</p>
+              )}
             </div>
+
             <div className="users-form-row">
               <div className="users-form-field">
                 <label className="users-form-label">Legajo</label>
@@ -182,6 +220,9 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
                   onChange={(e) => handleChange("enrollment_number", e.target.value)}
                   className="users-form-input"
                 />
+                {fieldErrors.enrollment_number && (
+                  <p className="users-form-error">{fieldErrors.enrollment_number}</p>
+                )}
               </div>
               <div className="users-form-field">
                 <label className="users-form-label">Fecha de ingreso</label>
@@ -191,6 +232,9 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
                   onChange={(e) => handleChange("enrollment_date", e.target.value)}
                   className="users-form-input"
                 />
+                {fieldErrors.enrollment_date && (
+                  <p className="users-form-error">{fieldErrors.enrollment_date}</p>
+                )}
               </div>
             </div>
           </>
@@ -204,6 +248,9 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
                 onChange={(e) => handleChange("employee_number", e.target.value)}
                 className="users-form-input"
               />
+              {fieldErrors.employee_number && (
+                <p className="users-form-error">{fieldErrors.employee_number}</p>
+              )}
             </div>
             <div className="users-form-field">
               <label className="users-form-label">Título</label>
@@ -213,11 +260,14 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
                 onChange={(e) => handleChange("degree", e.target.value)}
                 className="users-form-input"
               />
+              {fieldErrors.degree && (
+                <p className="users-form-error">{fieldErrors.degree}</p>
+              )}
             </div>
           </div>
         )}
 
-        {error && <p className="users-form-error">{error}</p>}
+        {generalError && <p className="users-form-error">{generalError}</p>}
 
         <div className="users-form-actions">
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>
