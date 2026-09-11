@@ -15,7 +15,7 @@ const TABS = [
 ];
 
 export default function CursadasPage() {
-  const [activeTab, setActiveTab] = useState("aulas");
+  const [activeTab, setActiveTab] = useState(TABS[0].key);
 
   return (
     <div className="users-page">
