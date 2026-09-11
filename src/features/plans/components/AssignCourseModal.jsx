@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
+import { getErrorMessage } from "../../../shared/api/api";
 
 const EMPTY_FORM = { course_id: "", year_number: "", term: "1" };
 
@@ -31,7 +32,7 @@ export default function AssignCourseModal({ open, courses, onClose, onSubmit }) 
         term: Number(form.term),
       });
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     }
   }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
+import { getErrorMessage } from "../../../shared/api/api";
 
 export default function PrerequisiteFormModal({ open, courseOptions, onClose, onSubmit }) {
   const [requiredCourseId, setRequiredCourseId] = useState("");
@@ -23,7 +24,7 @@ export default function PrerequisiteFormModal({ open, courseOptions, onClose, on
     try {
       await onSubmit({ required_course_id: Number(requiredCourseId), condition_type: conditionType });
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     }
   }
 

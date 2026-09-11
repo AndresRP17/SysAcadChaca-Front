@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
+import { getErrorMessage } from "../../../shared/api/api";
 
 const SHIFTS = ["Mañana", "Tarde", "Noche"];
 const EMPTY_FORM = { curriculum_course_id: "", teacher_id: "", name: "", academic_year: "", max_capacity: "", shift: SHIFTS[0] };
@@ -46,7 +47,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
         shift: form.shift,
       });
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     }
   }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
+import { getErrorMessage } from "../../../shared/api/api";
 
 const EMPTY_FORM = { name: "", code: "", duration_years: "" };
 
@@ -31,7 +32,7 @@ export default function ProgramFormModal({ open, mode, initialData, onClose, onS
     try {
       await onSubmit({ ...form, duration_years: Number(form.duration_years) });
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     }
   }
 
