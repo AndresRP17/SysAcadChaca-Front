@@ -6,13 +6,17 @@ export async function getClassrooms() {
 }
 
 export async function createClassroom(data) {
-  const res = await api.post("/classrooms", data);
+  const res = await api.post("/classrooms", toPayload(data));
   return res.data;
 }
 
 export async function updateClassroom(id, data) {
-  const res = await api.put(`/classrooms/${id}`, data);
+  const res = await api.put(`/classrooms/${id}`, toPayload(data));
   return res.data;
+}
+
+function toPayload({ name, capacity, location, buildingId }) {
+  return { name, capacity, location, building_id: buildingId };
 }
 
 export async function deleteClassroom(id) {

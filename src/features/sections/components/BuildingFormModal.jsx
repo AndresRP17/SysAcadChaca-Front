@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
 import { getErrorMessage } from "../../../shared/api/api";
 
-const EMPTY_FORM = { resolution_year: "", active: true };
+const EMPTY_FORM = { name: "", address: "" };
 
-export default function StudyPlanFormModal({ open, mode = "create", initialData, programId, onClose, onSubmit }) {
+export default function BuildingFormModal({ open, mode, initialData, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
 
@@ -12,7 +12,7 @@ export default function StudyPlanFormModal({ open, mode = "create", initialData,
     if (open) {
       setForm(
         initialData
-          ? { resolution_year: initialData.resolutionYear, active: initialData.active }
+          ? { name: initialData.name, address: initialData.address }
           : EMPTY_FORM,
       );
       setError("");
@@ -25,46 +25,40 @@ export default function StudyPlanFormModal({ open, mode = "create", initialData,
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.resolution_year) {
-      setError("Completá el año de resolución.");
+    if (!form.name.trim() || !form.address.trim()) {
+      setError("Completá todos los campos.");
       return;
     }
     try {
-      await onSubmit({
-        program_id: programId,
-        resolution_year: Number(form.resolution_year),
-        active: form.active,
-      });
+      await onSubmit(form);
     } catch (err) {
       setError(getErrorMessage(err));
     }
   }
 
-  const title = mode === "edit" ? "Editar plan de estudio" : "Nuevo plan de estudio";
+  const title = mode === "edit" ? "Editar edificio" : "Nuevo edificio";
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form">
         <div className="users-form-field">
-          <label className="users-form-label">Año de resolución</label>
+          <label className="users-form-label">Nombre</label>
           <input
-            type="number"
-            min="1990"
-            value={form.resolution_year}
-            onChange={(e) => handleChange("resolution_year", e.target.value)}
+            type="text"
+            value={form.name}
+            onChange={(e) => handleChange("name", e.target.value)}
             className="users-form-input"
           />
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">
-            <input
-              type="checkbox"
-              checked={form.active}
-              onChange={(e) => handleChange("active", e.target.checked)}
-            />{" "}
-            Activo
-          </label>
+          <label className="users-form-label">Dirección</label>
+          <input
+            type="text"
+            value={form.address}
+            onChange={(e) => handleChange("address", e.target.value)}
+            className="users-form-input"
+          />
         </div>
 
         {error && <p className="users-form-error">{error}</p>}

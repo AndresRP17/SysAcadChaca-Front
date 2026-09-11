@@ -5,6 +5,7 @@ import { SiInstagram, SiFacebook, SiX, SiYoutube } from "@icons-pack/react-simpl
 import { useAuth } from "../../../../../context/AuthContext";
 import { useTheme } from "../../../../../context/ThemeContext";
 import { getDefaultRouteForRole } from "../../../../layout/roleLinks";
+import { getErrorMessage } from "../../../../../shared/api/api";
 import utnLogo from "./utn-logo.jpg";
 import "./login.css";
 
@@ -34,7 +35,7 @@ export default function Login() {
       const { user } = await login(legajo.trim(), password);
       navigate(getDefaultRouteForRole(user?.role));
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

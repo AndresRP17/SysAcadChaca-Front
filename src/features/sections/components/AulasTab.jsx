@@ -53,6 +53,7 @@ export default function AulasTab() {
           <thead>
             <tr>
               <th className="users-th">Nombre</th>
+              <th className="users-th">Edificio</th>
               <th className="users-th">Capacidad</th>
               <th className="users-th">Ubicación</th>
               <th className="users-th users-th--actions">Acciones</th>
@@ -60,14 +61,15 @@ export default function AulasTab() {
           </thead>
           <tbody>
             {loading && (
-              <tr><td className="users-empty" colSpan={4}>Cargando...</td></tr>
+              <tr><td className="users-empty" colSpan={5}>Cargando...</td></tr>
             )}
             {!loading && classrooms.length === 0 && (
-              <tr><td className="users-empty" colSpan={4}>No hay aulas cargadas.</td></tr>
+              <tr><td className="users-empty" colSpan={5}>No hay aulas cargadas.</td></tr>
             )}
             {!loading && classrooms.map((classroom) => (
               <tr key={classroom.id} className="users-row">
                 <td className="users-td" data-label="Nombre">{classroom.name}</td>
+                <td className="users-td" data-label="Edificio">{classroom.buildingName ?? "—"}</td>
                 <td className="users-td" data-label="Capacidad">{classroom.capacity}</td>
                 <td className="users-td" data-label="Ubicación">{classroom.location}</td>
                 <td className="users-td users-td--actions" data-label="Acciones">

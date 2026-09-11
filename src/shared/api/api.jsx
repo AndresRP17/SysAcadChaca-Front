@@ -29,3 +29,10 @@ api.interceptors.response.use(
     // return Promise.reject(new Error(message));
   },
 );
+
+// El interceptor de arriba propaga el error de axios tal cual (no el mensaje de
+// la API), asi que los componentes que quieran mostrarlo en un formulario deben
+// usar esto en vez de err.message.
+export function getErrorMessage(err, fallback = "Ocurrió un error") {
+  return err?.response?.data?.error || err?.message || fallback;
+}

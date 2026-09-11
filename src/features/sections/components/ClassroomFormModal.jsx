@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
+import { getErrorMessage } from "../../../shared/api/api";
+import { useBuildings } from "../hooks/useBuildings";
 
-const EMPTY_FORM = { name: "", capacity: "", location: "" };
+const EMPTY_FORM = { name: "", capacity: "", location: "", buildingId: "" };
 
 export default function ClassroomFormModal({ open, mode, initialData, onClose, onSubmit }) {
+  const { buildings } = useBuildings();
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
 
@@ -11,7 +14,12 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
     if (open) {
       setForm(
         initialData
-          ? { name: initialData.name, capacity: initialData.capacity, location: initialData.location }
+          ? {
+              name: initialData.name,
+              capacity: initialData.capacity,
+              location: initialData.location,
+              buildingId: initialData.buildingId ?? "",
+            }
           : EMPTY_FORM,
       );
       setError("");
@@ -24,14 +32,14 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.name.trim() || !form.capacity || !form.location.trim()) {
+    if (!form.name.trim() || !form.capacity || !form.location.trim() || !form.buildingId) {
       setError("Completá todos los campos.");
       return;
     }
     try {
-      await onSubmit({ ...form, capacity: Number(form.capacity) });
+      await onSubmit({ ...form, capacity: Number(form.capacity), buildingId: Number(form.buildingId) });
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     }
   }
 
@@ -50,6 +58,22 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
           />
         </div>
 
+        <div className="users-form-field">
+          <label className="users-form-label">Edificio</label>
+          <select
+            value={form.buildingId}
+            onChange={(e) => handleChange("buildingId", e.target.value)}
+            className="users-form-input"
+          >
+            <option value="">Seleccioná un edificio</option>
+            {buildings.map((building) => (
+              <option key={building.id} value={building.id}>
+                {building.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="users-form-row">
           <div className="users-form-field">
             <label className="users-form-label">Capacidad</label>
@@ -62,7 +86,7 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
             />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Ubicación</label>
+            <label className="users-form-label">Ubicación (ej. Planta baja, Ala norte)</label>
             <input
               type="text"
               value={form.location}

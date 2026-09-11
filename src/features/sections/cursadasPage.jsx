@@ -2,11 +2,13 @@ import { useState } from "react";
 import AulasTab from "./components/AulasTab";
 import ComisionesTab from "./components/ComisionesTab";
 import GrillaHorariaTab from "./components/GrillaHorariaTab";
+import EdificiosTab from "./components/EdificiosTab";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
 import "./cursadasPage.css";
 
 const TABS = [
+  { key: "edificios", label: "Edificios" },
   { key: "aulas", label: "Aulas" },
   { key: "comisiones", label: "Comisiones" },
   { key: "grilla", label: "Grilla horaria" },
@@ -37,6 +39,7 @@ export default function CursadasPage() {
         ))}
       </div>
 
+      {activeTab === "edificios" && <EdificiosTab />}
       {activeTab === "aulas" && <AulasTab />}
       {activeTab === "comisiones" && <ComisionesTab />}
       {activeTab === "grilla" && <GrillaHorariaTab />}
