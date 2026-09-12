@@ -5,7 +5,7 @@ import { getCurriculumCourses } from "../../plans/services/curriculumCourseServi
 import { getTeachers } from "../../users/services/teacherService";
 import { useClassrooms } from "../hooks/useClassrooms";
 import { getSections, createSection, updateSection, deleteSection } from "../services/sectionService";
-import { getSectionSchedules, createSectionSchedule, deleteSectionSchedule } from "../services/sectionScheduleService";
+import { getSectionSchedules, createSectionSchedule, updateSectionSchedule, deleteSectionSchedule } from "../services/sectionScheduleService";
 import SectionFormModal from "./SectionFormModal";
 import SectionScheduleFormModal, { weekdayLabel, formatTime } from "./SectionScheduleFormModal";
 import ConfirmModal from "../../../shared/ui/ConfirmModal";
@@ -31,6 +31,8 @@ export default function ComisionesTab() {
   const [editingSection, setEditingSection] = useState(null);
   const [sectionToDelete, setSectionToDelete] = useState(null);
   const [scheduleFormOpen, setScheduleFormOpen] = useState(false);
+  const [scheduleFormMode, setScheduleFormMode] = useState("create");
+  const [editingSchedule, setEditingSchedule] = useState(null);
   const [scheduleToDelete, setScheduleToDelete] = useState(null);
 
   useEffect(() => {
@@ -117,8 +119,24 @@ export default function ComisionesTab() {
     await reloadSections();
   }
 
-  async function handleAddSchedule(data) {
-    await createSectionSchedule({ ...data, section_id: selectedSectionId });
+  function openCreateSchedule() {
+    setScheduleFormMode("create");
+    setEditingSchedule(null);
+    setScheduleFormOpen(true);
+  }
+
+  function openEditSchedule(schedule) {
+    setScheduleFormMode("edit");
+    setEditingSchedule(schedule);
+    setScheduleFormOpen(true);
+  }
+
+  async function handleScheduleFormSubmit(data) {
+    if (scheduleFormMode === "edit" && editingSchedule) {
+      await updateSectionSchedule(editingSchedule.id, { ...data, section_id: editingSchedule.sectionId });
+    } else {
+      await createSectionSchedule({ ...data, section_id: selectedSectionId });
+    }
     setScheduleFormOpen(false);
     await reloadSchedules(selectedSectionId);
   }
@@ -232,7 +250,7 @@ export default function ComisionesTab() {
                         type="button"
                         className="users-btn users-btn--primary"
                         disabled={classrooms.length === 0}
-                        onClick={() => setScheduleFormOpen(true)}
+                        onClick={openCreateSchedule}
                       >
                         + Agregar horario
                       </button>
@@ -249,13 +267,22 @@ export default function ComisionesTab() {
                             <span>
                               <strong>{weekdayLabel(sch.weekday)}</strong> {formatTime(sch.startTime)}–{formatTime(sch.endTime)} — {sch.classroomName}
                             </span>
-                            <button
-                              type="button"
-                              className="users-action-btn users-action-btn--danger"
-                              onClick={() => setScheduleToDelete(sch)}
-                            >
-                              Quitar
-                            </button>
+                            <span>
+                              <button
+                                type="button"
+                                className="users-action-btn"
+                                onClick={() => openEditSchedule(sch)}
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                className="users-action-btn users-action-btn--danger"
+                                onClick={() => setScheduleToDelete(sch)}
+                              >
+                                Quitar
+                              </button>
+                            </span>
                           </li>
                         ))}
                       </ul>
@@ -280,10 +307,12 @@ export default function ComisionesTab() {
 
       <SectionScheduleFormModal
         open={scheduleFormOpen}
+        mode={scheduleFormMode}
+        initialData={editingSchedule}
         classroomOptions={classrooms}
         teacherId={selectedSection?.teacherId}
         onClose={() => setScheduleFormOpen(false)}
-        onSubmit={handleAddSchedule}
+        onSubmit={handleScheduleFormSubmit}
       />
 
       <ConfirmModal

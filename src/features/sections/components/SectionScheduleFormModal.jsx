@@ -16,7 +16,7 @@ export function formatTime(time) {
   return time?.slice(0, 5) ?? "";
 }
 
-export default function SectionScheduleFormModal({ open, classroomOptions, teacherId, onClose, onSubmit }) {
+export default function SectionScheduleFormModal({ open, mode = "create", initialData, classroomOptions, teacherId, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [availability, setAvailability] = useState(null);
@@ -24,11 +24,20 @@ export default function SectionScheduleFormModal({ open, classroomOptions, teach
 
   useEffect(() => {
     if (open) {
-      setForm({ ...EMPTY_FORM, classroom_id: classroomOptions[0]?.id ?? "" });
+      setForm(
+        initialData
+          ? {
+              classroom_id: initialData.classroomId,
+              weekday: initialData.weekday,
+              start_time: formatTime(initialData.startTime),
+              end_time: formatTime(initialData.endTime),
+            }
+          : { ...EMPTY_FORM, classroom_id: classroomOptions[0]?.id ?? "" },
+      );
       setError("");
       setAvailability(null);
     }
-  }, [open, classroomOptions]);
+  }, [open, initialData, classroomOptions]);
 
   useEffect(() => {
     if (!open || !teacherId || !form.classroom_id || !form.weekday || !form.start_time || !form.end_time) {
@@ -47,6 +56,7 @@ export default function SectionScheduleFormModal({ open, classroomOptions, teach
           weekday: form.weekday,
           startTime: form.start_time,
           endTime: form.end_time,
+          excludeSectionScheduleId: mode === "edit" ? initialData?.id : undefined,
         });
         if (!cancelled) setAvailability(result);
       } catch {
@@ -60,7 +70,7 @@ export default function SectionScheduleFormModal({ open, classroomOptions, teach
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [open, teacherId, form.classroom_id, form.weekday, form.start_time, form.end_time]);
+  }, [open, teacherId, form.classroom_id, form.weekday, form.start_time, form.end_time, mode, initialData]);
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -84,8 +94,10 @@ export default function SectionScheduleFormModal({ open, classroomOptions, teach
     }
   }
 
+  const title = mode === "edit" ? "Editar horario" : "Agregar horario";
+
   return (
-    <Modal open={open} title="Agregar horario" onClose={onClose}>
+    <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form">
         <div className="users-form-field">
           <label className="users-form-label">Aula</label>
@@ -152,7 +164,7 @@ export default function SectionScheduleFormModal({ open, classroomOptions, teach
             Cancelar
           </button>
           <button type="submit" className="users-btn users-btn--primary">
-            Agregar
+            {mode === "edit" ? "Guardar" : "Agregar"}
           </button>
         </div>
       </form>

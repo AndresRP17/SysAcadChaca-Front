@@ -17,6 +17,11 @@ export async function createSectionSchedule(data) {
   return res.data;
 }
 
+export async function updateSectionSchedule(id, data) {
+  const res = await api.put(`/section-schedules/${id}`, data);
+  return res.data;
+}
+
 export async function deleteSectionSchedule(id) {
   await api.delete(`/section-schedules/${id}`);
 }
