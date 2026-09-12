@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
 import { getErrorMessage } from "../../../shared/api/api";
+import { getAvailability } from "../services/sectionScheduleService";
 
 const WEEKDAYS = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
 const WEEKDAY_LABELS = { LUNES: "Lunes", MARTES: "Martes", MIERCOLES: "Miércoles", JUEVES: "Jueves", VIERNES: "Viernes", SABADO: "Sábado" };
@@ -15,16 +16,51 @@ export function formatTime(time) {
   return time?.slice(0, 5) ?? "";
 }
 
-export default function SectionScheduleFormModal({ open, classroomOptions, onClose, onSubmit }) {
+export default function SectionScheduleFormModal({ open, classroomOptions, teacherId, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [availability, setAvailability] = useState(null);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
 
   useEffect(() => {
     if (open) {
       setForm({ ...EMPTY_FORM, classroom_id: classroomOptions[0]?.id ?? "" });
       setError("");
+      setAvailability(null);
     }
   }, [open, classroomOptions]);
+
+  useEffect(() => {
+    if (!open || !teacherId || !form.classroom_id || !form.weekday || !form.start_time || !form.end_time) {
+      setAvailability(null);
+      return;
+    }
+
+    let cancelled = false;
+    setCheckingAvailability(true);
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const result = await getAvailability({
+          classroomId: Number(form.classroom_id),
+          teacherId,
+          weekday: form.weekday,
+          startTime: form.start_time,
+          endTime: form.end_time,
+        });
+        if (!cancelled) setAvailability(result);
+      } catch {
+        if (!cancelled) setAvailability(null);
+      } finally {
+        if (!cancelled) setCheckingAvailability(false);
+      }
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [open, teacherId, form.classroom_id, form.weekday, form.start_time, form.end_time]);
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -96,6 +132,18 @@ export default function SectionScheduleFormModal({ open, classroomOptions, onClo
             />
           </div>
         </div>
+
+        {checkingAvailability && <p className="users-subtitle">Verificando disponibilidad...</p>}
+
+        {!checkingAvailability && availability && !availability.available && (
+          <div className="users-form-error">
+            {availability.conflicts.map((conflict, i) => <p key={i}>{conflict}</p>)}
+          </div>
+        )}
+
+        {!checkingAvailability && availability?.available && (
+          <p className="users-subtitle">Sin conflictos para ese horario.</p>
+        )}
 
         {error && <p className="users-form-error">{error}</p>}
 
