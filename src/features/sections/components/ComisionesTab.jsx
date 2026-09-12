@@ -281,6 +281,7 @@ export default function ComisionesTab() {
       <SectionScheduleFormModal
         open={scheduleFormOpen}
         classroomOptions={classrooms}
+        teacherId={selectedSection?.teacherId}
         onClose={() => setScheduleFormOpen(false)}
         onSubmit={handleAddSchedule}
       />
