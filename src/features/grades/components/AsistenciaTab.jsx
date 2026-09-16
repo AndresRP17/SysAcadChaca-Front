@@ -1,16 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getErrorMessage } from "../../../shared/api/api";
 import { getSectionSchedules } from "../../sections/services/sectionScheduleService";
 import {
+  getAttendancesBySection,
   getAttendancesBySectionAndDate,
   createAttendance,
   updateAttendance,
 } from "../services/attendanceService";
 
 const WEEKDAY_INDEX = { LUNES: 1, MARTES: 2, MIERCOLES: 3, JUEVES: 4, VIERNES: 5, SABADO: 6 };
+const INDEX_TO_WEEKDAY = Object.fromEntries(Object.entries(WEEKDAY_INDEX).map(([k, v]) => [v, k]));
 
 function formatTime(time) {
   return time?.slice(0, 5) ?? "";
+}
+
+function formatDate(isoDate) {
+  const [y, m, d] = isoDate.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function weekdayOf(isoDate) {
+  return INDEX_TO_WEEKDAY[new Date(`${isoDate}T00:00:00`).getDay()];
 }
 
 // Fecha real mas reciente (hoy o antes) que caiga en el dia de semana de la
@@ -27,6 +38,7 @@ function mostRecentDateForWeekday(weekday) {
 export default function AsistenciaTab({ sectionId, enrollments }) {
   const [schedules, setSchedules] = useState([]);
   const [scheduleId, setScheduleId] = useState("");
+  const [takenDates, setTakenDates] = useState([]); // fechas con asistencia ya cargada para la clase elegida
   const [date, setDate] = useState("");
   const [rows, setRows] = useState([]); // { enrollmentId, studentName, attendanceId, present }
   const [loading, setLoading] = useState(false);
@@ -49,10 +61,29 @@ export default function AsistenciaTab({ sectionId, enrollments }) {
       .catch((err) => setError(getErrorMessage(err, "No se pudieron cargar los horarios de la comision.")));
   }, [sectionId]);
 
-  function selectSchedule(schedule) {
+  const selectedSchedule = useMemo(
+    () => schedules.find((s) => String(s.id) === scheduleId),
+    [schedules, scheduleId],
+  );
+
+  async function selectSchedule(schedule) {
     setMessage("");
+    setError("");
     setScheduleId(String(schedule.id));
-    setDate(mostRecentDateForWeekday(schedule.weekday));
+    setDate("");
+
+    try {
+      const all = await getAttendancesBySection(sectionId);
+      const uniqueDates = [...new Set(all.map((a) => a.date))];
+      const matching = uniqueDates.filter((d) => weekdayOf(d) === schedule.weekday).sort().reverse();
+      setTakenDates(matching);
+    } catch (err) {
+      setError(getErrorMessage(err, "No se pudieron cargar las fechas ya tomadas."));
+    }
+  }
+
+  function startNewDate() {
+    setDate(mostRecentDateForWeekday(selectedSchedule.weekday));
   }
 
   useEffect(() => {
@@ -108,11 +139,11 @@ export default function AsistenciaTab({ sectionId, enrollments }) {
           await createAttendance(payload);
         }
       }
-      setMessage("Asistencia guardada.");
-      // Cierra la planilla y vuelve al selector de clase, para que quede claro
-      // que la accion termino en vez de dejar la tabla abierta como si nada.
-      setScheduleId("");
+      setMessage(`Asistencia del ${formatDate(date)} guardada.`);
+      // Cierra la planilla y vuelve al listado de fechas de esta clase, para
+      // que quede claro que la accion termino en vez de dejar la tabla abierta.
       setDate("");
+      setTakenDates((prev) => (prev.includes(date) ? prev : [date, ...prev].sort().reverse()));
     } catch (err) {
       setError(getErrorMessage(err, "No se pudo guardar la asistencia."));
     } finally {
@@ -140,23 +171,58 @@ export default function AsistenciaTab({ sectionId, enrollments }) {
         ))}
       </div>
 
-      {scheduleId && (
+      {error && <p className="users-form-error">{error}</p>}
+
+      {selectedSchedule && !date && (
+        <div style={{ marginTop: 16 }}>
+          <p className="users-form-label">Fechas ya tomadas</p>
+          {takenDates.length === 0 && (
+            <p className="users-empty">Todavía no se tomó asistencia en esta clase.</p>
+          )}
+          <div className="users-form-row" style={{ flexWrap: "wrap", gap: 8 }}>
+            {takenDates.map((d) => (
+              <button
+                key={d}
+                type="button"
+                className="users-btn users-btn--ghost"
+                onClick={() => setDate(d)}
+              >
+                {formatDate(d)}
+              </button>
+            ))}
+            <button type="button" className="users-btn users-btn--primary" onClick={startNewDate}>
+              + Nueva fecha
+            </button>
+          </div>
+        </div>
+      )}
+
+      {date && (
         <div className="users-form-field" style={{ maxWidth: 220, marginTop: 16 }}>
-          <label className="users-form-label">Fecha</label>
+          <label className="users-form-label">
+            Fecha {takenDates.includes(date) ? "(editando asistencia ya cargada)" : "(nueva)"}
+          </label>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="users-form-input"
           />
+          <button
+            type="button"
+            className="users-btn users-btn--ghost"
+            style={{ marginTop: 8 }}
+            onClick={() => setDate("")}
+          >
+            ← Volver a fechas
+          </button>
         </div>
       )}
 
-      {error && <p className="users-form-error">{error}</p>}
       {message && <p className="users-subtitle">{message}</p>}
       {loading && <p className="users-empty">Cargando...</p>}
 
-      {!loading && scheduleId && rows.length === 0 && (
+      {!loading && date && rows.length === 0 && (
         <p className="users-empty">No hay alumnos inscriptos en esta comision.</p>
       )}
 
