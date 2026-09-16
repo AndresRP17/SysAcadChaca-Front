@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
 import { getErrorMessage } from "../../shared/api/api";
-import { getTeachers } from "../users/services/teacherService";
+import { getMyTeacherProfile } from "../users/services/teacherService";
 import { getSections } from "../sections/services/sectionService";
 import { getEnrollmentsBySection } from "./services/enrollmentService";
 import AsistenciaTab from "./components/AsistenciaTab";
@@ -15,8 +14,6 @@ const TABS = [
 ];
 
 export default function PlanillaDocentePage() {
-  const { user } = useAuth();
-
   const [activeTab, setActiveTab] = useState(TABS[0].key);
   const [sections, setSections] = useState([]);
   const [sectionId, setSectionId] = useState("");
@@ -29,13 +26,7 @@ export default function PlanillaDocentePage() {
       setLoading(true);
       setError("");
       try {
-        const teachers = await getTeachers();
-        const me = teachers.find((t) => t.email === user?.email);
-
-        if (!me) {
-          setError("No se encontró tu perfil docente (no hay ningun Teacher con tu email).");
-          return;
-        }
+        const me = await getMyTeacherProfile();
 
         const allSections = await getSections();
         const mine = allSections.filter((s) => s.teacherId === me.id);
@@ -50,7 +41,7 @@ export default function PlanillaDocentePage() {
     }
 
     loadMySections();
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     if (!sectionId) {
