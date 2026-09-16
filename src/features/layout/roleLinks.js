@@ -6,10 +6,10 @@
 // carreras/materias/planes/usuarios; Docente todavía no tiene ninguna
 // vista propia construida, por eso su lista queda vacía por ahora.
 export const LINKS_BY_ROLE = {
-  Administrador: ["usuarios", "planes", "cursadas"],
-  Alumno: ["alumno"],
+  Administrador: ["usuarios", "planes", "cursadas", "actas"],
+  Alumno: ["alumno", "mis-cursadas", "finales"],
   Docente: [],
-  Bedel: ["cursadas"],
+  Bedel: ["cursadas", "actas"],
 };
 
 export function getDefaultRouteForRole(role) {
@@ -17,7 +17,9 @@ export function getDefaultRouteForRole(role) {
   if (keys.includes("usuarios")) return "/usuarios";
   if (keys.includes("planes")) return "/planes";
   if (keys.includes("cursadas")) return "/cursadas";
+  if (keys.includes("actas")) return "/actas";
   if (keys.includes("alumno")) return "/alumno";
+  if (keys.includes("mis-cursadas")) return "/mis-cursadas";
   // Docente todavía no tiene ninguna vista propia — mandarlo a una ruta
   // con guard generaría un loop de redirects.
   return "/sin-acceso";
