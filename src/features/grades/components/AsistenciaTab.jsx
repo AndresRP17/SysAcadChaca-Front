@@ -24,15 +24,8 @@ function weekdayOf(isoDate) {
   return INDEX_TO_WEEKDAY[new Date(`${isoDate}T00:00:00`).getDay()];
 }
 
-// Fecha real mas reciente (hoy o antes) que caiga en el dia de semana de la
-// clase elegida — asi al entrar a "Lunes 08:00-10:00" no te aparece un
-// selector de fecha en blanco, ya te sugiere la ultima vez que esa clase se dio.
-function mostRecentDateForWeekday(weekday) {
-  const target = WEEKDAY_INDEX[weekday];
-  const today = new Date();
-  const diff = (today.getDay() - target + 7) % 7;
-  today.setDate(today.getDate() - diff);
-  return today.toISOString().slice(0, 10);
+function today() {
+  return new Date().toISOString().slice(0, 10);
 }
 
 export default function AsistenciaTab({ sectionId, enrollments }) {
@@ -83,7 +76,9 @@ export default function AsistenciaTab({ sectionId, enrollments }) {
   }
 
   function startNewDate() {
-    setDate(mostRecentDateForWeekday(selectedSchedule.weekday));
+    // Arranca siempre en hoy, sin adivinar — si "hoy" ya tiene asistencia
+    // cargada, se avisa mas abajo (no se disfraza de "nueva" una fecha vieja).
+    setDate(today());
   }
 
   useEffect(() => {
