@@ -50,6 +50,7 @@ export default function AsistenciaTab({ sectionId, enrollments }) {
   }, [sectionId]);
 
   function selectSchedule(schedule) {
+    setMessage("");
     setScheduleId(String(schedule.id));
     setDate(mostRecentDateForWeekday(schedule.weekday));
   }
@@ -108,6 +109,10 @@ export default function AsistenciaTab({ sectionId, enrollments }) {
         }
       }
       setMessage("Asistencia guardada.");
+      // Cierra la planilla y vuelve al selector de clase, para que quede claro
+      // que la accion termino en vez de dejar la tabla abierta como si nada.
+      setScheduleId("");
+      setDate("");
     } catch (err) {
       setError(getErrorMessage(err, "No se pudo guardar la asistencia."));
     } finally {

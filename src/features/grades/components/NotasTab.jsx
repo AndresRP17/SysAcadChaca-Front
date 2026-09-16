@@ -105,6 +105,8 @@ export default function NotasTab({ sectionId, enrollments }) {
         }
       }
       setMessage("Notas guardadas.");
+      // Cierra la planilla de notas y vuelve al selector de evaluacion.
+      setEvaluationId("");
     } catch (err) {
       setError(getErrorMessage(err, "No se pudieron guardar las notas."));
     } finally {
