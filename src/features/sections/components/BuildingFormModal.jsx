@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Modal from "../../../shared/ui/Modal";
+import Modal from "../../../shared/ui/Modal/Modal";
 import { getErrorMessage } from "../../../shared/api/api";
 
 const EMPTY_FORM = { name: "", address: "" };

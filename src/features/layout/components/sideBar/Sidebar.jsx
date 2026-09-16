@@ -29,7 +29,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
           {!collapsed && (
             <div className="sidebar-brand">
-              <span className="sidebar-brand-title">SysAcad</span>
+              <span className="sidebar-brand-title">SGA</span>
             </div>
           )}
 

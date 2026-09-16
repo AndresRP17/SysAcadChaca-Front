@@ -1,4 +1,4 @@
-import Modal from "../../../shared/ui/Modal";
+import Modal from "../../../shared/ui/modal/Modal";
 
 export default function ConfirmDeleteModal({ open, user, onCancel, onConfirm }) {
   if (!user) return null;

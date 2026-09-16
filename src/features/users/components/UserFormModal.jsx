@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Modal from "../../../shared/ui/Modal";
+import Modal from "../../../shared/ui/modal/Modal";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 
 const EMPTY_FORM = {
