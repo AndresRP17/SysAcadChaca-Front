@@ -164,16 +164,16 @@ export default function NotasTab({ sectionId, enrollments }) {
             <table className="users-table">
               <thead>
                 <tr>
-                  <th>Alumno</th>
-                  <th>Nota</th>
-                  <th>Condicion</th>
+                  <th className="users-th">Alumno</th>
+                  <th className="users-th users-th--center">Nota</th>
+                  <th className="users-th users-th--center">Condicion</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.enrollmentId}>
                     <td className="users-td">{row.studentName}</td>
-                    <td className="users-td">
+                    <td className="users-td users-td--center">
                       <input
                         type="number"
                         min="0"
@@ -182,10 +182,10 @@ export default function NotasTab({ sectionId, enrollments }) {
                         value={row.gradeValue}
                         onChange={(e) => updateRow(row.enrollmentId, "gradeValue", e.target.value)}
                         className="users-form-input"
-                        style={{ width: 80 }}
+                        style={{ width: 80, margin: "0 auto" }}
                       />
                     </td>
-                    <td className="users-td">
+                    <td className="users-td users-td--center">
                       <select
                         value={row.condition}
                         onChange={(e) => updateRow(row.enrollmentId, "condition", e.target.value)}

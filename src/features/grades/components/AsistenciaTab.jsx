@@ -1,22 +1,58 @@
 import { useEffect, useState } from "react";
 import { getErrorMessage } from "../../../shared/api/api";
+import { getSectionSchedules } from "../../sections/services/sectionScheduleService";
 import {
   getAttendancesBySectionAndDate,
   createAttendance,
   updateAttendance,
 } from "../services/attendanceService";
 
-function today() {
-  return new Date().toISOString().slice(0, 10);
+const WEEKDAY_INDEX = { LUNES: 1, MARTES: 2, MIERCOLES: 3, JUEVES: 4, VIERNES: 5, SABADO: 6 };
+
+function formatTime(time) {
+  return time?.slice(0, 5) ?? "";
+}
+
+// Fecha real mas reciente (hoy o antes) que caiga en el dia de semana de la
+// clase elegida — asi al entrar a "Lunes 08:00-10:00" no te aparece un
+// selector de fecha en blanco, ya te sugiere la ultima vez que esa clase se dio.
+function mostRecentDateForWeekday(weekday) {
+  const target = WEEKDAY_INDEX[weekday];
+  const today = new Date();
+  const diff = (today.getDay() - target + 7) % 7;
+  today.setDate(today.getDate() - diff);
+  return today.toISOString().slice(0, 10);
 }
 
 export default function AsistenciaTab({ sectionId, enrollments }) {
-  const [date, setDate] = useState(today());
+  const [schedules, setSchedules] = useState([]);
+  const [scheduleId, setScheduleId] = useState("");
+  const [date, setDate] = useState("");
   const [rows, setRows] = useState([]); // { enrollmentId, studentName, attendanceId, present }
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    setScheduleId("");
+    setDate("");
+    setRows([]);
+
+    if (!sectionId) {
+      setSchedules([]);
+      return;
+    }
+
+    getSectionSchedules(sectionId)
+      .then(setSchedules)
+      .catch((err) => setError(getErrorMessage(err, "No se pudieron cargar los horarios de la comision.")));
+  }, [sectionId]);
+
+  function selectSchedule(schedule) {
+    setScheduleId(String(schedule.id));
+    setDate(mostRecentDateForWeekday(schedule.weekday));
+  }
 
   useEffect(() => {
     async function load() {
@@ -34,7 +70,9 @@ export default function AsistenciaTab({ sectionId, enrollments }) {
               enrollmentId: e.id,
               studentName: `${e.studentFirstName} ${e.studentLastName}`,
               attendanceId: found?.id ?? null,
-              present: found ? found.present : true,
+              // Default en false a proposito: preferimos que el docente marque
+              // presentes a mano antes que asumir que todos vinieron.
+              present: found ? found.present : false,
             };
           }),
         );
@@ -45,9 +83,9 @@ export default function AsistenciaTab({ sectionId, enrollments }) {
       }
     }
 
-    if (sectionId && enrollments.length > 0) load();
+    if (scheduleId && date && enrollments.length > 0) load();
     else setRows([]);
-  }, [sectionId, date, enrollments]);
+  }, [sectionId, scheduleId, date, enrollments]);
 
   function togglePresent(enrollmentId) {
     setRows((prev) =>
@@ -77,23 +115,43 @@ export default function AsistenciaTab({ sectionId, enrollments }) {
     }
   }
 
+  if (schedules.length === 0) {
+    return <p className="users-empty">Esta comision todavia no tiene horarios asignados.</p>;
+  }
+
   return (
     <div>
-      <div className="users-form-field" style={{ maxWidth: 220 }}>
-        <label className="users-form-label">Fecha</label>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="users-form-input"
-        />
+      <p className="users-form-label">Elegí la clase</p>
+      <div className="users-form-row" style={{ flexWrap: "wrap", gap: 8 }}>
+        {schedules.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            className={`users-btn ${String(s.id) === scheduleId ? "users-btn--primary" : "users-btn--ghost"}`}
+            onClick={() => selectSchedule(s)}
+          >
+            {s.weekday} {formatTime(s.startTime)}-{formatTime(s.endTime)} ({s.classroomName})
+          </button>
+        ))}
       </div>
+
+      {scheduleId && (
+        <div className="users-form-field" style={{ maxWidth: 220, marginTop: 16 }}>
+          <label className="users-form-label">Fecha</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="users-form-input"
+          />
+        </div>
+      )}
 
       {error && <p className="users-form-error">{error}</p>}
       {message && <p className="users-subtitle">{message}</p>}
       {loading && <p className="users-empty">Cargando...</p>}
 
-      {!loading && rows.length === 0 && (
+      {!loading && scheduleId && rows.length === 0 && (
         <p className="users-empty">No hay alumnos inscriptos en esta comision.</p>
       )}
 
@@ -103,15 +161,15 @@ export default function AsistenciaTab({ sectionId, enrollments }) {
             <table className="users-table">
               <thead>
                 <tr>
-                  <th>Alumno</th>
-                  <th>Presente</th>
+                  <th className="users-th">Alumno</th>
+                  <th className="users-th users-th--center">Presente</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.enrollmentId}>
                     <td className="users-td">{row.studentName}</td>
-                    <td className="users-td">
+                    <td className="users-td users-td--center">
                       <input
                         type="checkbox"
                         checked={row.present}
