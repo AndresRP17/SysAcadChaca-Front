@@ -9,6 +9,7 @@ import UsersPage from "../../features/users/usersPage";
 import PlansPage from "../../features/plans/plansPage";
 import CursadasPage from "../../features/sections/cursadasPage";
 import StudentDashboardPage from "../../features/dashboard/studentDashboardPage";
+import PlanillaDocentePage from "../../features/grades/planillaDocentePage";
 
 export const router = createBrowserRouter([
   {
@@ -47,6 +48,14 @@ export const router = createBrowserRouter([
         element: (
           <RequireRole allow={getRolesAllowedForLink("alumno")}>
             <StudentDashboardPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/planilla",
+        element: (
+          <RequireRole allow={getRolesAllowedForLink("planilla")}>
+            <PlanillaDocentePage />
           </RequireRole>
         ),
       },

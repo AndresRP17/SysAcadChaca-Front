@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Users, GraduationCap, UserCircle, CalendarClock, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, GraduationCap, UserCircle, CalendarClock, ClipboardList, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "../../../../context/AuthContext";
 import { LINKS_BY_ROLE } from "../../roleLinks";
 import "./Sidebar.css";
@@ -9,6 +9,7 @@ const ALL_LINKS = {
   planes: { to: "/planes", icon: <GraduationCap size={18} />, label: "Planes de estudio" },
   cursadas: { to: "/cursadas", icon: <CalendarClock size={18} />, label: "Cursadas" },
   alumno: { to: "/alumno", icon: <UserCircle size={18} />, label: "Vista alumno" },
+  planilla: { to: "/planilla", icon: <ClipboardList size={18} />, label: "Planilla" },
 };
 
 const Sidebar = ({ collapsed, onToggle }) => {
