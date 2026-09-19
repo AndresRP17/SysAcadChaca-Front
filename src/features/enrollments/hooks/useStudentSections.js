@@ -7,6 +7,19 @@ import { getAllSectionSchedules } from "../../sections/services/sectionScheduleS
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
 import { getEnrollments, createEnrollment, deleteEnrollment } from "../services/enrollmentService";
 
+// TEMPORAL: el backend todavía no tiene GET /enrollments. Mientras tanto, si
+// responde 404 lo tratamos como "sin inscripciones" para que el resto de la
+// pantalla cargue. Cuando el endpoint exista, esto deja de activarse solo y
+// se puede borrar.
+async function getEnrollmentsSafe() {
+  try {
+    return await getEnrollments();
+  } catch (e) {
+    if (e?.response?.status === 404) return [];
+    throw e;
+  }
+}
+
 // Carga todo lo que necesita el portal del alumno y lo deja armado en dos
 // listas separadas: la oferta a la que se puede inscribir y las comisiones en
 // las que ya está inscripto. El backend no tiene un endpoint que devuelva la
@@ -33,7 +46,7 @@ export function useStudentSections() {
       const [sectionsData, schedulesData, enrollmentsData] = await Promise.all([
         getSections(),
         getAllSectionSchedules(),
-        getEnrollments(),
+        getEnrollmentsSafe(),
       ]);
 
       setSections(sectionsData);
