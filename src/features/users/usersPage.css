@@ -118,6 +118,10 @@
   text-align: right;
 }
 
+.users-th--center {
+  text-align: center;
+}
+
 .users-row {
   border-bottom: 1px solid var(--border);
 }
@@ -143,6 +147,10 @@
 .users-td--actions {
   text-align: right;
   white-space: nowrap;
+}
+
+.users-td--center {
+  text-align: center;
 }
 
 .users-empty {
