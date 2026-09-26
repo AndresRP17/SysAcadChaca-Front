@@ -3,12 +3,12 @@
 // el backend); Bedel gestiona comisiones/aulas/horarios/mesas de examen
 // (IsAdministradorValidatorService/assertHasAnyRole en Classroom/Section/
 // SectionSchedule ya lo permite en el backend) pero no administra
-// carreras/materias/planes/usuarios; Docente todavía no tiene ninguna
-// vista propia construida, por eso su lista queda vacía por ahora.
+// carreras/materias/planes/usuarios; Docente ahora tiene la Planilla
+// (asistencia/notas) — ver planillaDocentePage.
 export const LINKS_BY_ROLE = {
   Administrador: ["usuarios", "planes", "cursadas", "actas"],
   Alumno: ["alumno", "mis-cursadas", "finales"],
-  Docente: [],
+  Docente: ["planilla"],
   Bedel: ["cursadas", "actas"],
 };
 
@@ -20,8 +20,7 @@ export function getDefaultRouteForRole(role) {
   if (keys.includes("actas")) return "/actas";
   if (keys.includes("alumno")) return "/alumno";
   if (keys.includes("mis-cursadas")) return "/mis-cursadas";
-  // Docente todavía no tiene ninguna vista propia — mandarlo a una ruta
-  // con guard generaría un loop de redirects.
+  if (keys.includes("planilla")) return "/planilla";
   return "/sin-acceso";
 }
 

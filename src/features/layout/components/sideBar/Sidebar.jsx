@@ -12,6 +12,7 @@ const ALL_LINKS = {
   "mis-cursadas": { to: "/mis-cursadas", icon: <ClipboardList size={18} />, label: "Inscripción a cursadas" },
   finales: { to: "/finales", icon: <FileText size={18} />, label: "Inscripción a finales" },
   actas: { to: "/actas", icon: <NotebookPen size={18} />, label: "Actas de examen" },
+  planilla: { to: "/planilla", icon: <ClipboardList size={18} />, label: "Planilla" },
 };
 
 const Sidebar = ({ collapsed, onToggle }) => {
