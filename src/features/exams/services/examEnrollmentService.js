@@ -28,7 +28,7 @@ export async function createExamEnrollment({ examBoardId, studentId }) {
 }
 
 export async function updateExamEnrollment(id, { finalGrade, status }) {
-  const res = await api.put(`/exam-enrollments/${id}`, {
+  const res = await api.put(`/exam-enrollments/${id}/result`, {
     final_grade: finalGrade,
     status,
   });
