@@ -1,16 +1,15 @@
 import { formatDateTime } from "../../../shared/utils/formatters";
-import { EXAM_ENROLLMENT_STATUS } from "../services/examEnrollmentService";
+import { getResultStatus, getResultLabel } from "../services/examEnrollmentService";
 
-function statusBadgeClass(status) {
-  if (status === EXAM_ENROLLMENT_STATUS.PASSED) return "users-badge users-badge--active";
-  if (status === EXAM_ENROLLMENT_STATUS.FAILED || status === EXAM_ENROLLMENT_STATUS.ABSENT) {
-    return "users-badge users-badge--inactive";
-  }
+function statusBadgeClass(enrollment) {
+  const result = getResultStatus(enrollment);
+  if (result === "passed") return "users-badge users-badge--active";
+  if (result === "failed" || result === "absent") return "users-badge users-badge--inactive";
   return "users-badge users-badge--gray";
 }
 
 export default function ActaDetail({ board, enrollments, loading, closed, onGrade, onCloseActa }) {
-  const pending = enrollments.filter((e) => e.status === EXAM_ENROLLMENT_STATUS.ENROLLED).length;
+  const pending = enrollments.filter((e) => getResultStatus(e) === "pending").length;
 
   return (
     <div className="portal-acta-detail">
@@ -70,7 +69,7 @@ export default function ActaDetail({ board, enrollments, loading, closed, onGrad
                     {e.studentLastName}, {e.studentFirstName}
                   </td>
                   <td className="users-td">
-                    <span className={statusBadgeClass(e.status)}>{e.status}</span>
+                    <span className={statusBadgeClass(e)}>{getResultLabel(e)}</span>
                   </td>
                   <td className="users-td users-td--mono">
                     {e.finalGrade === null || e.finalGrade === undefined ? "—" : e.finalGrade}
