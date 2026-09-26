@@ -13,6 +13,7 @@ import PortalCursadasPage from "../../features/enrollments/portalCursadasPage";
 import PortalFinalesPage from "../../features/exams/portalFinalesPage";
 import ActasPage from "../../features/exams/actasPage";
 import PlanillaDocentePage from "../../features/grades/planillaDocentePage";
+import MisComisionesPage from "../../features/grades/misComisionesPage";
 
 
 import { ResetPasswordPage } from '../../features/auth/resetPasswordPage/ResetPasswordPage';
@@ -81,6 +82,14 @@ export const router = createBrowserRouter([
         element: (
           <RequireRole allow={getRolesAllowedForLink("actas")}>
             <ActasPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/mis-comisiones",
+        element: (
+          <RequireRole allow={getRolesAllowedForLink("mis-comisiones")}>
+            <MisComisionesPage />
           </RequireRole>
         ),
       },
