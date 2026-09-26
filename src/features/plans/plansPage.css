@@ -37,14 +37,15 @@
 
 .plans-selectors {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  align-items: stretch;
   gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 12px;
 }
 
 .plans-selectors .users-form-field {
-  min-width: 220px;
+  min-width: 0;
 }
 
 .plans-planlist {
@@ -98,7 +99,7 @@
 /* Matriz de correlativas: lista de materias a la izquierda, detalle a la derecha */
 .correlatives-layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 1fr;
   gap: 24px;
 }
 
@@ -109,7 +110,7 @@
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 8px;
-  max-height: 480px;
+  max-height: 220px;
   overflow-y: auto;
 }
 
@@ -173,22 +174,22 @@
   font-size: 14px;
 }
 
-@media (max-width: 700px) {
+@media (min-width: 701px) {
   .plans-selectors {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: flex-end;
   }
 
   .plans-selectors .users-form-field {
-    min-width: 0;
+    min-width: 220px;
   }
 
   .correlatives-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: 260px 1fr;
   }
 
   .correlatives-list {
-    max-height: 220px;
+    max-height: 480px;
   }
 }
 

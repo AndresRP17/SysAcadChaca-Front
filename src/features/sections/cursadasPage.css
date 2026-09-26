@@ -1,7 +1,7 @@
 .grilla-horaria {
   display: grid;
-  grid-template-columns: repeat(6, minmax(140px, 1fr));
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: 8px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
@@ -23,7 +23,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px;
-  min-width: 140px;
+  min-width: 0;
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
@@ -91,19 +91,19 @@
   font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 900px) {
+@media (min-width: 481px) {
   .grilla-horaria {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 8px;
-  }
-}
-
-@media (max-width: 480px) {
-  .grilla-horaria {
-    grid-template-columns: 1fr;
   }
 
   .grilla-horaria-col {
-    min-width: 0;
+    min-width: 140px;
+  }
+}
+
+@media (min-width: 901px) {
+  .grilla-horaria {
+    grid-template-columns: repeat(6, minmax(140px, 1fr));
+    gap: 10px;
   }
 }

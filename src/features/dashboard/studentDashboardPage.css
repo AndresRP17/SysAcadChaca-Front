@@ -19,7 +19,9 @@
 /* Tarjeta de perfil */
 .dash-profile-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 18px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -57,7 +59,7 @@
 /* Fila de estadísticas */
 .dash-stats-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: 16px;
 }
 
@@ -93,7 +95,7 @@
 /* Grilla de paneles inferiores */
 .dash-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
 }
 
@@ -123,6 +125,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
@@ -170,21 +173,21 @@
 }
 
 /* Responsive */
-@media (max-width: 700px) {
+@media (min-width: 701px) {
   .dash-stats-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .dash-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .dash-profile-card {
-    flex-direction: column;
-    text-align: center;
+    flex-direction: row;
+    text-align: left;
   }
 
   .dash-list-item {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 }
