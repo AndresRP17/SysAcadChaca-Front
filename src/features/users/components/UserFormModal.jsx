@@ -80,7 +80,6 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
         ? {
           ...base,
           study_plan_id: Number(form.study_plan_id),
-          enrollment_number: form.enrollment_number,
           enrollment_date: form.enrollment_date,
         }
         : {
@@ -212,18 +211,12 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
             </div>
 
             <div className="users-form-row">
-              <div className="users-form-field">
-                <label className="users-form-label">Legajo</label>
-                <input
-                  type="text"
-                  value={form.enrollment_number}
-                  onChange={(e) => handleChange("enrollment_number", e.target.value)}
-                  className="users-form-input"
-                />
-                {fieldErrors.enrollment_number && (
-                  <p className="users-form-error">{fieldErrors.enrollment_number}</p>
-                )}
-              </div>
+              {mode === "edit" && (
+                <div className="users-form-field">
+                  <label className="users-form-label">Legajo</label>
+                  <input type="text" value={form.enrollment_number} disabled className="users-form-input" />
+                </div>
+              )}
               <div className="users-form-field">
                 <label className="users-form-label">Fecha de ingreso</label>
                 <input
