@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Sun, Moon } from "lucide-react";
 import { SiInstagram, SiFacebook, SiX, SiYoutube } from "@icons-pack/react-simple-icons";
 import { useAuth } from "../../../../../context/AuthContext";
@@ -119,9 +119,9 @@ export default function Login() {
                   <label htmlFor="password" className="sysacad-label">
                     CONTRASEÑA
                   </label>
-                  <a href="#" className="sysacad-link">
+                  <Link to="/forgot-password" className="sysacad-link">
                     ¿Olvidaste tu contraseña?
-                  </a>
+                  </Link>
                 </div>
                 <div
                   className={

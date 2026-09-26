@@ -11,6 +11,12 @@ import CursadasPage from "../../features/sections/cursadasPage";
 import StudentDashboardPage from "../../features/dashboard/studentDashboardPage";
 import PlanillaDocentePage from "../../features/grades/planillaDocentePage";
 
+
+import { ResetPasswordPage } from '../../features/auth/resetPasswordPage/ResetPasswordPage';
+import { VerifyEmailPage } from '../../features/auth/verifyEmail/VerifyEmail';
+import { ForgotPasswordPage } from '../../features/auth/resetPassword/ForgotPasswordPage';
+
+
 export const router = createBrowserRouter([
   {
     element: (
@@ -63,5 +69,8 @@ export const router = createBrowserRouter([
     ],
   },
   { path: "/", element: <LoginPage /> },
+  { path: "/forgot-password", element: <ForgotPasswordPage /> },
+  { path: "/reset-password", element: <ResetPasswordPage /> },
+  { path: "/verify-email", element: <VerifyEmailPage /> },
   { path: "*", element: <Navigate to="/" replace /> },
 ]);
