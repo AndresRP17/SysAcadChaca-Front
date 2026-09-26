@@ -6,10 +6,10 @@
 // carreras/materias/planes/usuarios; Docente ahora tiene la Planilla
 // (asistencia/notas) — ver planillaDocentePage.
 export const LINKS_BY_ROLE = {
-  Administrador: ["usuarios", "planes", "cursadas"],
-  Alumno: ["alumno"],
+  Administrador: ["usuarios", "planes", "cursadas", "actas"],
+  Alumno: ["alumno", "mis-cursadas", "finales"],
   Docente: ["planilla"],
-  Bedel: ["cursadas"],
+  Bedel: ["cursadas", "actas"],
 };
 
 export function getDefaultRouteForRole(role) {
@@ -17,7 +17,9 @@ export function getDefaultRouteForRole(role) {
   if (keys.includes("usuarios")) return "/usuarios";
   if (keys.includes("planes")) return "/planes";
   if (keys.includes("cursadas")) return "/cursadas";
+  if (keys.includes("actas")) return "/actas";
   if (keys.includes("alumno")) return "/alumno";
+  if (keys.includes("mis-cursadas")) return "/mis-cursadas";
   if (keys.includes("planilla")) return "/planilla";
   return "/sin-acceso";
 }

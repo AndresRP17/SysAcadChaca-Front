@@ -9,6 +9,9 @@ import UsersPage from "../../features/users/usersPage";
 import PlansPage from "../../features/plans/plansPage";
 import CursadasPage from "../../features/sections/cursadasPage";
 import StudentDashboardPage from "../../features/dashboard/studentDashboardPage";
+import PortalCursadasPage from "../../features/enrollments/portalCursadasPage";
+import PortalFinalesPage from "../../features/exams/portalFinalesPage";
+import ActasPage from "../../features/exams/actasPage";
 import PlanillaDocentePage from "../../features/grades/planillaDocentePage";
 
 
@@ -54,6 +57,30 @@ export const router = createBrowserRouter([
         element: (
           <RequireRole allow={getRolesAllowedForLink("alumno")}>
             <StudentDashboardPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/mis-cursadas",
+        element: (
+          <RequireRole allow={getRolesAllowedForLink("mis-cursadas")}>
+            <PortalCursadasPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/finales",
+        element: (
+          <RequireRole allow={getRolesAllowedForLink("finales")}>
+            <PortalFinalesPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/actas",
+        element: (
+          <RequireRole allow={getRolesAllowedForLink("actas")}>
+            <ActasPage />
           </RequireRole>
         ),
       },
