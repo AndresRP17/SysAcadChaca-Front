@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Modal from "../../../shared/ui/Modal/Modal";
+import Modal from "../../../shared/ui/Modal";
 import { getErrorMessage } from "../../../shared/api/api";
 
 const SHIFTS = ["Mañana", "Tarde", "Noche"];
