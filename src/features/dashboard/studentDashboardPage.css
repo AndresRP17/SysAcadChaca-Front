@@ -1,5 +1,7 @@
 /* La paleta de colores (--navy, --bg, --surface, etc.) vive en
    src/styles/theme.css, compartida por toda la app. */
+@import "../../shared/ui/badges.css";
+
 .dash-page {
   max-width: 1000px;
   margin: 0 auto;
@@ -147,23 +149,7 @@
   margin: 2px 0 0 0;
 }
 
-.dash-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 12px;
-  white-space: nowrap;
-}
-
-.dash-badge--navy {
-  background: var(--navy);
-  color: #ffffff;
-}
-
-.dash-badge--gray {
-  background: var(--bg);
-  color: var(--text-secondary);
-}
+/* .dash-badge, .dash-badge--navy, .dash-badge--gray: ver src/shared/ui/badges.css */
 
 .dash-event-date {
   font-size: 12px;
