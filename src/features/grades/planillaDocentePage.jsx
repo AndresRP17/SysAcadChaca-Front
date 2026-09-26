@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getErrorMessage } from "../../shared/api/api";
 import { getMyTeacherProfile } from "../users/services/teacherService";
-import { getSections } from "../sections/services/sectionService";
+import { getMySections } from "../sections/services/sectionService";
 import { getEnrollmentsBySection } from "./services/enrollmentService";
 import AsistenciaTab from "./components/AsistenciaTab";
 import NotasTab from "./components/NotasTab";
@@ -14,6 +15,9 @@ const TABS = [
 ];
 
 export default function PlanillaDocentePage() {
+  const [searchParams] = useSearchParams();
+  const preselectedSectionId = searchParams.get("section");
+
   const [activeTab, setActiveTab] = useState(TABS[0].key);
   const [sections, setSections] = useState([]);
   const [sectionId, setSectionId] = useState("");
@@ -28,11 +32,14 @@ export default function PlanillaDocentePage() {
       try {
         const me = await getMyTeacherProfile();
 
-        const allSections = await getSections();
-        const mine = allSections.filter((s) => s.teacherId === me.id);
+        const mine = await getMySections(me.id);
         setSections(mine);
 
-        if (mine.length > 0) setSectionId(String(mine[0].id));
+        if (preselectedSectionId && mine.some((s) => String(s.id) === preselectedSectionId)) {
+          setSectionId(preselectedSectionId);
+        } else if (mine.length > 0) {
+          setSectionId(String(mine[0].id));
+        }
       } catch (err) {
         setError(getErrorMessage(err, "No se pudieron cargar tus comisiones."));
       } finally {
@@ -41,7 +48,7 @@ export default function PlanillaDocentePage() {
     }
 
     loadMySections();
-  }, []);
+  }, [preselectedSectionId]);
 
   useEffect(() => {
     if (!sectionId) {

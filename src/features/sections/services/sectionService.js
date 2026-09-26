@@ -5,6 +5,11 @@ export async function getSections() {
   return data;
 }
 
+export async function getMySections(teacherId) {
+  const { data } = await api.get(`/sections?teacher_id=${teacherId}&size=1000`);
+  return data;
+}
+
 export async function createSection(data) {
   const res = await api.post("/sections", data);
   return res.data;

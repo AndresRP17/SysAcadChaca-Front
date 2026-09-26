@@ -1,0 +1,61 @@
+.mis-comisiones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mis-comisiones-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  background: var(--surface, #fff);
+}
+
+.mis-comisiones-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mis-comisiones-card-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.mis-comisiones-card-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.mis-comisiones-schedules {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0;
+}
+
+.mis-comisiones-schedule-line {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.mis-comisiones-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.mis-comisiones-roster {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.mis-comisiones-roster-item {
+  font-size: 14px;
+  padding: 4px 0;
+}

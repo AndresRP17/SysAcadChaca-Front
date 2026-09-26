@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Users, GraduationCap, UserCircle, CalendarClock, ClipboardList, FileText, NotebookPen, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, GraduationCap, UserCircle, CalendarClock, ClipboardList, FileText, NotebookPen, LayoutList, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "../../../../context/AuthContext";
 import { LINKS_BY_ROLE } from "../../roleLinks";
 import "./Sidebar.css";
@@ -12,6 +12,7 @@ const ALL_LINKS = {
   "mis-cursadas": { to: "/mis-cursadas", icon: <ClipboardList size={18} />, label: "Inscripción a cursadas" },
   finales: { to: "/finales", icon: <FileText size={18} />, label: "Inscripción a finales" },
   actas: { to: "/actas", icon: <NotebookPen size={18} />, label: "Actas de examen" },
+  "mis-comisiones": { to: "/mis-comisiones", icon: <LayoutList size={18} />, label: "Mis comisiones" },
   planilla: { to: "/planilla", icon: <ClipboardList size={18} />, label: "Planilla" },
 };
 

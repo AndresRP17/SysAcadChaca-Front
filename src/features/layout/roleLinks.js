@@ -8,7 +8,7 @@
 export const LINKS_BY_ROLE = {
   Administrador: ["usuarios", "planes", "cursadas", "actas"],
   Alumno: ["alumno", "mis-cursadas", "finales"],
-  Docente: ["planilla"],
+  Docente: ["mis-comisiones", "planilla"],
   Bedel: ["cursadas", "actas"],
 };
 
@@ -20,6 +20,7 @@ export function getDefaultRouteForRole(role) {
   if (keys.includes("actas")) return "/actas";
   if (keys.includes("alumno")) return "/alumno";
   if (keys.includes("mis-cursadas")) return "/mis-cursadas";
+  if (keys.includes("mis-comisiones")) return "/mis-comisiones";
   if (keys.includes("planilla")) return "/planilla";
   return "/sin-acceso";
 }
