@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useStudentExamBoards } from "./hooks/useStudentExamBoards";
-import { EXAM_ENROLLMENT_STATUS } from "./services/examEnrollmentService";
+import { getResultStatus, getResultLabel } from "./services/examEnrollmentService";
 import { getErrorMessage } from "../../shared/api/api";
 import { isPast } from "../../shared/utils/formatters";
 import ExamBoardCard from "./components/ExamBoardCard";
@@ -9,9 +9,10 @@ import "../users/usersPage.css";
 import "../plans/plansPage.css";
 import "../enrollments/portalCursadasPage.css";
 
-function badgeForStatus(status) {
-  if (status === EXAM_ENROLLMENT_STATUS.PASSED) return "active";
-  if (status === EXAM_ENROLLMENT_STATUS.FAILED || status === EXAM_ENROLLMENT_STATUS.ABSENT) return "inactive";
+function badgeForEnrollment(enrollment) {
+  const result = getResultStatus(enrollment);
+  if (result === "passed") return "active";
+  if (result === "failed" || result === "absent") return "inactive";
   return "navy";
 }
 
@@ -117,10 +118,10 @@ export default function PortalFinalesPage() {
                     board={board}
                     badge={
                       enrollment.finalGrade !== null && enrollment.finalGrade !== undefined
-                        ? `${enrollment.status} · ${enrollment.finalGrade}`
-                        : enrollment.status
+                        ? `${getResultLabel(enrollment)} · ${enrollment.finalGrade}`
+                        : getResultLabel(enrollment)
                     }
-                    badgeVariant={badgeForStatus(enrollment.status)}
+                    badgeVariant={badgeForEnrollment(enrollment)}
                     actionLabel={closed ? null : "Darme de baja"}
                     actionVariant="danger"
                     disabled={submitting}

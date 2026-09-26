@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { EXAM_ENROLLMENT_STATUS, PASSING_GRADE } from "../services/examEnrollmentService";
+import { EXAM_ENROLLMENT_STATUS } from "../services/examEnrollmentService";
 
 // Carga de nota de un alumno en una mesa. El estado se deduce de la nota
 // (aprobado/desaprobado) salvo que se marque ausente.
@@ -36,7 +36,7 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
 
     await save({
       finalGrade: numericGrade,
-      status: numericGrade >= PASSING_GRADE ? EXAM_ENROLLMENT_STATUS.PASSED : EXAM_ENROLLMENT_STATUS.FAILED,
+      status: EXAM_ENROLLMENT_STATUS.PRESENT,
     });
   }
 
