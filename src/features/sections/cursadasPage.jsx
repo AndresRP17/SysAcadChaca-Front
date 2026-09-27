@@ -3,6 +3,7 @@ import AulasTab from "./components/AulasTab";
 import ComisionesTab from "./components/ComisionesTab";
 import GrillaHorariaTab from "./components/GrillaHorariaTab";
 import EdificiosTab from "./components/EdificiosTab";
+import PeriodosTab from "./components/PeriodosTab";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
 import "./cursadasPage.css";
@@ -12,6 +13,7 @@ const TABS = [
   { key: "aulas", label: "Aulas" },
   { key: "comisiones", label: "Comisiones" },
   { key: "grilla", label: "Grilla horaria" },
+  { key: "periodos", label: "Períodos de inscripción" },
 ];
 
 export default function CursadasPage() {
@@ -43,6 +45,7 @@ export default function CursadasPage() {
       {activeTab === "aulas" && <AulasTab />}
       {activeTab === "comisiones" && <ComisionesTab />}
       {activeTab === "grilla" && <GrillaHorariaTab />}
+      {activeTab === "periodos" && <PeriodosTab />}
     </div>
   );
 }

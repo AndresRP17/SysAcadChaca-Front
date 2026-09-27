@@ -5,6 +5,8 @@ import { getErrorMessage } from "../../shared/api/api";
 import AvailableSectionsList from "./components/AvailableSectionsList";
 import EnrolledSectionsList from "./components/EnrolledSectionsList";
 import ConflictModal from "./components/ConflictModal";
+import EnrollmentPeriodBanner from "./components/EnrollmentPeriodBanner";
+import { useOpenEnrollmentPeriods } from "./hooks/useOpenEnrollmentPeriods";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
@@ -13,6 +15,7 @@ import "./portalCursadasPage.css";
 export default function PortalCursadasPage() {
   const { student, available, enrolled, loading, error, setError, enroll, unenroll } = useStudentSections();
 
+  const { periods, loading: loadingPeriods, isOpen: enrollmentOpen } = useOpenEnrollmentPeriods("CURSADA");
   const [search, setSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [shownConflicts, setShownConflicts] = useState(null);
@@ -86,6 +89,8 @@ export default function PortalCursadasPage() {
         </div>
       </div>
 
+      <EnrollmentPeriodBanner periods={periods} loading={loadingPeriods} label="cursadas" />
+
       {error && <p className="users-form-error">{error}</p>}
 
       {loading && <p className="users-empty">Cargando...</p>}
@@ -108,7 +113,7 @@ export default function PortalCursadasPage() {
               items={filteredAvailable}
               conflictsBySection={conflictsBySection}
               onEnroll={handleEnroll}
-              submitting={submitting}
+              submitting={submitting || !enrollmentOpen}
             />
           </section>
 

@@ -3,6 +3,8 @@ import { useStudentExamBoards } from "./hooks/useStudentExamBoards";
 import { getResultStatus, getResultLabel } from "./services/examEnrollmentService";
 import { getErrorMessage } from "../../shared/api/api";
 import { isPast } from "../../shared/utils/formatters";
+import EnrollmentPeriodBanner from "../enrollments/components/EnrollmentPeriodBanner";
+import { useOpenEnrollmentPeriods } from "../enrollments/hooks/useOpenEnrollmentPeriods";
 import ExamBoardCard from "./components/ExamBoardCard";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import "../users/usersPage.css";
@@ -19,6 +21,7 @@ function badgeForEnrollment(enrollment) {
 export default function PortalFinalesPage() {
   const { student, available, enrolled, loading, error, setError, enroll, unenroll } = useStudentExamBoards();
 
+  const { periods, loading: loadingPeriods, isOpen: enrollmentOpen } = useOpenEnrollmentPeriods("FINAL");
   const [submitting, setSubmitting] = useState(false);
   const [enrollmentToCancel, setEnrollmentToCancel] = useState(null);
 
@@ -61,6 +64,8 @@ export default function PortalFinalesPage() {
         </div>
       </div>
 
+      <EnrollmentPeriodBanner periods={periods} loading={loadingPeriods} label="mesas de examen" />
+
       {error && <p className="users-form-error">{error}</p>}
 
       {loading && <p className="users-empty">Cargando...</p>}
@@ -85,7 +90,7 @@ export default function PortalFinalesPage() {
                   key={board.id}
                   board={board}
                   actionLabel="Inscribirme"
-                  disabled={submitting}
+                  disabled={submitting || !enrollmentOpen}
                   onAction={() => handleEnroll(board.id)}
                 />
               ))}
