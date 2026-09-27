@@ -6,6 +6,7 @@ import NoAccessPage from "../../features/layout/components/NoAccessPage";
 import { getRolesAllowedForLink } from "../../features/layout/roleLinks";
 import LoginPage from "../../features/auth/login/loginPage";
 import UsersPage from "../../features/users/usersPage";
+import StudentsPage from "../../features/users/studentsPage";
 import PlansPage from "../../features/plans/plansPage";
 import CursadasPage from "../../features/sections/cursadasPage";
 import StudentDashboardPage from "../../features/dashboard/studentDashboardPage";
@@ -34,6 +35,14 @@ export const router = createBrowserRouter([
         element: (
           <RequireRole allow={getRolesAllowedForLink("usuarios")}>
             <UsersPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/alumnos",
+        element: (
+          <RequireRole allow={getRolesAllowedForLink("alumnos")}>
+            <StudentsPage />
           </RequireRole>
         ),
       },

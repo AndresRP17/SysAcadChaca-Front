@@ -1,25 +1,26 @@
-export default function CourseList({ materias }) {
+const STATUS_LABELS = { active: "Cursando" };
+
+export default function CourseList({ courses }) {
   return (
     <div className="dash-panel">
       <h3 className="dash-panel-title">Materias en curso</h3>
-      <ul className="dash-list">
-        {materias.map((m) => (
-          <li key={m.id} className="dash-list-item">
-            <div>
-              <p className="dash-list-item-title">{m.nombre}</p>
-              <p className="dash-list-item-sub">{m.docente}</p>
-            </div>
-            <span
-              className={
-                "dash-badge " +
-                (m.estado === "Cursando" ? "dash-badge--navy" : "dash-badge--gray")
-              }
-            >
-              {m.estado}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {courses.length === 0 ? (
+        <p className="users-empty">Todavía no estás cursando materias.</p>
+      ) : (
+        <ul className="dash-list">
+          {courses.map((c) => (
+            <li key={`${c.courseName}-${c.sectionName}`} className="dash-list-item">
+              <div>
+                <p className="dash-list-item-title">
+                  {c.courseName} — Comisión {c.sectionName}
+                </p>
+                <p className="dash-list-item-sub">{c.teacherName}</p>
+              </div>
+              <span className="dash-badge dash-badge--navy">{STATUS_LABELS[c.status] ?? c.status}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
