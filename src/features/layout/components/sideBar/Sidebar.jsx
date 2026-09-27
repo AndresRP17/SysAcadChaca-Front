@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Users, Contact, GraduationCap, UserCircle, CalendarClock, ClipboardList, FileText, NotebookPen, LayoutList, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, Contact, GraduationCap, UserCircle, CalendarClock, ClipboardList, FileText, NotebookPen, LayoutList, ChevronLeft, ChevronRight, History, Award } from "lucide-react";
 import { useAuth } from "../../../../context/AuthContext";
 import { LINKS_BY_ROLE } from "../../roleLinks";
 import "./Sidebar.css";
@@ -10,11 +10,13 @@ const ALL_LINKS = {
   planes: { to: "/planes", icon: <GraduationCap size={18} />, label: "Planes de estudio" },
   cursadas: { to: "/cursadas", icon: <CalendarClock size={18} />, label: "Cursadas" },
   alumno: { to: "/alumno", icon: <UserCircle size={18} />, label: "Vista alumno" },
+  historial: { to: "/historial", icon: <History size={18} />, label: "Historial académico" },
   "mis-cursadas": { to: "/mis-cursadas", icon: <ClipboardList size={18} />, label: "Inscripción a cursadas" },
   finales: { to: "/finales", icon: <FileText size={18} />, label: "Inscripción a finales" },
   actas: { to: "/actas", icon: <NotebookPen size={18} />, label: "Actas de examen" },
   "mis-comisiones": { to: "/mis-comisiones", icon: <LayoutList size={18} />, label: "Mis comisiones" },
   planilla: { to: "/planilla", icon: <ClipboardList size={18} />, label: "Planilla" },
+  certificados: { to: "/certificados", icon: <Award size={18} />, label: "Certificados" },
 };
 
 const Sidebar = ({ collapsed, onToggle }) => {
