@@ -107,7 +107,7 @@ export default function Login() {
                     onChange={(e) => setLegajo(e.target.value)}
                     onFocus={() => setFocused("legajo")}
                     onBlur={() => setFocused(null)}
-                    placeholder="admin@sga.local"
+                    placeholder="tu-correo@ejemplo.com"
                     className="sysacad-input"
                   />
                 </div>
@@ -137,7 +137,6 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     onFocus={() => setFocused("password")}
                     onBlur={() => setFocused(null)}
-                    placeholder="••••••••"
                     className="sysacad-input"
                   />
                   <button
