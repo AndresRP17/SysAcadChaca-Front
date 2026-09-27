@@ -28,7 +28,7 @@ export const ResetPasswordPage = () => {
 
     if (!token) {
         return (
-            <div className="snp-error-page-wrapper">
+            <div className="auth-page">
                 <div className="snp-error-page-card">
                     <div className="snp-error-page-heading">
                         <div className="snp-error-page-icon">
@@ -52,9 +52,11 @@ export const ResetPasswordPage = () => {
         );
     }
     return (
-        <SetNewPasswordModal
-            token={token}
-            onSuccessRedirect={() => navigate('/', { state: { openLogin: true } })}
-        />
+        <div className="auth-page">
+            <SetNewPasswordModal
+                token={token}
+                onSuccessRedirect={() => navigate('/', { state: { openLogin: true } })}
+            />
+        </div>
     );
 };
