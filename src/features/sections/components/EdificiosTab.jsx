@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useBuildings } from "../hooks/useBuildings";
 import BuildingFormModal from "./BuildingFormModal";
-import ConfirmModal from "../../../shared/ui/ConfirmModal";
+import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 
 export default function EdificiosTab() {
   const { buildings, loading, error, addBuilding, editBuilding, removeBuilding } = useBuildings();
@@ -97,6 +97,7 @@ export default function EdificiosTab() {
       <ConfirmModal
         open={!!buildingToDelete}
         title="Eliminar edificio"
+        note={DELETE_NOTE}
         message={buildingToDelete ? `¿Seguro que querés eliminar "${buildingToDelete.name}"? Esta acción no se puede deshacer.` : ""}
         onCancel={() => setBuildingToDelete(null)}
         onConfirm={handleConfirmDelete}

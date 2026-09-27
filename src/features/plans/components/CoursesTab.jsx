@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useCourses } from "../hooks/useCourses";
 import CourseFormModal from "./CourseFormModal";
-import ConfirmModal from "../../../shared/ui/ConfirmModal";
+import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 
 export default function CoursesTab() {
   const { courses, loading, error, addCourse, editCourse, removeCourse } = useCourses();
@@ -99,6 +99,7 @@ export default function CoursesTab() {
       <ConfirmModal
         open={!!courseToDelete}
         title="Eliminar materia"
+        note={DELETE_NOTE}
         message={courseToDelete ? `¿Seguro que querés eliminar "${courseToDelete.name}"? Esta acción no se puede deshacer.` : ""}
         onCancel={() => setCourseToDelete(null)}
         onConfirm={handleConfirmDelete}

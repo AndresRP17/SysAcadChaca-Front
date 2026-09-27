@@ -6,7 +6,7 @@ import StudyPlanSelector from "./StudyPlanSelector";
 import StudyPlanFormModal from "./StudyPlanFormModal";
 import PrerequisiteFormModal from "./PrerequisiteFormModal";
 import CorrelativesMatrix from "./CorrelativesMatrix";
-import ConfirmModal from "../../../shared/ui/ConfirmModal";
+import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 import { createStudyPlan, updateStudyPlan, deleteStudyPlan } from "../services/studyPlanService";
 
 export default function CorrelativesTab() {
@@ -248,6 +248,7 @@ export default function CorrelativesTab() {
       <ConfirmModal
         open={!!planToDelete}
         title="Eliminar plan de estudio"
+        note={DELETE_NOTE}
         message={planToDelete ? `¿Seguro que querés eliminar el plan Res. ${planToDelete.resolutionYear}? Esta acción no se puede deshacer.` : ""}
         onCancel={() => setPlanToDelete(null)}
         onConfirm={handleConfirmDeletePlan}

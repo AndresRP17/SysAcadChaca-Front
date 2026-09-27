@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useClassrooms } from "../hooks/useClassrooms";
 import ClassroomFormModal from "./ClassroomFormModal";
-import ConfirmModal from "../../../shared/ui/ConfirmModal";
+import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 
 export default function AulasTab() {
   const { classrooms, loading, error, addClassroom, editClassroom, removeClassroom } = useClassrooms();
@@ -101,6 +101,7 @@ export default function AulasTab() {
       <ConfirmModal
         open={!!classroomToDelete}
         title="Eliminar aula"
+        note={DELETE_NOTE}
         message={classroomToDelete ? `¿Seguro que querés eliminar "${classroomToDelete.name}"? Esta acción no se puede deshacer.` : ""}
         onCancel={() => setClassroomToDelete(null)}
         onConfirm={handleConfirmDelete}
