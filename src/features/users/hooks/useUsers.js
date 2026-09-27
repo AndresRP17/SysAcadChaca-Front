@@ -32,7 +32,8 @@ function teacherToRow(t) {
   };
 }
 
-export function useUsers() {
+// studentsOnly: la pantalla del Bedel maneja solo alumnos y no pide /teachers.
+export function useUsers({ studentsOnly = false } = {}) {
   const [rawUsers, setRawUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -43,14 +44,17 @@ export function useUsers() {
     setLoading(true);
     setError("");
     try {
-      const [students, teachers] = await Promise.all([getStudents(), getTeachers()]);
+      const [students, teachers] = await Promise.all([
+        getStudents(),
+        studentsOnly ? [] : getTeachers(),
+      ]);
       setRawUsers([...students.map(studentToRow), ...teachers.map(teacherToRow)]);
     } catch (e) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [studentsOnly]);
 
   useEffect(() => {
     reload();

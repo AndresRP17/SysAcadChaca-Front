@@ -16,7 +16,7 @@ const EMPTY_FORM = {
   degree: "",
 };
 
-export default function UserFormModal({ open, mode, initialData, onClose, onSubmit }) {
+export default function UserFormModal({ open, mode, initialData, onClose, onSubmit, studentsOnly = false }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [studyPlans, setStudyPlans] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -102,11 +102,13 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
     }
   }
 
-  const title = mode === "edit" ? "Editar usuario" : "Nuevo usuario";
+  const noun = studentsOnly ? "alumno" : "usuario";
+  const title = mode === "edit" ? `Editar ${noun}` : `Nuevo ${noun}`;
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form">
+        {!studentsOnly && (
         <div className="users-form-field">
           <label className="users-form-label">Rol</label>
           <select
@@ -119,6 +121,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
             <option value="Docente">Docente</option>
           </select>
         </div>
+        )}
 
         <div className="users-form-row">
           <div className="users-form-field">

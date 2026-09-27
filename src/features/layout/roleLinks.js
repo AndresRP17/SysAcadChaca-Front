@@ -3,13 +3,13 @@
 // el backend); Bedel gestiona comisiones/aulas/horarios/mesas de examen
 // (IsAdministradorValidatorService/assertHasAnyRole en Classroom/Section/
 // SectionSchedule ya lo permite en el backend) pero no administra
-// carreras/materias/planes/usuarios; Docente ahora tiene la Planilla
+// carreras/materias/planes/usuarios (sí alumnos: alta/edición/baja); Docente ahora tiene la Planilla
 // (asistencia/notas) — ver planillaDocentePage.
 export const LINKS_BY_ROLE = {
-  Administrador: ["usuarios", "planes", "cursadas", "actas"],
+  Administrador: ["usuarios", "alumnos", "planes", "cursadas", "actas"],
   Alumno: ["alumno", "mis-cursadas", "finales"],
   Docente: ["mis-comisiones", "planilla", "actas"],
-  Bedel: ["cursadas", "actas"],
+  Bedel: ["cursadas", "alumnos", "actas"],
 };
 
 export function getDefaultRouteForRole(role) {

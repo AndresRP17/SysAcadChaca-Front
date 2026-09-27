@@ -7,7 +7,7 @@ import UserFormModal from "./components/UserFormModal";
 import ConfirmDeleteModal from "./components/ConfirmDeleteModal";
 import "./usersPage.css";
 
-export default function UsersPage() {
+export default function UsersPage({ studentsOnly = false }) {
   const {
     users,
     totalCount,
@@ -20,7 +20,8 @@ export default function UsersPage() {
     addUser,
     updateUser,
     deleteUser,
-  } = useUsers();
+  } = useUsers({ studentsOnly });
+  const noun = studentsOnly ? "alumno" : "usuario";
 
   // Estado del modal de alta/edición
   const [formOpen, setFormOpen] = useState(false);
@@ -60,21 +61,21 @@ export default function UsersPage() {
     <div className="users-page">
       <div className="users-header">
         <div>
-          <h1 className="users-title">Usuarios</h1>
+          <h1 className="users-title">{studentsOnly ? "Alumnos" : "Usuarios"}</h1>
           <p className="users-subtitle">
-            {totalCount} usuario{totalCount !== 1 ? "s" : ""} registrado{totalCount !== 1 ? "s" : ""}
+            {totalCount} {noun}{totalCount !== 1 ? "s" : ""} registrado{totalCount !== 1 ? "s" : ""}
           </p>
         </div>
         <div className="users-header-actions">
           <button type="button" className="users-btn users-btn--primary" onClick={openCreateModal}>
-            + Nuevo usuario
+            + Nuevo {noun}
           </button>
         </div>
       </div>
 
       <div className="users-toolbar">
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
-        <FilterBar value={roleFilter} onChange={setRoleFilter} />
+        {!studentsOnly && <FilterBar value={roleFilter} onChange={setRoleFilter} />}
       </div>
 
       {error && <p className="users-form-error">{error}</p>}
@@ -92,6 +93,7 @@ export default function UsersPage() {
         initialData={editingUser}
         onClose={() => setFormOpen(false)}
         onSubmit={handleFormSubmit}
+        studentsOnly={studentsOnly}
       />
 
       <ConfirmDeleteModal
