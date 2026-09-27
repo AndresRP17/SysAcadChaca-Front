@@ -8,7 +8,7 @@ import { getSections, createSection, updateSection, deleteSection } from "../ser
 import { getSectionSchedules, createSectionSchedule, updateSectionSchedule, deleteSectionSchedule } from "../services/sectionScheduleService";
 import SectionFormModal from "./SectionFormModal";
 import SectionScheduleFormModal, { weekdayLabel, formatTime } from "./SectionScheduleFormModal";
-import ConfirmModal from "../../../shared/ui/ConfirmModal";
+import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 
 export default function ComisionesTab() {
   const { programs } = usePrograms();
@@ -315,6 +315,7 @@ export default function ComisionesTab() {
       <ConfirmModal
         open={!!sectionToDelete}
         title="Eliminar comisión"
+        note={DELETE_NOTE}
         message={sectionToDelete ? `¿Seguro que querés eliminar "${sectionToDelete.name}"? Esta acción no se puede deshacer.` : ""}
         onCancel={() => setSectionToDelete(null)}
         onConfirm={handleConfirmDeleteSection}

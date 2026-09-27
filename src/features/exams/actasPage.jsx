@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getErrorMessage } from "../../shared/api/api";
 import { formatDateTime, isPast } from "../../shared/utils/formatters";
-import ConfirmModal from "../../shared/ui/ConfirmModal";
+import ConfirmModal, { DELETE_NOTE } from "../../shared/ui/ConfirmModal";
 import { getMyTeacherProfile } from "../users/services/teacherService";
 import { getExamBoards, createExamBoard, closeExamBoard, deleteExamBoard } from "./services/examBoardService";
 import { getExamEnrollments, updateExamEnrollment } from "./services/examEnrollmentService";
@@ -114,15 +114,12 @@ export default function ActasPage() {
   }
 
   async function handleConfirmDelete() {
+    // Si falla, el error se propaga al ConfirmModal, que queda abierto y lo muestra.
     const board = boardToDelete;
+    await deleteExamBoard(board.id);
     setBoardToDelete(null);
-    try {
-      await deleteExamBoard(board.id);
-      if (board.id === selectedBoardId) setSelectedBoardId(null);
-      await reloadBoards();
-    } catch (e) {
-      setError(getErrorMessage(e, "No pudimos eliminar la mesa."));
-    }
+    if (board.id === selectedBoardId) setSelectedBoardId(null);
+    await reloadBoards();
   }
 
   return (
@@ -229,6 +226,7 @@ export default function ActasPage() {
       <ConfirmModal
         open={!!boardToDelete}
         title="Eliminar mesa"
+        note={DELETE_NOTE}
         message={boardToDelete ? `¿Seguro que querés eliminar la mesa de "${boardToDelete.courseName}"? Esta acción no se puede deshacer.` : ""}
         onCancel={() => setBoardToDelete(null)}
         onConfirm={handleConfirmDelete}

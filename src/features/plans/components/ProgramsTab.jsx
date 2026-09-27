@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { usePrograms } from "../hooks/usePrograms";
 import ProgramFormModal from "./ProgramFormModal";
-import ConfirmModal from "../../../shared/ui/ConfirmModal";
+import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 
 export default function ProgramsTab() {
   const { programs, loading, error, addProgram, editProgram, removeProgram } = usePrograms();
@@ -99,6 +99,7 @@ export default function ProgramsTab() {
       <ConfirmModal
         open={!!programToDelete}
         title="Eliminar carrera"
+        note={DELETE_NOTE}
         message={programToDelete ? `¿Seguro que querés eliminar "${programToDelete.name}"? Esta acción no se puede deshacer.` : ""}
         onCancel={() => setProgramToDelete(null)}
         onConfirm={handleConfirmDelete}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getErrorMessage } from "../../../shared/api/api";
-import ConfirmModal from "../../../shared/ui/ConfirmModal";
+import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 import { todayIso } from "../../../shared/utils/formatters";
 import EnrollmentPeriodFormModal from "./EnrollmentPeriodFormModal";
 import {
@@ -73,14 +73,10 @@ export default function PeriodosTab() {
   }
 
   async function handleConfirmDelete() {
-    const period = periodToDelete;
+    // Si falla, el error se propaga al ConfirmModal, que queda abierto y lo muestra.
+    await deleteEnrollmentPeriod(periodToDelete.id);
     setPeriodToDelete(null);
-    try {
-      await deleteEnrollmentPeriod(period.id);
-      await reload();
-    } catch (e) {
-      setError(getErrorMessage(e, "No pudimos eliminar el período."));
-    }
+    await reload();
   }
 
   return (
@@ -158,6 +154,7 @@ export default function PeriodosTab() {
       <ConfirmModal
         open={!!periodToDelete}
         title="Eliminar período"
+        note={DELETE_NOTE}
         message={periodToDelete ? `¿Seguro que querés eliminar este período de ${PERIOD_TYPES[periodToDelete.type] ?? periodToDelete.type}? Esta acción no se puede deshacer.` : ""}
         onCancel={() => setPeriodToDelete(null)}
         onConfirm={handleConfirmDelete}
