@@ -23,8 +23,8 @@ async function getEnrollmentsSafe() {
 // Carga todo lo que necesita el portal del alumno y lo deja armado en dos
 // listas separadas: la oferta a la que se puede inscribir y las comisiones en
 // las que ya está inscripto. El backend no tiene un endpoint que devuelva la
-// oferta ya filtrada, así que traemos comisiones + horarios + inscripciones y
-// cruzamos acá (son pocos registros, van todos con size=1000).
+// oferta ya filtrada, así que traemos comisiones (con availableSeats calculado
+// por el backend) + horarios + inscripciones y cruzamos acá (son pocos registros, van todos con size=1000).
 export function useStudentSections() {
   const { user } = useAuth();
 
@@ -80,15 +80,6 @@ export function useStudentSections() {
     return map;
   }, [schedules]);
 
-  // Cuántos inscriptos tiene cada comisión, para mostrar el cupo restante.
-  const countsBySection = useMemo(() => {
-    const map = new Map();
-    allEnrollments.forEach((e) => {
-      map.set(e.sectionId, (map.get(e.sectionId) ?? 0) + 1);
-    });
-    return map;
-  }, [allEnrollments]);
-
   const myEnrollments = useMemo(
     () => (student ? allEnrollments.filter((e) => e.studentId === student.id) : []),
     [allEnrollments, student],
@@ -117,16 +108,11 @@ export function useStudentSections() {
       .filter((s) => planCourseIds.size === 0 || planCourseIds.has(s.curriculumCourseId))
       .filter((s) => !enrolledSectionIds.has(s.id))
       .filter((s) => !enrolledCourseIds.has(s.curriculumCourseId))
-      .map((section) => {
-        const taken = countsBySection.get(section.id) ?? 0;
-        return {
-          section,
-          schedules: schedulesBySection.get(section.id) ?? [],
-          taken,
-          remaining: Math.max((section.maxCapacity ?? 0) - taken, 0),
-        };
-      });
-  }, [sections, curriculumCourseIds, myEnrollments, enrolled, countsBySection, schedulesBySection]);
+      .map((section) => ({
+        section,
+        schedules: schedulesBySection.get(section.id) ?? [],
+      }));
+  }, [sections, curriculumCourseIds, myEnrollments, enrolled, schedulesBySection]);
 
   async function enroll(sectionId) {
     await createEnrollment({ studentId: student.id, sectionId });

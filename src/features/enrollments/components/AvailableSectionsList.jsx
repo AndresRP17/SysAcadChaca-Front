@@ -7,10 +7,12 @@ export default function AvailableSectionsList({ items, conflictsBySection, onEnr
 
   return (
     <div className="portal-cards">
-      {items.map(({ section, schedules, taken, remaining }) => {
+      {items.map(({ section, schedules }) => {
         const conflicts = conflictsBySection.get(section.id) ?? [];
         const conflictIds = conflicts.map((c) => c.candidateSchedule.id);
-        const full = remaining === 0;
+        const seats = section.availableSeats;
+        const noSchedule = seats === null || seats === undefined;
+        const full = seats === 0;
 
         return (
           <article key={section.id} className="portal-card">
@@ -26,8 +28,8 @@ export default function AvailableSectionsList({ items, conflictsBySection, onEnr
                   </p>
                 )}
               </div>
-              <span className={`users-badge ${full ? "users-badge--inactive" : "users-badge--navy"}`}>
-                {full ? "Sin cupo" : `${remaining} de ${section.maxCapacity} lugares`}
+              <span className={`users-badge ${full || noSchedule ? "users-badge--inactive" : "users-badge--navy"}`}>
+                {noSchedule ? "Sin horario asignado" : full ? "Sin cupo" : `${seats} ${seats === 1 ? "lugar disponible" : "lugares disponibles"}`}
               </span>
             </div>
 
@@ -43,7 +45,7 @@ export default function AvailableSectionsList({ items, conflictsBySection, onEnr
               <button
                 type="button"
                 className="users-btn users-btn--primary"
-                disabled={full || submitting || taken === undefined}
+                disabled={full || noSchedule || submitting}
                 onClick={() => onEnroll(section.id)}
               >
                 Inscribirme
