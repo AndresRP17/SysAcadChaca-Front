@@ -1,4 +1,4 @@
-import { formatDateTime } from "../../../shared/utils/formatters";
+import { formatDateTime, isPast } from "../../../shared/utils/formatters";
 import { getResultStatus, getResultLabel } from "../services/examEnrollmentService";
 
 function statusBadgeClass(enrollment) {
@@ -8,8 +8,11 @@ function statusBadgeClass(enrollment) {
   return "users-badge users-badge--gray";
 }
 
-export default function ActaDetail({ board, enrollments, loading, closed, onGrade, onCloseActa }) {
+export default function ActaDetail({ board, enrollments, loading, closed, canGrade, onGrade, onCloseActa, onDeleteBoard }) {
   const pending = enrollments.filter((e) => getResultStatus(e) === "pending").length;
+  const held = isPast(board.scheduledAt);
+  const canClose = !closed && held && enrollments.length > 0 && pending === 0;
+  const canDelete = !closed && !!onDeleteBoard && board.enrolledCount === 0;
 
   return (
     <div className="portal-acta-detail">
@@ -27,20 +30,33 @@ export default function ActaDetail({ board, enrollments, loading, closed, onGrad
           )}
         </div>
 
-        <button
-          type="button"
-          className="users-btn users-btn--primary"
-          disabled={closed || enrollments.length === 0 || pending > 0}
-          onClick={onCloseActa}
-        >
-          Cerrar acta
-        </button>
+        <div className="users-header-actions">
+          {canDelete && (
+            <button type="button" className="users-btn users-btn--ghost" onClick={onDeleteBoard}>
+              Eliminar mesa
+            </button>
+          )}
+          <button
+            type="button"
+            className="users-btn users-btn--primary"
+            disabled={!canClose}
+            onClick={onCloseActa}
+          >
+            Cerrar acta
+          </button>
+        </div>
       </div>
 
-      {!closed && pending > 0 && (
+      {!closed && !held && (
+        <p className="users-subtitle">El acta se puede cerrar recién después de la fecha del examen.</p>
+      )}
+      {!closed && held && pending > 0 && (
         <p className="users-subtitle">
           Falta cargar {pending} nota{pending !== 1 ? "s" : ""} para poder cerrar el acta.
         </p>
+      )}
+      {!closed && !canGrade && (
+        <p className="users-subtitle">Las notas las cargan el docente presidente de la mesa o el Administrador.</p>
       )}
 
       {loading && <p className="users-empty">Cargando inscriptos...</p>}
@@ -78,7 +94,7 @@ export default function ActaDetail({ board, enrollments, loading, closed, onGrad
                     <button
                       type="button"
                       className="users-action-btn"
-                      disabled={closed}
+                      disabled={closed || !canGrade}
                       onClick={() => onGrade(e)}
                     >
                       {e.finalGrade === null || e.finalGrade === undefined ? "Cargar nota" : "Editar nota"}

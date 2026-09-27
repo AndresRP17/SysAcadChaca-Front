@@ -8,7 +8,7 @@
 export const LINKS_BY_ROLE = {
   Administrador: ["usuarios", "planes", "cursadas", "actas"],
   Alumno: ["alumno", "mis-cursadas", "finales"],
-  Docente: ["mis-comisiones", "planilla"],
+  Docente: ["mis-comisiones", "planilla", "actas"],
   Bedel: ["cursadas", "actas"],
 };
 
