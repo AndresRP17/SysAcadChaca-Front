@@ -1,4 +1,5 @@
 import axios from "axios";
+import { authStorage } from "../utils/authStorage";
 
 export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8087";
 
@@ -7,7 +8,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = authStorage.getToken();
   if (token) {
     config.headers.Authorization = token;
   }
@@ -24,8 +25,7 @@ api.interceptors.response.use(
     const isPublicRequest = PUBLIC_PATHS.some((path) => error.config?.url?.startsWith(path));
 
     if (error.response?.status === 401 && !isPublicRequest) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      authStorage.clear();
       window.location.href = "/";
     }
 

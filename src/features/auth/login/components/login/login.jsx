@@ -32,7 +32,7 @@ export default function Login() {
     try {
       // El campo se sigue llamando "legajo" en la UI (así lo diseñaron), pero
       // el backend real solo tiene login por email todavía — se manda como email.
-      const { user } = await login(legajo.trim(), password);
+      const { user } = await login(legajo.trim(), password, remember);
       navigate(getDefaultRouteForRole(user?.role));
     } catch (err) {
       setError(getErrorMessage(err));

@@ -1,30 +1,22 @@
 import { api } from "../../../../shared/api/api";
+import { authStorage } from "../../../../shared/utils/authStorage";
 
 export const loginService = {
-  login: async (email, password) => {
+  login: async (email, password, remember) => {
     const { data } = await api.post("/login", { email, password });
 
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-    }
-    if (data.user) {
-      localStorage.setItem("user", JSON.stringify(data.user));
-    }
+    authStorage.save(data.token, data.user, remember);
 
     return data;
   },
 
   logout: () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    authStorage.clear();
   },
 
-  getToken: () => localStorage.getItem("token"),
+  getToken: () => authStorage.getToken(),
 
-  getCurrentUser: () => {
-    const user = localStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
-  },
+  getCurrentUser: () => authStorage.getUser(),
 
-  isAuthenticated: () => !!localStorage.getItem("token"),
+  isAuthenticated: () => !!authStorage.getToken(),
 };
