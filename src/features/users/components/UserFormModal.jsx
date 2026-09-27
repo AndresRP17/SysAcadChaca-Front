@@ -75,18 +75,20 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
       password: form.password || (mode === "create" ? "" : null),
     };
 
-    const payload =
-      form.rol === "Alumno"
-        ? {
-          ...base,
-          study_plan_id: Number(form.study_plan_id),
-          enrollment_date: form.enrollment_date,
-        }
-        : {
-          ...base,
-          employee_number: form.employee_number,
-          degree: form.degree,
-        };
+    let payload = base;
+    if (form.rol === "Alumno") {
+      payload = {
+        ...base,
+        study_plan_id: Number(form.study_plan_id),
+        enrollment_date: form.enrollment_date,
+      };
+    } else if (form.rol === "Docente") {
+      payload = {
+        ...base,
+        employee_number: form.employee_number,
+        degree: form.degree,
+      };
+    }
 
     try {
       await onSubmit({ rol: form.rol, payload });
@@ -119,6 +121,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
           >
             <option value="Alumno">Alumno</option>
             <option value="Docente">Docente</option>
+            <option value="Bedel">Bedel</option>
           </select>
         </div>
         )}
@@ -234,7 +237,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
               </div>
             </div>
           </>
-        ) : (
+        ) : form.rol === "Docente" ? (
           <div className="users-form-row">
             <div className="users-form-field">
               <label className="users-form-label">Legajo</label>
@@ -261,7 +264,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
               )}
             </div>
           </div>
-        )}
+        ) : null}
 
         {generalError && <p className="users-form-error">{generalError}</p>}
 
