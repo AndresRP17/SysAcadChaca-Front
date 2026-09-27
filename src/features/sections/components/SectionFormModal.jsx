@@ -3,7 +3,7 @@ import Modal from "../../../shared/ui/Modal";
 import { getErrorMessage } from "../../../shared/api/api";
 
 const SHIFTS = ["Mañana", "Tarde", "Noche"];
-const EMPTY_FORM = { curriculum_course_id: "", teacher_id: "", name: "", academic_year: "", max_capacity: "", shift: SHIFTS[0] };
+const EMPTY_FORM = { curriculum_course_id: "", teacher_id: "", name: "", academic_year: "", term: "", max_capacity: "", shift: SHIFTS[0] };
 
 export default function SectionFormModal({ open, mode, initialData, curriculumCourseOptions, teacherOptions, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
@@ -18,10 +18,11 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
               teacher_id: String(initialData.teacherId),
               name: initialData.name,
               academic_year: initialData.academicYear,
+              term: String(initialData.term),
               max_capacity: initialData.maxCapacity,
               shift: initialData.shift,
             }
-          : { ...EMPTY_FORM, curriculum_course_id: curriculumCourseOptions[0]?.id ?? "", teacher_id: teacherOptions[0]?.id ?? "" },
+          : EMPTY_FORM,
       );
       setError("");
     }
@@ -33,7 +34,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.curriculum_course_id || !form.teacher_id || !form.name.trim() || !form.academic_year || !form.max_capacity) {
+    if (!form.curriculum_course_id || !form.teacher_id || !form.name.trim() || !form.academic_year || !form.term || !form.max_capacity) {
       setError("Completá todos los campos.");
       return;
     }
@@ -43,6 +44,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
         teacher_id: Number(form.teacher_id),
         name: form.name,
         academic_year: Number(form.academic_year),
+        term: Number(form.term),
         max_capacity: Number(form.max_capacity),
         shift: form.shift,
       });
@@ -63,7 +65,9 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
             onChange={(e) => handleChange("curriculum_course_id", e.target.value)}
             className="users-form-input"
           >
-            {curriculumCourseOptions.length === 0 && <option value="">No hay materias en este plan</option>}
+            {curriculumCourseOptions.length === 0
+              ? <option value="">No hay materias en este plan</option>
+              : <option value="">Seleccioná una materia...</option>}
             {curriculumCourseOptions.map((cc) => (
               <option key={cc.id} value={cc.id}>{cc.code} - {cc.name}</option>
             ))}
@@ -77,7 +81,9 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
             onChange={(e) => handleChange("teacher_id", e.target.value)}
             className="users-form-input"
           >
-            {teacherOptions.length === 0 && <option value="">No hay docentes cargados</option>}
+            {teacherOptions.length === 0
+              ? <option value="">No hay docentes cargados</option>
+              : <option value="">Seleccioná un docente...</option>}
             {teacherOptions.map((t) => (
               <option key={t.id} value={t.id}>{t.firstName} {t.lastName}</option>
             ))}
@@ -105,6 +111,18 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
               onChange={(e) => handleChange("academic_year", e.target.value)}
               className="users-form-input"
             />
+          </div>
+          <div className="users-form-field">
+            <label className="users-form-label">Cuatrimestre</label>
+            <select
+              value={form.term}
+              onChange={(e) => handleChange("term", e.target.value)}
+              className="users-form-input"
+            >
+              <option value="">Seleccioná...</option>
+              <option value="1">1°</option>
+              <option value="2">2°</option>
+            </select>
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Cupo máximo</label>

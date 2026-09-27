@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { getErrorMessage } from "../../../shared/api/api";
+import { todayIso } from "../../../shared/utils/formatters";
 import { getSectionSchedules } from "../../sections/services/sectionScheduleService";
 import {
   getAttendancesBySection,
@@ -22,10 +23,6 @@ function formatDate(isoDate) {
 
 function weekdayOf(isoDate) {
   return INDEX_TO_WEEKDAY[new Date(`${isoDate}T00:00:00`).getDay()];
-}
-
-function today() {
-  return new Date().toISOString().slice(0, 10);
 }
 
 export default function AsistenciaTab({ sectionId, enrollments }) {
@@ -78,7 +75,7 @@ export default function AsistenciaTab({ sectionId, enrollments }) {
   function startNewDate() {
     // Arranca siempre en hoy, sin adivinar — si "hoy" ya tiene asistencia
     // cargada, se avisa mas abajo (no se disfraza de "nueva" una fecha vieja).
-    setDate(today());
+    setDate(todayIso());
   }
 
   useEffect(() => {

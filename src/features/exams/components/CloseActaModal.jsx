@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
+import { getErrorMessage } from "../../../shared/api/api";
 
 // Cerrar el acta = guardar libro y folio en la mesa (exam_boards.record_book /
 // record_folio). A partir de ahí la vista queda de solo lectura.
@@ -31,7 +32,7 @@ export default function CloseActaModal({ open, board, onClose, onSubmit }) {
     try {
       await onSubmit(form);
     } catch (e) {
-      setError(e.message);
+      setError(getErrorMessage(e));
     } finally {
       setSaving(false);
     }

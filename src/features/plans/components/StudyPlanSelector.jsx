@@ -20,6 +20,7 @@ export default function StudyPlanSelector({
             className="users-form-input"
           >
             {programs.length === 0 && <option value="">No hay carreras cargadas</option>}
+            {programs.length > 0 && <option value="">Seleccioná una carrera...</option>}
             {programs.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}

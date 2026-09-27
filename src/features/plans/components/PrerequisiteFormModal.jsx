@@ -9,7 +9,7 @@ export default function PrerequisiteFormModal({ open, courseOptions, onClose, on
 
   useEffect(() => {
     if (open) {
-      setRequiredCourseId(courseOptions[0]?.id ?? "");
+      setRequiredCourseId("");
       setConditionType("CURSADA");
       setError("");
     }
@@ -38,7 +38,9 @@ export default function PrerequisiteFormModal({ open, courseOptions, onClose, on
             onChange={(e) => setRequiredCourseId(e.target.value)}
             className="users-form-input"
           >
-            {courseOptions.length === 0 && <option value="">No hay otras materias disponibles</option>}
+            {courseOptions.length === 0
+              ? <option value="">No hay otras materias disponibles</option>
+              : <option value="">Seleccioná una materia...</option>}
             {courseOptions.map((course) => (
               <option key={course.id} value={course.id}>
                 {course.code} - {course.name}

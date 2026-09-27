@@ -32,7 +32,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
               start_time: formatTime(initialData.startTime),
               end_time: formatTime(initialData.endTime),
             }
-          : { ...EMPTY_FORM, classroom_id: classroomOptions[0]?.id ?? "" },
+          : EMPTY_FORM,
       );
       setError("");
       setAvailability(null);
@@ -106,7 +106,9 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
             onChange={(e) => handleChange("classroom_id", e.target.value)}
             className="users-form-input"
           >
-            {classroomOptions.length === 0 && <option value="">No hay aulas cargadas</option>}
+            {classroomOptions.length === 0
+              ? <option value="">No hay aulas cargadas</option>
+              : <option value="">Seleccioná un aula...</option>}
             {classroomOptions.map((c) => (
               <option key={c.id} value={c.id}>{c.name} ({c.location})</option>
             ))}
