@@ -32,3 +32,20 @@
     margin-left: 64px;
   }
 }
+
+/* Vistas imprimibles (ej. certificados): ocultar navegación, la página
+   imprimida es solo el contenido. */
+@media print {
+  .sidebar,
+  .topbar {
+    display: none !important;
+  }
+
+  .layout-body {
+    margin-left: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

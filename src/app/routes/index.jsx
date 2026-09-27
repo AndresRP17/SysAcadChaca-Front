@@ -10,6 +10,8 @@ import StudentsPage from "../../features/users/studentsPage";
 import PlansPage from "../../features/plans/plansPage";
 import CursadasPage from "../../features/sections/cursadasPage";
 import StudentDashboardPage from "../../features/dashboard/studentDashboardPage";
+import HistorialAlumnoPage from "../../features/dashboard/historialAlumnoPage";
+import CertificatesPage from "../../features/certificates/certificatesPage";
 import PortalCursadasPage from "../../features/enrollments/portalCursadasPage";
 import PortalFinalesPage from "../../features/exams/portalFinalesPage";
 import ActasPage from "../../features/exams/actasPage";
@@ -67,6 +69,22 @@ export const router = createBrowserRouter([
         element: (
           <RequireRole allow={getRolesAllowedForLink("alumno")}>
             <StudentDashboardPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/historial",
+        element: (
+          <RequireRole allow={getRolesAllowedForLink("historial")}>
+            <HistorialAlumnoPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/certificados",
+        element: (
+          <RequireRole allow={getRolesAllowedForLink("certificados")}>
+            <CertificatesPage />
           </RequireRole>
         ),
       },
