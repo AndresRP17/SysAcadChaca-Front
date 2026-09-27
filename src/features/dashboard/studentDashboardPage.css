@@ -1,5 +1,7 @@
 /* La paleta de colores (--navy, --bg, --surface, etc.) vive en
    src/styles/theme.css, compartida por toda la app. */
+@import "../../shared/ui/badges.css";
+
 .dash-page {
   max-width: 1000px;
   margin: 0 auto;
@@ -19,7 +21,9 @@
 /* Tarjeta de perfil */
 .dash-profile-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 18px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -57,7 +61,7 @@
 /* Fila de estadísticas */
 .dash-stats-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: 16px;
 }
 
@@ -93,7 +97,7 @@
 /* Grilla de paneles inferiores */
 .dash-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
 }
 
@@ -123,6 +127,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
@@ -144,23 +149,7 @@
   margin: 2px 0 0 0;
 }
 
-.dash-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 12px;
-  white-space: nowrap;
-}
-
-.dash-badge--navy {
-  background: var(--navy);
-  color: #ffffff;
-}
-
-.dash-badge--gray {
-  background: var(--bg);
-  color: var(--text-secondary);
-}
+/* .dash-badge, .dash-badge--navy, .dash-badge--gray: ver src/shared/ui/badges.css */
 
 .dash-event-date {
   font-size: 12px;
@@ -170,21 +159,21 @@
 }
 
 /* Responsive */
-@media (max-width: 700px) {
+@media (min-width: 701px) {
   .dash-stats-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .dash-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .dash-profile-card {
-    flex-direction: column;
-    text-align: center;
+    flex-direction: row;
+    text-align: left;
   }
 
   .dash-list-item {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 }

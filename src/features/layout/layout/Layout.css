@@ -9,12 +9,8 @@
   flex-direction: column;
   flex: 1;
   min-width: 0;
-  margin-left: 220px;
+  margin-left: 0;
   transition: margin-left 0.2s ease;
-}
-
-.layout-body.collapsed {
-  margin-left: 64px;
 }
 
 .main-content {
@@ -27,9 +23,12 @@
   margin: 0 auto;
 }
 
-@media (max-width: 768px) {
-  .layout-body,
+@media (min-width: 769px) {
+  .layout-body {
+    margin-left: 220px;
+  }
+
   .layout-body.collapsed {
-    margin-left: 0;
+    margin-left: 64px;
   }
 }

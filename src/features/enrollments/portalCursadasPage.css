@@ -110,14 +110,14 @@
    cuando se importa desde la vista de finales. */
 .portal-acta-layout {
   display: grid;
-  grid-template-columns: minmax(220px, 300px) 1fr;
+  grid-template-columns: 1fr;
   gap: 20px;
   align-items: start;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 769px) {
   .portal-acta-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(220px, 300px) 1fr;
   }
 }
 

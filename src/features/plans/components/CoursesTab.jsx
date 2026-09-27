@@ -49,7 +49,7 @@ export default function CoursesTab() {
       {error && <p className="users-form-error">{error}</p>}
 
       <div className="users-table-wrapper">
-        <table className="users-table">
+        <table className="users-table plans-data-table">
           <thead>
             <tr>
               <th className="users-th">Nombre</th>

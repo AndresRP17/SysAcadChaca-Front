@@ -7,7 +7,7 @@
   background: var(--surface);
   border-right: 1px solid color-mix(in srgb, var(--border) 15%, transparent);
   z-index: 20;
-  transition: width 0.2s ease;
+  transition: width 0.2s ease, transform 0.2s ease;
 }
 
 .sidebar.collapsed {
@@ -93,5 +93,15 @@
     inset: 0;
     background: rgba(0, 0, 0, 0.4);
     z-index: 15;
+  }
+
+  .sidebar,
+  .sidebar.collapsed {
+    width: 220px;
+    transform: translateX(-100%);
+  }
+
+  .sidebar:not(.collapsed) {
+    transform: translateX(0);
   }
 }

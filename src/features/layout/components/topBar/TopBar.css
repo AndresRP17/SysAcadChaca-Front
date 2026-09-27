@@ -20,7 +20,7 @@
 }
 
 .mobile-menu-btn {
-  display: none;
+  display: block;
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -33,8 +33,8 @@
   gap: 16px;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 769px) {
   .mobile-menu-btn {
-    display: block;
+    display: none;
   }
 }
