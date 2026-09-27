@@ -20,7 +20,7 @@ export default function ExamBoardCard({ board, badge, badgeVariant = "navy", act
         {badge && <span className={`users-badge users-badge--${badgeVariant}`}>{badge}</span>}
       </div>
 
-      {(board.recordBook || board.recordFolio) && (
+      {board.closed && (
         <p className="portal-card-sub">
           Acta cerrada — libro {board.recordBook}, folio {board.recordFolio}
         </p>

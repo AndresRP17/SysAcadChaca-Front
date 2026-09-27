@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { getErrorMessage } from "../../shared/api/api";
 import { formatDateTime, isPast } from "../../shared/utils/formatters";
-import { getExamBoards, updateExamBoard } from "./services/examBoardService";
+import ConfirmModal from "../../shared/ui/ConfirmModal";
+import { getMyTeacherProfile } from "../users/services/teacherService";
+import { getExamBoards, createExamBoard, closeExamBoard, deleteExamBoard } from "./services/examBoardService";
 import { getExamEnrollments, updateExamEnrollment } from "./services/examEnrollmentService";
 import ActaDetail from "./components/ActaDetail";
 import GradeModal from "./components/GradeModal";
 import CloseActaModal from "./components/CloseActaModal";
+import ExamBoardFormModal from "./components/ExamBoardFormModal";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
 import "../enrollments/portalCursadasPage.css";
@@ -16,11 +20,18 @@ const FILTERS = [
   { key: "todas", label: "Todas" },
 ];
 
-function isClosed(board) {
-  return !!board.recordBook && !!board.recordFolio;
-}
+// Quién puede qué (espeja el backend): Administrador y Bedel programan mesas;
+// cargan notas el Administrador y el docente presidente de la mesa (por eso el
+// Docente solo ve las mesas que preside); Bedel puede cerrar pero no calificar.
+const ROLES_THAT_MANAGE_BOARDS = ["Administrador", "Bedel"];
+const ROLES_THAT_GRADE = ["Administrador", "Docente"];
 
 export default function ActasPage() {
+  const { user } = useAuth();
+  const role = user?.role;
+  const canManageBoards = ROLES_THAT_MANAGE_BOARDS.includes(role);
+  const canGrade = ROLES_THAT_GRADE.includes(role);
+
   const [boards, setBoards] = useState([]);
   const [filter, setFilter] = useState(FILTERS[0].key);
   const [selectedBoardId, setSelectedBoardId] = useState(null);
@@ -31,19 +42,25 @@ export default function ActasPage() {
 
   const [enrollmentToGrade, setEnrollmentToGrade] = useState(null);
   const [closeModalOpen, setCloseModalOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [boardToDelete, setBoardToDelete] = useState(null);
 
   const reloadBoards = useCallback(async () => {
     setLoadingBoards(true);
     setError("");
     try {
-      const data = await getExamBoards();
+      let data = await getExamBoards();
+      if (role === "Docente") {
+        const me = await getMyTeacherProfile();
+        data = data.filter((b) => b.chairTeacherId === me.id);
+      }
       setBoards(data.sort((a, b) => String(b.scheduledAt).localeCompare(String(a.scheduledAt))));
     } catch (e) {
       setError(getErrorMessage(e, "No pudimos cargar las mesas de examen."));
     } finally {
       setLoadingBoards(false);
     }
-  }, []);
+  }, [role]);
 
   useEffect(() => {
     reloadBoards();
@@ -69,8 +86,8 @@ export default function ActasPage() {
   }, [selectedBoardId, reloadEnrollments]);
 
   const visibleBoards = boards.filter((b) => {
-    if (filter === "abiertas") return !isClosed(b);
-    if (filter === "cerradas") return isClosed(b);
+    if (filter === "abiertas") return !b.closed;
+    if (filter === "cerradas") return b.closed;
     return true;
   });
 
@@ -83,9 +100,29 @@ export default function ActasPage() {
   }
 
   async function handleCloseActa(form) {
-    await updateExamBoard(selectedBoard.id, form);
+    await closeExamBoard(selectedBoard.id, form);
     setCloseModalOpen(false);
     await reloadBoards();
+  }
+
+  async function handleCreateBoard(data) {
+    const created = await createExamBoard(data);
+    setFormOpen(false);
+    setFilter("abiertas");
+    await reloadBoards();
+    setSelectedBoardId(created.id);
+  }
+
+  async function handleConfirmDelete() {
+    const board = boardToDelete;
+    setBoardToDelete(null);
+    try {
+      await deleteExamBoard(board.id);
+      if (board.id === selectedBoardId) setSelectedBoardId(null);
+      await reloadBoards();
+    } catch (e) {
+      setError(getErrorMessage(e, "No pudimos eliminar la mesa."));
+    }
   }
 
   return (
@@ -93,8 +130,19 @@ export default function ActasPage() {
       <div className="users-header">
         <div>
           <h1 className="users-title">Actas de examen</h1>
-          <p className="users-subtitle">Cargá las notas de cada mesa y cerrá el acta con su libro y folio</p>
+          <p className="users-subtitle">
+            {role === "Docente"
+              ? "Cargá las notas de las mesas que presidís y cerrá el acta con su libro y folio"
+              : "Programá las mesas, controlá la carga de notas y cerrá el acta con su libro y folio"}
+          </p>
         </div>
+        {canManageBoards && (
+          <div className="users-header-actions">
+            <button type="button" className="users-btn users-btn--primary" onClick={() => setFormOpen(true)}>
+              + Nueva mesa
+            </button>
+          </div>
+        )}
       </div>
 
       {error && <p className="users-form-error">{error}</p>}
@@ -130,8 +178,8 @@ export default function ActasPage() {
               >
                 <span>{board.courseName}</span>
                 <span className="portal-card-sub">{formatDateTime(board.scheduledAt)}</span>
-                <span className={`users-badge ${isClosed(board) ? "users-badge--gray" : "users-badge--navy"}`}>
-                  {isClosed(board) ? "Cerrada" : isPast(board.scheduledAt) ? "Pendiente de cierre" : "Programada"}
+                <span className={`users-badge ${board.closed ? "users-badge--gray" : "users-badge--navy"}`}>
+                  {board.closed ? "Cerrada" : isPast(board.scheduledAt) ? "Pendiente de cierre" : "Programada"}
                 </span>
               </button>
             ))}
@@ -147,9 +195,11 @@ export default function ActasPage() {
                 board={selectedBoard}
                 enrollments={enrollments}
                 loading={loadingEnrollments}
-                closed={isClosed(selectedBoard)}
+                closed={selectedBoard.closed}
+                canGrade={canGrade}
                 onGrade={setEnrollmentToGrade}
                 onCloseActa={() => setCloseModalOpen(true)}
+                onDeleteBoard={canManageBoards ? () => setBoardToDelete(selectedBoard) : null}
               />
             )}
           </div>
@@ -168,6 +218,20 @@ export default function ActasPage() {
         board={selectedBoard}
         onClose={() => setCloseModalOpen(false)}
         onSubmit={handleCloseActa}
+      />
+
+      <ExamBoardFormModal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSubmit={handleCreateBoard}
+      />
+
+      <ConfirmModal
+        open={!!boardToDelete}
+        title="Eliminar mesa"
+        message={boardToDelete ? `¿Seguro que querés eliminar la mesa de "${boardToDelete.courseName}"? Esta acción no se puede deshacer.` : ""}
+        onCancel={() => setBoardToDelete(null)}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

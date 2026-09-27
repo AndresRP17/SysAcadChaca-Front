@@ -12,9 +12,15 @@ export async function createExamBoard(data) {
   return res.data;
 }
 
-// Se usa para cerrar el acta: guarda libro y folio en la mesa.
 export async function updateExamBoard(id, data) {
   const res = await api.put(`/exam-boards/${id}`, data);
+  return res.data;
+}
+
+// Cierra el acta: registra libro y folio y la deja de solo lectura. El backend
+// valida que la mesa ya se rindió y que no queden resultados pendientes.
+export async function closeExamBoard(id, { record_book, record_folio }) {
+  const res = await api.post(`/exam-boards/${id}/close`, { record_book, record_folio });
   return res.data;
 }
 
