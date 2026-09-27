@@ -14,12 +14,6 @@ export function useStudyPlanSelector() {
   const [studyPlanId, setStudyPlanId] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (programs.length > 0 && !programId) {
-      setProgramId(String(programs[0].id));
-    }
-  }, [programs, programId]);
-
   async function reloadStudyPlans(forProgramId) {
     if (!forProgramId) {
       setStudyPlans([]);

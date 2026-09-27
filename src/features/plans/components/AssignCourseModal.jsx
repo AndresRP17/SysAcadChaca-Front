@@ -10,7 +10,7 @@ export default function AssignCourseModal({ open, courses, onClose, onSubmit }) 
 
   useEffect(() => {
     if (open) {
-      setForm({ ...EMPTY_FORM, course_id: courses[0]?.id ?? "" });
+      setForm(EMPTY_FORM);
       setError("");
     }
   }, [open, courses]);
@@ -46,7 +46,9 @@ export default function AssignCourseModal({ open, courses, onClose, onSubmit }) 
             onChange={(e) => handleChange("course_id", e.target.value)}
             className="users-form-input"
           >
-            {courses.length === 0 && <option value="">No hay materias cargadas</option>}
+            {courses.length === 0
+              ? <option value="">No hay materias cargadas</option>
+              : <option value="">Seleccioná una materia...</option>}
             {courses.map((course) => (
               <option key={course.id} value={course.id}>
                 {course.code} - {course.name}

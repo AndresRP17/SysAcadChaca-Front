@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
+import { getErrorMessage } from "../../../shared/api/api";
 import { EXAM_ENROLLMENT_STATUS } from "../services/examEnrollmentService";
 
 // Carga de nota de un alumno en una mesa. El estado se deduce de la nota
@@ -45,7 +46,7 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
     try {
       await onSubmit(data);
     } catch (e) {
-      setError(e.message);
+      setError(getErrorMessage(e));
     } finally {
       setSaving(false);
     }

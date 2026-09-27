@@ -21,10 +21,6 @@ export default function GrillaHorariaTab() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (programs.length > 0 && !programId) setProgramId(String(programs[0].id));
-  }, [programs, programId]);
-
-  useEffect(() => {
     setStudyPlanId("");
     setStudyPlans([]);
     if (!programId) return;
@@ -67,6 +63,7 @@ export default function GrillaHorariaTab() {
           <label className="users-form-label">Carrera</label>
           <select value={programId} onChange={(e) => setProgramId(e.target.value)} className="users-form-input">
             {programs.length === 0 && <option value="">No hay carreras cargadas</option>}
+            {programs.length > 0 && <option value="">Seleccioná una carrera...</option>}
             {programs.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>

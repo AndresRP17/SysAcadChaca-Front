@@ -1,16 +1,15 @@
 import Modal from "../../../shared/ui/Modal";
 import { weekdayLabel, formatTime } from "../../sections/components/SectionScheduleFormModal";
 
-// Aviso de superposición: mostramos con qué materia choca cada horario y
-// dejamos que el alumno decida. Si la cátedra pide que sea un bloqueo duro,
-// alcanza con sacar el botón "Inscribirme igual".
-export default function ConflictModal({ open, conflicts, onCancel, onConfirm }) {
+// La superposición de horarios es un bloqueo duro: el backend rechaza la
+// inscripción (409), así que acá solo se informa con qué materia choca.
+export default function ConflictModal({ open, conflicts, onClose }) {
   if (!open) return null;
 
   return (
-    <Modal open={open} title="Superposición de horarios" onClose={onCancel}>
+    <Modal open={open} title="No podés inscribirte a esta comisión" onClose={onClose}>
       <p className="users-confirm-text">
-        Esta comisión se superpone con materias en las que ya estás inscripto:
+        Su horario se superpone con materias en las que ya estás inscripto:
       </p>
 
       <ul className="portal-conflict-list">
@@ -24,11 +23,8 @@ export default function ConflictModal({ open, conflicts, onCancel, onConfirm }) 
       </ul>
 
       <div className="users-form-actions">
-        <button type="button" className="users-btn users-btn--ghost" onClick={onCancel}>
-          Cancelar
-        </button>
-        <button type="button" className="users-btn users-btn--primary" onClick={onConfirm}>
-          Inscribirme igual
+        <button type="button" className="users-btn users-btn--primary" onClick={onClose}>
+          Entendido
         </button>
       </div>
     </Modal>

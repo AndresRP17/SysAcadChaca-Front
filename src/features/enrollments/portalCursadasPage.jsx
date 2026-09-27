@@ -15,8 +15,7 @@ export default function PortalCursadasPage() {
 
   const [search, setSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [pendingSectionId, setPendingSectionId] = useState(null);
-  const [pendingConflicts, setPendingConflicts] = useState([]);
+  const [shownConflicts, setShownConflicts] = useState(null);
   const [enrollmentToCancel, setEnrollmentToCancel] = useState(null);
 
   // Para cada comisión de la oferta, contra qué horarios ya inscriptos choca.
@@ -54,22 +53,10 @@ export default function PortalCursadasPage() {
   function handleEnroll(sectionId) {
     const conflicts = conflictsBySection.get(sectionId) ?? [];
     if (conflicts.length > 0) {
-      setPendingSectionId(sectionId);
-      setPendingConflicts(conflicts);
+      setShownConflicts(conflicts);
       return;
     }
     doEnroll(sectionId);
-  }
-
-  function closeConflictModal() {
-    setPendingSectionId(null);
-    setPendingConflicts([]);
-  }
-
-  async function confirmConflictEnroll() {
-    const sectionId = pendingSectionId;
-    closeConflictModal();
-    await doEnroll(sectionId);
   }
 
   async function confirmUnenroll() {
@@ -145,10 +132,9 @@ export default function PortalCursadasPage() {
       )}
 
       <ConflictModal
-        open={pendingSectionId !== null}
-        conflicts={pendingConflicts}
-        onCancel={closeConflictModal}
-        onConfirm={confirmConflictEnroll}
+        open={shownConflicts !== null}
+        conflicts={shownConflicts ?? []}
+        onClose={() => setShownConflicts(null)}
       />
 
       <ConfirmModal
