@@ -23,3 +23,8 @@ export async function updateSection(id, data) {
 export async function deleteSection(id) {
   await api.delete(`/sections/${id}`);
 }
+
+export async function closeSection(id) {
+  const { data } = await api.post(`/sections/${id}/close`);
+  return data;
+}

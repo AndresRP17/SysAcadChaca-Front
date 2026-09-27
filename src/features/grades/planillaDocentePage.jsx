@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getErrorMessage } from "../../shared/api/api";
 import { getMyTeacherProfile } from "../users/services/teacherService";
-import { getMySections } from "../sections/services/sectionService";
+import { getMySections, closeSection } from "../sections/services/sectionService";
 import { getEnrollmentsBySection } from "./services/enrollmentService";
 import AsistenciaTab from "./components/AsistenciaTab";
 import NotasTab from "./components/NotasTab";
+import CloseSectionModal from "./components/CloseSectionModal";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
 
@@ -24,6 +25,7 @@ export default function PlanillaDocentePage() {
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [closeModalOpen, setCloseModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadMySections() {
@@ -125,6 +127,23 @@ export default function PlanillaDocentePage() {
           {activeTab === "notas" && (
             <NotasTab sectionId={selectedSection.id} enrollments={enrollments} />
           )}
+
+          <div className="users-form-actions">
+            <button
+              type="button"
+              className="users-btn users-btn--danger"
+              onClick={() => setCloseModalOpen(true)}
+            >
+              Cerrar comisión
+            </button>
+          </div>
+
+          <CloseSectionModal
+            open={closeModalOpen}
+            section={selectedSection}
+            onClose={() => setCloseModalOpen(false)}
+            onSubmit={() => closeSection(selectedSection.id)}
+          />
         </>
       )}
     </div>
