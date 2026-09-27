@@ -1,4 +1,4 @@
-const ROLES = ["Todos", "Alumno", "Docente"];
+const ROLES = ["Todos", "Alumno", "Docente", "Bedel"];
 
 export default function FilterBar({ value, onChange }) {
   return (
