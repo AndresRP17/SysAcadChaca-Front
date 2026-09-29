@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 import { getErrorMessage } from "../../shared/api/api";
 import { formatDateTime, isPast } from "../../shared/utils/formatters";
 import ConfirmModal, { DELETE_NOTE } from "../../shared/ui/ConfirmModal";
@@ -31,6 +32,7 @@ export default function ActasPage() {
   const role = user?.role;
   const canManageBoards = ROLES_THAT_MANAGE_BOARDS.includes(role);
   const canGrade = ROLES_THAT_GRADE.includes(role);
+  const { showToast } = useToast();
 
   const [boards, setBoards] = useState([]);
   const [filter, setFilter] = useState(FILTERS[0].key);
@@ -103,6 +105,7 @@ export default function ActasPage() {
     await closeExamBoard(selectedBoard.id, form);
     setCloseModalOpen(false);
     await reloadBoards();
+    showToast("Acta cerrada correctamente");
   }
 
   async function handleCreateBoard(data) {

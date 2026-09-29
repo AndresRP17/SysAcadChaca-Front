@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { EXAM_ENROLLMENT_STATUS } from "../services/examEnrollmentService";
 
 // Carga de nota de un alumno en una mesa. El estado se deduce de la nota
@@ -9,6 +10,7 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
   const [grade, setGrade] = useState("");
   const [absent, setAbsent] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -16,6 +18,7 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
       setGrade(enrollment?.finalGrade ?? "");
       setAbsent(enrollment?.status === EXAM_ENROLLMENT_STATUS.ABSENT);
       setError("");
+      setFieldErrors({});
     }
   }, [open, enrollment]);
 
@@ -47,6 +50,7 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
       await onSubmit(data);
     } catch (e) {
       setError(getErrorMessage(e));
+      setFieldErrors(getFieldErrors(e));
     } finally {
       setSaving(false);
     }
@@ -75,6 +79,7 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
           disabled={absent}
           onChange={(e) => setGrade(e.target.value)}
         />
+        <FieldError errors={fieldErrors} field="final_grade" />
       </div>
 
       <div className="users-form-field">

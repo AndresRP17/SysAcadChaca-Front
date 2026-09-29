@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
 const EMPTY_FORM = { name: "", code: "", duration_years: "" };
 
 export default function ProgramFormModal({ open, mode, initialData, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (open) {
@@ -16,6 +18,7 @@ export default function ProgramFormModal({ open, mode, initialData, onClose, onS
           : EMPTY_FORM,
       );
       setError("");
+      setFieldErrors({});
     }
   }, [open, initialData]);
 
@@ -33,6 +36,7 @@ export default function ProgramFormModal({ open, mode, initialData, onClose, onS
       await onSubmit({ ...form, duration_years: Number(form.duration_years) });
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     }
   }
 
@@ -49,6 +53,7 @@ export default function ProgramFormModal({ open, mode, initialData, onClose, onS
             onChange={(e) => handleChange("name", e.target.value)}
             className="users-form-input"
           />
+          <FieldError errors={fieldErrors} field="name" />
         </div>
 
         <div className="users-form-row">
@@ -60,16 +65,23 @@ export default function ProgramFormModal({ open, mode, initialData, onClose, onS
               onChange={(e) => handleChange("code", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="code" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Duración (años)</label>
-            <input
-              type="number"
-              min="1"
+            <select
               value={form.duration_years}
               onChange={(e) => handleChange("duration_years", e.target.value)}
               className="users-form-input"
-            />
+            >
+              <option value="">Seleccioná...</option>
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+            <FieldError errors={fieldErrors} field="duration_years" />
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { useBuildings } from "../hooks/useBuildings";
 
 const EMPTY_FORM = { name: "", capacity: "", location: "", buildingId: "" };
@@ -9,6 +10,7 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
   const { buildings } = useBuildings();
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (open) {
@@ -23,6 +25,7 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
           : EMPTY_FORM,
       );
       setError("");
+      setFieldErrors({});
     }
   }, [open, initialData]);
 
@@ -40,6 +43,7 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
       await onSubmit({ ...form, capacity: Number(form.capacity), buildingId: Number(form.buildingId) });
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     }
   }
 
@@ -56,6 +60,7 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
             onChange={(e) => handleChange("name", e.target.value)}
             className="users-form-input"
           />
+          <FieldError errors={fieldErrors} field="name" />
         </div>
 
         <div className="users-form-field">
@@ -72,6 +77,7 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
               </option>
             ))}
           </select>
+          <FieldError errors={fieldErrors} field="building_id" />
         </div>
 
         <div className="users-form-row">
@@ -84,6 +90,7 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
               onChange={(e) => handleChange("capacity", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="capacity" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Ubicación (ej. Planta baja, Ala norte)</label>
@@ -93,6 +100,7 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
               onChange={(e) => handleChange("location", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="location" />
           </div>
         </div>
 

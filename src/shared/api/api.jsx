@@ -45,3 +45,10 @@ api.interceptors.response.use(
 export function getErrorMessage(err, fallback = "Ocurrió un error") {
   return err?.response?.data?.error || err?.message || fallback;
 }
+
+// El backend manda, en un 422, un mapa {campo: mensaje} además del mensaje
+// general (RequestValidator). Los formularios lo usan para marcar el campo
+// puntual en vez de mostrar solo "Datos invalidos".
+export function getFieldErrors(err) {
+  return err?.response?.data?.errors ?? {};
+}

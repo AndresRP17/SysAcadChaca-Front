@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
 export default function PrerequisiteFormModal({ open, courseOptions, onClose, onSubmit }) {
   const [requiredCourseId, setRequiredCourseId] = useState("");
   const [conditionType, setConditionType] = useState("CURSADA");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (open) {
       setRequiredCourseId("");
       setConditionType("CURSADA");
       setError("");
+      setFieldErrors({});
     }
   }, [open, courseOptions]);
 
@@ -25,6 +28,7 @@ export default function PrerequisiteFormModal({ open, courseOptions, onClose, on
       await onSubmit({ required_course_id: Number(requiredCourseId), condition_type: conditionType });
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     }
   }
 
@@ -47,6 +51,7 @@ export default function PrerequisiteFormModal({ open, courseOptions, onClose, on
               </option>
             ))}
           </select>
+          <FieldError errors={fieldErrors} field="required_course_id" />
         </div>
 
         <div className="users-form-field">
@@ -59,6 +64,7 @@ export default function PrerequisiteFormModal({ open, courseOptions, onClose, on
             <option value="CURSADA">Cursada (regularizada)</option>
             <option value="APROBADA">Aprobada (final rendido)</option>
           </select>
+          <FieldError errors={fieldErrors} field="condition_type" />
         </div>
 
         {error && <p className="users-form-error">{error}</p>}

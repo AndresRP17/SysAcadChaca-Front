@@ -1,23 +1,34 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
 const EMPTY_FORM = { course_id: "", year_number: "", term: "1" };
 
 export default function AssignCourseModal({ open, courses, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (open) {
       setForm(EMPTY_FORM);
       setError("");
+      setFieldErrors({});
+      setQuery("");
     }
   }, [open, courses]);
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
+
+  const filteredCourses = courses.filter((c) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q);
+  });
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -33,6 +44,7 @@ export default function AssignCourseModal({ open, courses, onClose, onSubmit }) 
       });
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     }
   }
 
@@ -40,21 +52,33 @@ export default function AssignCourseModal({ open, courses, onClose, onSubmit }) 
     <Modal open={open} title="Asignar materia al plan" onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form">
         <div className="users-form-field">
+          <label className="users-form-label">Buscar materia</label>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Nombre o código..."
+            className="users-form-input"
+          />
+        </div>
+
+        <div className="users-form-field">
           <label className="users-form-label">Materia</label>
           <select
             value={form.course_id}
             onChange={(e) => handleChange("course_id", e.target.value)}
             className="users-form-input"
           >
-            {courses.length === 0
-              ? <option value="">No hay materias cargadas</option>
+            {filteredCourses.length === 0
+              ? <option value="">No hay materias disponibles</option>
               : <option value="">Seleccioná una materia...</option>}
-            {courses.map((course) => (
+            {filteredCourses.map((course) => (
               <option key={course.id} value={course.id}>
                 {course.code} - {course.name}
               </option>
             ))}
           </select>
+          <FieldError errors={fieldErrors} field="course_id" />
         </div>
 
         <div className="users-form-row">
@@ -67,6 +91,7 @@ export default function AssignCourseModal({ open, courses, onClose, onSubmit }) 
               onChange={(e) => handleChange("year_number", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="year_number" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Cuatrimestre</label>
@@ -78,6 +103,7 @@ export default function AssignCourseModal({ open, courses, onClose, onSubmit }) 
               <option value="1">1°</option>
               <option value="2">2°</option>
             </select>
+            <FieldError errors={fieldErrors} field="term" />
           </div>
         </div>
 

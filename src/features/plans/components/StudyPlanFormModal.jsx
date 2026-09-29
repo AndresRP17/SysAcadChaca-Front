@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
 const EMPTY_FORM = { resolution_year: "", active: true };
 
 export default function StudyPlanFormModal({ open, mode = "create", initialData, programId, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (open) {
@@ -16,6 +18,7 @@ export default function StudyPlanFormModal({ open, mode = "create", initialData,
           : EMPTY_FORM,
       );
       setError("");
+      setFieldErrors({});
     }
   }, [open, initialData]);
 
@@ -37,6 +40,7 @@ export default function StudyPlanFormModal({ open, mode = "create", initialData,
       });
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     }
   }
 
@@ -54,6 +58,7 @@ export default function StudyPlanFormModal({ open, mode = "create", initialData,
             onChange={(e) => handleChange("resolution_year", e.target.value)}
             className="users-form-input"
           />
+          <FieldError errors={fieldErrors} field="resolution_year" />
         </div>
 
         <div className="users-form-field">

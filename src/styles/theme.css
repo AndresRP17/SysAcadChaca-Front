@@ -11,6 +11,7 @@
   --text-secondary: #141111;
   --text-muted: #767674;
   --error: #b5482f;
+  --success: #2e7d4f;
   --panel-logo-bg: #ffffff;
 }
 
@@ -24,6 +25,7 @@
   --text-secondary: #e7e9ed;
   --text-muted: #8b9098;
   --error: #e5735a;
+  --success: #4caf7d;
   --panel-logo-bg: #ffffff;
 }
 

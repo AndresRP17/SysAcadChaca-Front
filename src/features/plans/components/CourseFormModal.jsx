@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
 const EMPTY_FORM = { name: "", code: "", credit_hours: "" };
 
 export default function CourseFormModal({ open, mode, initialData, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (open) {
@@ -16,6 +18,7 @@ export default function CourseFormModal({ open, mode, initialData, onClose, onSu
           : EMPTY_FORM,
       );
       setError("");
+      setFieldErrors({});
     }
   }, [open, initialData]);
 
@@ -33,6 +36,7 @@ export default function CourseFormModal({ open, mode, initialData, onClose, onSu
       await onSubmit({ ...form, credit_hours: Number(form.credit_hours) });
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     }
   }
 
@@ -49,6 +53,7 @@ export default function CourseFormModal({ open, mode, initialData, onClose, onSu
             onChange={(e) => handleChange("name", e.target.value)}
             className="users-form-input"
           />
+          <FieldError errors={fieldErrors} field="name" />
         </div>
 
         <div className="users-form-row">
@@ -60,6 +65,7 @@ export default function CourseFormModal({ open, mode, initialData, onClose, onSu
               onChange={(e) => handleChange("code", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="code" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Carga horaria</label>
@@ -70,6 +76,7 @@ export default function CourseFormModal({ open, mode, initialData, onClose, onSu
               onChange={(e) => handleChange("credit_hours", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="credit_hours" />
           </div>
         </div>
 

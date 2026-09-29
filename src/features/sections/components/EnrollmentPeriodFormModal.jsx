@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { PERIOD_TYPES } from "../services/enrollmentPeriodService";
 
 const EMPTY_FORM = { type: "CURSADA", academic_year: "", term: "", start_date: "", end_date: "", active: true };
@@ -8,6 +9,7 @@ const EMPTY_FORM = { type: "CURSADA", academic_year: "", term: "", start_date: "
 export default function EnrollmentPeriodFormModal({ open, mode, initialData, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -25,6 +27,7 @@ export default function EnrollmentPeriodFormModal({ open, mode, initialData, onC
         : { ...EMPTY_FORM, academic_year: String(new Date().getFullYear()) },
     );
     setError("");
+    setFieldErrors({});
   }, [open, initialData]);
 
   function handleChange(field, value) {
@@ -60,6 +63,7 @@ export default function EnrollmentPeriodFormModal({ open, mode, initialData, onC
       });
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     } finally {
       setSaving(false);
     }
@@ -83,6 +87,7 @@ export default function EnrollmentPeriodFormModal({ open, mode, initialData, onC
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
+            <FieldError errors={fieldErrors} field="type" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="ep-year">Año lectivo</label>
@@ -94,6 +99,7 @@ export default function EnrollmentPeriodFormModal({ open, mode, initialData, onC
               onChange={(e) => handleChange("academic_year", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="academic_year" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="ep-term">Cuatrimestre</label>
@@ -107,6 +113,7 @@ export default function EnrollmentPeriodFormModal({ open, mode, initialData, onC
               <option value="1">1°</option>
               <option value="2">2°</option>
             </select>
+            <FieldError errors={fieldErrors} field="term" />
           </div>
         </div>
 
@@ -120,6 +127,7 @@ export default function EnrollmentPeriodFormModal({ open, mode, initialData, onC
               onChange={(e) => handleChange("start_date", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="start_date" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="ep-end">Fin</label>
@@ -130,6 +138,7 @@ export default function EnrollmentPeriodFormModal({ open, mode, initialData, onC
               onChange={(e) => handleChange("end_date", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="end_date" />
           </div>
         </div>
 
