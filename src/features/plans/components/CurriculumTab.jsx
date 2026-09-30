@@ -87,6 +87,9 @@ export default function CurriculumTab() {
     await reloadCurriculumCourses(studyPlanId);
   }
 
+  const assignedCourseIds = new Set(curriculumCourses.map((cc) => cc.courseId));
+  const availableCourses = courses.filter((c) => !assignedCourseIds.has(c.id));
+
   return (
     <div>
       {(error || selectorError) && <p className="users-form-error">{error || selectorError}</p>}
@@ -168,7 +171,8 @@ export default function CurriculumTab() {
 
       <AssignCourseModal
         open={assignOpen}
-        courses={courses}
+        courses={availableCourses}
+        durationYears={programs.find((p) => String(p.id) === String(programId))?.durationYears}
         onClose={() => setAssignOpen(false)}
         onSubmit={handleAssignCourse}
       />

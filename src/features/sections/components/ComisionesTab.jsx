@@ -189,13 +189,21 @@ export default function ComisionesTab() {
               type="button"
               className="users-btn users-btn--primary"
               disabled={curriculumCourses.length === 0}
+              title={curriculumCourses.length === 0 ? "Este plan no tiene materias asignadas todavía" : undefined}
               onClick={openCreateSection}
             >
               + Nueva comisión
             </button>
           </div>
 
-          {sections.length === 0 && (
+          {curriculumCourses.length === 0 && (
+            <p className="users-empty">
+              Este plan todavía no tiene materias asignadas — andá a "Estructura curricular" y asigná al
+              menos una antes de crear una comisión.
+            </p>
+          )}
+
+          {curriculumCourses.length > 0 && sections.length === 0 && (
             <p className="users-empty">Este plan todavía no tiene comisiones abiertas.</p>
           )}
 

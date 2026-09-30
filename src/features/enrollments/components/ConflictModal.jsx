@@ -3,14 +3,18 @@ import { weekdayLabel, formatTime } from "../../sections/components/SectionSched
 
 // La superposición de horarios es un bloqueo duro: el backend rechaza la
 // inscripción (409), así que acá solo se informa con qué materia choca.
-export default function ConflictModal({ open, conflicts, onClose }) {
+export default function ConflictModal({
+  open,
+  conflicts,
+  onClose,
+  title = "No podés inscribirte a esta comisión",
+  message = "Su horario se superpone con materias en las que ya estás inscripto:",
+}) {
   if (!open) return null;
 
   return (
-    <Modal open={open} title="No podés inscribirte a esta comisión" onClose={onClose}>
-      <p className="users-confirm-text">
-        Su horario se superpone con materias en las que ya estás inscripto:
-      </p>
+    <Modal open={open} title={title} onClose={onClose}>
+      <p className="users-confirm-text">{message}</p>
 
       <ul className="portal-conflict-list">
         {conflicts.map((c, index) => (

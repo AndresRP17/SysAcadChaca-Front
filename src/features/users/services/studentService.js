@@ -5,6 +5,11 @@ export async function getStudents() {
   return data;
 }
 
+export async function getStudent(id) {
+  const { data } = await api.get(`/students/${id}`);
+  return data;
+}
+
 export async function createStudent(data) {
   const res = await api.post("/students", data);
   return res.data;

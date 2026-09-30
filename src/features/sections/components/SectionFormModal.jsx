@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
 const SHIFTS = ["Mañana", "Tarde", "Noche"];
 const EMPTY_FORM = { curriculum_course_id: "", teacher_id: "", name: "", academic_year: "", term: "", max_capacity: "", shift: SHIFTS[0] };
@@ -8,6 +9,7 @@ const EMPTY_FORM = { curriculum_course_id: "", teacher_id: "", name: "", academi
 export default function SectionFormModal({ open, mode, initialData, curriculumCourseOptions, teacherOptions, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (open) {
@@ -25,6 +27,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
           : EMPTY_FORM,
       );
       setError("");
+      setFieldErrors({});
     }
   }, [open, initialData, curriculumCourseOptions, teacherOptions]);
 
@@ -50,6 +53,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
       });
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     }
   }
 
@@ -57,7 +61,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label">Materia</label>
           <select
@@ -72,6 +76,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
               <option key={cc.id} value={cc.id}>{cc.code} - {cc.name}</option>
             ))}
           </select>
+          <FieldError errors={fieldErrors} field="curriculum_course_id" />
         </div>
 
         <div className="users-form-field">
@@ -88,6 +93,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
               <option key={t.id} value={t.id}>{t.firstName} {t.lastName}</option>
             ))}
           </select>
+          <FieldError errors={fieldErrors} field="teacher_id" />
         </div>
 
         <div className="users-form-field">
@@ -99,6 +105,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
             placeholder="Comisión A"
             className="users-form-input"
           />
+          <FieldError errors={fieldErrors} field="name" />
         </div>
 
         <div className="users-form-row">
@@ -111,6 +118,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
               onChange={(e) => handleChange("academic_year", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="academic_year" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Cuatrimestre</label>
@@ -123,6 +131,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
               <option value="1">1°</option>
               <option value="2">2°</option>
             </select>
+            <FieldError errors={fieldErrors} field="term" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Cupo máximo</label>
@@ -133,6 +142,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
               onChange={(e) => handleChange("max_capacity", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="max_capacity" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Turno</label>
@@ -143,6 +153,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
             >
               {SHIFTS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
+            <FieldError errors={fieldErrors} field="shift" />
           </div>
         </div>
 

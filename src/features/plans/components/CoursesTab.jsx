@@ -92,6 +92,7 @@ export default function CoursesTab() {
         open={formOpen}
         mode={formMode}
         initialData={editingCourse}
+        existingCodes={courses.map((c) => c.code)}
         onClose={() => setFormOpen(false)}
         onSubmit={handleFormSubmit}
       />

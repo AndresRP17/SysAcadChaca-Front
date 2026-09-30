@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "../../context/ToastContext";
 import { useUsers } from "./hooks/useUsers";
 import SearchBar from "./components/SearchBar";
 import FilterBar from "./components/FilterBar";
@@ -22,6 +23,7 @@ export default function UsersPage({ studentsOnly = false }) {
     deleteUser,
   } = useUsers({ studentsOnly });
   const noun = studentsOnly ? "alumno" : "usuario";
+  const { showToast } = useToast();
 
   // Estado del modal de alta/edición
   const [formOpen, setFormOpen] = useState(false);
@@ -46,8 +48,10 @@ export default function UsersPage({ studentsOnly = false }) {
   async function handleFormSubmit(data) {
     if (formMode === "edit" && editingUser) {
       await updateUser(editingUser, data);
+      showToast(`${data.rol} actualizado correctamente`);
     } else {
       await addUser(data);
+      showToast(`${data.rol} creado correctamente`);
     }
     setFormOpen(false);
   }
@@ -55,6 +59,7 @@ export default function UsersPage({ studentsOnly = false }) {
   async function handleConfirmDelete(user) {
     await deleteUser(user);
     setUserToDelete(null);
+    showToast(`${user.rol} eliminado correctamente`);
   }
 
   return (

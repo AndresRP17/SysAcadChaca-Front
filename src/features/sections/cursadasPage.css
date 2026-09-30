@@ -86,7 +86,8 @@
 }
 
 .grilla-horaria-block-section,
-.grilla-horaria-block-classroom {
+.grilla-horaria-block-classroom,
+.grilla-horaria-block-teacher {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }

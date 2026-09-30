@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 
 const EMPTY_FORM = {
@@ -14,6 +16,8 @@ const EMPTY_FORM = {
   enrollment_date: "",
   employee_number: "",
   degree: "",
+  active: true,
+  manual_employee_number: false,
 };
 
 export default function UserFormModal({ open, mode, initialData, onClose, onSubmit, studentsOnly = false }) {
@@ -41,6 +45,8 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
         enrollment_date: r.enrollmentDate ?? "",
         employee_number: r.employeeNumber ?? "",
         degree: r.degree ?? "",
+        active: r.active ?? true,
+        manual_employee_number: false,
       });
     } else {
       setForm(EMPTY_FORM);
@@ -73,6 +79,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
       last_name: form.last_name,
       national_id: form.national_id,
       password: form.password || (mode === "create" ? "" : null),
+      active: form.active,
     };
 
     let payload = base;
@@ -85,7 +92,9 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
     } else if (form.rol === "Docente") {
       payload = {
         ...base,
-        employee_number: form.employee_number,
+        ...(mode === "edit" || form.manual_employee_number
+          ? { employee_number: form.employee_number }
+          : {}),
         degree: form.degree,
       };
     }
@@ -93,14 +102,8 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
     try {
       await onSubmit({ rol: form.rol, payload });
     } catch (err) {
-      const backendErrors = err?.response?.data?.errors ?? err?.errors;
-      
-      if (backendErrors) {
-        setFieldErrors(backendErrors);
-        setGeneralError(err?.response?.data?.error ?? "Datos invalidos");
-      } else {
-        setGeneralError(err?.message ?? "Error inesperado");
-      }
+      setFieldErrors(getFieldErrors(err));
+      setGeneralError(getErrorMessage(err, "Error inesperado"));
     }
   }
 
@@ -109,7 +112,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         {!studentsOnly && (
         <div className="users-form-field">
           <label className="users-form-label">Rol</label>
@@ -135,9 +138,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
               onChange={(e) => handleChange("first_name", e.target.value)}
               className="users-form-input"
             />
-            {fieldErrors.first_name && (
-              <p className="users-form-error">{fieldErrors.first_name}</p>
-            )}
+            <FieldError errors={fieldErrors} field="first_name" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Apellido</label>
@@ -147,9 +148,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
               onChange={(e) => handleChange("last_name", e.target.value)}
               className="users-form-input"
             />
-            {fieldErrors.last_name && (
-              <p className="users-form-error">{fieldErrors.last_name}</p>
-            )}
+            <FieldError errors={fieldErrors} field="last_name" />
           </div>
         </div>
 
@@ -162,9 +161,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
               onChange={(e) => handleChange("email", e.target.value)}
               className="users-form-input"
             />
-            {fieldErrors.email && (
-              <p className="users-form-error">{fieldErrors.email}</p>
-            )}
+            <FieldError errors={fieldErrors} field="email" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label">DNI</label>
@@ -174,9 +171,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
               onChange={(e) => handleChange("national_id", e.target.value)}
               className="users-form-input"
             />
-            {fieldErrors.national_id && (
-              <p className="users-form-error">{fieldErrors.national_id}</p>
-            )}
+            <FieldError errors={fieldErrors} field="national_id" />
           </div>
         </div>
 
@@ -190,9 +185,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
             onChange={(e) => handleChange("password", e.target.value)}
             className="users-form-input"
           />
-          {fieldErrors.password && (
-            <p className="users-form-error">{fieldErrors.password}</p>
-          )}
+          <FieldError errors={fieldErrors} field="password" />
         </div>
 
         {form.rol === "Alumno" ? (
@@ -211,9 +204,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
                   </option>
                 ))}
               </select>
-              {fieldErrors.study_plan_id && (
-                <p className="users-form-error">{fieldErrors.study_plan_id}</p>
-              )}
+              <FieldError errors={fieldErrors} field="study_plan_id" />
             </div>
 
             <div className="users-form-row">
@@ -231,40 +222,64 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
                   onChange={(e) => handleChange("enrollment_date", e.target.value)}
                   className="users-form-input"
                 />
-                {fieldErrors.enrollment_date && (
-                  <p className="users-form-error">{fieldErrors.enrollment_date}</p>
-                )}
+                <FieldError errors={fieldErrors} field="enrollment_date" />
               </div>
             </div>
           </>
         ) : form.rol === "Docente" ? (
-          <div className="users-form-row">
-            <div className="users-form-field">
-              <label className="users-form-label">Legajo</label>
-              <input
-                type="text"
-                value={form.employee_number}
-                onChange={(e) => handleChange("employee_number", e.target.value)}
-                className="users-form-input"
-              />
-              {fieldErrors.employee_number && (
-                <p className="users-form-error">{fieldErrors.employee_number}</p>
+          <>
+            {mode === "create" && (
+              <div className="users-form-field">
+                <label className="users-form-label">
+                  <input
+                    type="checkbox"
+                    checked={form.manual_employee_number}
+                    onChange={(e) => handleChange("manual_employee_number", e.target.checked)}
+                  />{" "}
+                  Cargar legajo manual
+                </label>
+              </div>
+            )}
+            <div className="users-form-row">
+              {(mode === "edit" || form.manual_employee_number) && (
+                <div className="users-form-field">
+                  <label className="users-form-label">Legajo</label>
+                  <input
+                    type="text"
+                    value={form.employee_number}
+                    onChange={(e) => handleChange("employee_number", e.target.value)}
+                    disabled={mode === "edit"}
+                    className="users-form-input"
+                  />
+                  <FieldError errors={fieldErrors} field="employee_number" />
+                </div>
               )}
+              <div className="users-form-field">
+                <label className="users-form-label">Título</label>
+                <input
+                  type="text"
+                  value={form.degree}
+                  onChange={(e) => handleChange("degree", e.target.value)}
+                  className="users-form-input"
+                />
+                <FieldError errors={fieldErrors} field="degree" />
+              </div>
             </div>
-            <div className="users-form-field">
-              <label className="users-form-label">Título</label>
-              <input
-                type="text"
-                value={form.degree}
-                onChange={(e) => handleChange("degree", e.target.value)}
-                className="users-form-input"
-              />
-              {fieldErrors.degree && (
-                <p className="users-form-error">{fieldErrors.degree}</p>
-              )}
-            </div>
-          </div>
+          </>
         ) : null}
+
+        {mode === "edit" && (
+          <div className="users-form-field">
+            <label className="users-form-label">
+              <input
+                type="checkbox"
+                checked={form.active}
+                onChange={(e) => handleChange("active", e.target.checked)}
+              />{" "}
+              Activo
+            </label>
+          </div>
+        )}
 
         {generalError && <p className="users-form-error">{generalError}</p>}
 

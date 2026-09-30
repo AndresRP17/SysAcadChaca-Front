@@ -106,6 +106,7 @@ export default function GrillaHorariaTab() {
                   <span className="grilla-horaria-block-course">{sch.courseName}</span>
                   <span className="grilla-horaria-block-section">{sch.sectionName}</span>
                   <span className="grilla-horaria-block-classroom">{sch.classroomName}</span>
+                  <span className="grilla-horaria-block-teacher">{sch.teacherFirstName} {sch.teacherLastName}</span>
                 </div>
               ))}
             </div>

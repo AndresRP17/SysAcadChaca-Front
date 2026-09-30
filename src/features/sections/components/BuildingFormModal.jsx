@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
 const EMPTY_FORM = { name: "", address: "" };
 
 export default function BuildingFormModal({ open, mode, initialData, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (open) {
@@ -16,6 +18,7 @@ export default function BuildingFormModal({ open, mode, initialData, onClose, on
           : EMPTY_FORM,
       );
       setError("");
+      setFieldErrors({});
     }
   }, [open, initialData]);
 
@@ -33,6 +36,7 @@ export default function BuildingFormModal({ open, mode, initialData, onClose, on
       await onSubmit(form);
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     }
   }
 
@@ -40,7 +44,7 @@ export default function BuildingFormModal({ open, mode, initialData, onClose, on
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label">Nombre</label>
           <input
@@ -49,6 +53,7 @@ export default function BuildingFormModal({ open, mode, initialData, onClose, on
             onChange={(e) => handleChange("name", e.target.value)}
             className="users-form-input"
           />
+          <FieldError errors={fieldErrors} field="name" />
         </div>
 
         <div className="users-form-field">
@@ -59,6 +64,7 @@ export default function BuildingFormModal({ open, mode, initialData, onClose, on
             onChange={(e) => handleChange("address", e.target.value)}
             className="users-form-input"
           />
+          <FieldError errors={fieldErrors} field="address" />
         </div>
 
         {error && <p className="users-form-error">{error}</p>}

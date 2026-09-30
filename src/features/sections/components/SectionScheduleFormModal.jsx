@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { getAvailability } from "../services/sectionScheduleService";
 
 const WEEKDAYS = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
@@ -19,6 +20,7 @@ export function formatTime(time) {
 export default function SectionScheduleFormModal({ open, mode = "create", initialData, classroomOptions, teacherId, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [availability, setAvailability] = useState(null);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
 
@@ -35,6 +37,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
           : EMPTY_FORM,
       );
       setError("");
+      setFieldErrors({});
       setAvailability(null);
     }
   }, [open, initialData, classroomOptions]);
@@ -91,6 +94,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
       });
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     }
   }
 
@@ -98,7 +102,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label">Aula</label>
           <select
@@ -113,6 +117,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
               <option key={c.id} value={c.id}>{c.name} ({c.location})</option>
             ))}
           </select>
+          <FieldError errors={fieldErrors} field="classroom_id" />
         </div>
 
         <div className="users-form-field">
@@ -124,6 +129,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
           >
             {WEEKDAYS.map((w) => <option key={w} value={w}>{weekdayLabel(w)}</option>)}
           </select>
+          <FieldError errors={fieldErrors} field="weekday" />
         </div>
 
         <div className="users-form-row">
@@ -135,6 +141,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
               onChange={(e) => handleChange("start_time", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="start_time" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Hora fin</label>
@@ -144,6 +151,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
               onChange={(e) => handleChange("end_time", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="end_time" />
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { usePrograms } from "../../plans/hooks/usePrograms";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
@@ -27,12 +28,14 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
   const [curriculumCourses, setCurriculumCourses] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setForm(EMPTY_FORM);
     setError("");
+    setFieldErrors({});
     getTeachers().then(setTeachers).catch((e) => setError(getErrorMessage(e)));
   }, [open]);
 
@@ -92,6 +95,7 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
       });
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     } finally {
       setSaving(false);
     }
@@ -99,7 +103,7 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
 
   return (
     <Modal open={open} title="Nueva mesa de examen" onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-row">
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="xb-program">Carrera</label>
@@ -142,6 +146,7 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
               <option key={cc.id} value={cc.id}>{cc.courseCode} - {cc.courseName}</option>
             ))}
           </select>
+          <FieldError errors={fieldErrors} field="curriculum_course_id" />
         </div>
 
         <div className="users-form-row">
@@ -156,6 +161,7 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
               <option value="">Seleccioná un docente...</option>
               {teachers.map((t) => <option key={t.id} value={t.id}>{t.lastName}, {t.firstName}</option>)}
             </select>
+            <FieldError errors={fieldErrors} field="chair_teacher_id" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="xb-member">Docente vocal</label>
@@ -168,6 +174,7 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
               <option value="">Seleccioná un docente...</option>
               {teachers.map((t) => <option key={t.id} value={t.id}>{t.lastName}, {t.firstName}</option>)}
             </select>
+            <FieldError errors={fieldErrors} field="member_teacher_id" />
           </div>
         </div>
 
@@ -183,6 +190,7 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
               <option value="">Seleccioná un aula...</option>
               {classrooms.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.location})</option>)}
             </select>
+            <FieldError errors={fieldErrors} field="classroom_id" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="xb-date">Fecha y hora</label>
@@ -193,6 +201,7 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
               onChange={(e) => handleChange("scheduled_at", e.target.value)}
               className="users-form-input"
             />
+            <FieldError errors={fieldErrors} field="scheduled_at" />
           </div>
         </div>
 

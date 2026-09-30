@@ -13,6 +13,7 @@ function studentToRow(s) {
     nombre: s.firstName,
     apellido: s.lastName,
     email: s.email,
+    dni: s.nationalId,
     rol: "Alumno",
     estado: s.active ? "Activo" : "Inactivo",
     raw: s,
@@ -28,6 +29,7 @@ function teacherToRow(t) {
     nombre: t.firstName,
     apellido: t.lastName,
     email: t.email,
+    dni: t.nationalId,
     rol: "Docente",
     estado: t.active ? "Activo" : "Inactivo",
     raw: t,
@@ -45,6 +47,7 @@ function userToRow(u) {
     nombre: u.firstName,
     apellido: u.lastName,
     email: u.email,
+    dni: u.nationalId,
     rol: u.roleName,
     estado: u.active ? "Activo" : "Inactivo",
     raw: u,
@@ -103,6 +106,7 @@ export function useUsers({ studentsOnly = false } = {}) {
         user.nombre.toLowerCase().includes(term) ||
         user.apellido.toLowerCase().includes(term) ||
         (user.legajo ?? "").toLowerCase().includes(term) ||
+        (user.dni ?? "").toLowerCase().includes(term) ||
         user.email.toLowerCase().includes(term);
 
       return matchesRole && matchesSearch;

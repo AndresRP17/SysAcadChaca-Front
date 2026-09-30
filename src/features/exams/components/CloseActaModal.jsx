@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
 // Cerrar el acta = guardar libro y folio en la mesa (exam_boards.record_book /
 // record_folio). A partir de ahí la vista queda de solo lectura.
 export default function CloseActaModal({ open, board, onClose, onSubmit }) {
   const [form, setForm] = useState({ record_book: "", record_folio: "" });
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -16,6 +18,7 @@ export default function CloseActaModal({ open, board, onClose, onSubmit }) {
         record_folio: board?.recordFolio ?? "",
       });
       setError("");
+      setFieldErrors({});
     }
   }, [open, board]);
 
@@ -33,6 +36,7 @@ export default function CloseActaModal({ open, board, onClose, onSubmit }) {
       await onSubmit(form);
     } catch (e) {
       setError(getErrorMessage(e));
+      setFieldErrors(getFieldErrors(e));
     } finally {
       setSaving(false);
     }
@@ -57,6 +61,7 @@ export default function CloseActaModal({ open, board, onClose, onSubmit }) {
             value={form.record_book}
             onChange={(e) => setForm({ ...form, record_book: e.target.value })}
           />
+          <FieldError errors={fieldErrors} field="record_book" />
         </div>
 
         <div className="users-form-field">
@@ -69,6 +74,7 @@ export default function CloseActaModal({ open, board, onClose, onSubmit }) {
             value={form.record_folio}
             onChange={(e) => setForm({ ...form, record_folio: e.target.value })}
           />
+          <FieldError errors={fieldErrors} field="record_folio" />
         </div>
       </div>
 

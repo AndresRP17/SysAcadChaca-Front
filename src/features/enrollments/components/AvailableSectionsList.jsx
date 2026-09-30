@@ -1,8 +1,15 @@
 import ScheduleLines from "./ScheduleLines";
 
-export default function AvailableSectionsList({ items, conflictsBySection, onEnroll, submitting }) {
+export default function AvailableSectionsList({
+  items,
+  conflictsBySection,
+  onEnroll,
+  submitting,
+  actionLabel = "Inscribirme",
+  emptyLabel = "No hay comisiones abiertas para inscribirte en este momento.",
+}) {
   if (items.length === 0) {
-    return <p className="users-empty">No hay comisiones abiertas para inscribirte en este momento.</p>;
+    return <p className="users-empty">{emptyLabel}</p>;
   }
 
   return (
@@ -48,7 +55,7 @@ export default function AvailableSectionsList({ items, conflictsBySection, onEnr
                 disabled={full || noSchedule || submitting}
                 onClick={() => onEnroll(section.id)}
               >
-                Inscribirme
+                {actionLabel}
               </button>
             </div>
           </article>

@@ -1,23 +1,35 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import { getErrorMessage } from "../../../shared/api/api";
+import FieldError from "../../../shared/ui/FieldError";
+import Combobox from "../../../shared/ui/Combobox";
+import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
 const EMPTY_FORM = { course_id: "", year_number: "", term: "1" };
 
-export default function AssignCourseModal({ open, courses, onClose, onSubmit }) {
+export default function AssignCourseModal({ open, courses, durationYears, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (open) {
       setForm(EMPTY_FORM);
       setError("");
+      setFieldErrors({});
     }
   }, [open, courses]);
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
+
+  const courseOptions = courses.map((c) => ({
+    value: c.id,
+    label: `${c.code} - ${c.name}`,
+    searchText: `${c.code} ${c.name}`,
+  }));
+
+  const yearOptions = Array.from({ length: durationYears || 1 }, (_, i) => i + 1);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -33,40 +45,41 @@ export default function AssignCourseModal({ open, courses, onClose, onSubmit }) 
       });
     } catch (err) {
       setError(getErrorMessage(err));
+      setFieldErrors(getFieldErrors(err));
     }
   }
 
   return (
     <Modal open={open} title="Asignar materia al plan" onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label">Materia</label>
-          <select
+          <Combobox
+            options={courseOptions}
             value={form.course_id}
-            onChange={(e) => handleChange("course_id", e.target.value)}
-            className="users-form-input"
-          >
-            {courses.length === 0
-              ? <option value="">No hay materias cargadas</option>
-              : <option value="">Seleccioná una materia...</option>}
-            {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.code} - {course.name}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => handleChange("course_id", v)}
+            placeholder="Buscar por nombre o código..."
+            emptyLabel="No hay materias disponibles"
+          />
+          <FieldError errors={fieldErrors} field="course_id" />
         </div>
 
         <div className="users-form-row">
           <div className="users-form-field">
-            <label className="users-form-label">Año de la carrera</label>
-            <input
-              type="number"
-              min="1"
+            <label className="users-form-label">Año de cursada</label>
+            <select
               value={form.year_number}
               onChange={(e) => handleChange("year_number", e.target.value)}
               className="users-form-input"
-            />
+            >
+              <option value="">Seleccioná el año...</option>
+              {yearOptions.map((y) => (
+                <option key={y} value={y}>
+                  {y}° año
+                </option>
+              ))}
+            </select>
+            <FieldError errors={fieldErrors} field="year_number" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label">Cuatrimestre</label>
@@ -78,6 +91,7 @@ export default function AssignCourseModal({ open, courses, onClose, onSubmit }) 
               <option value="1">1°</option>
               <option value="2">2°</option>
             </select>
+            <FieldError errors={fieldErrors} field="term" />
           </div>
         </div>
 

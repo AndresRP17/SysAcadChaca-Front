@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useToast } from "../../context/ToastContext";
 import { useStudentSections } from "./hooks/useStudentSections";
 import { findScheduleConflicts } from "./utils/scheduleConflicts";
 import { getErrorMessage } from "../../shared/api/api";
@@ -14,6 +15,7 @@ import "./portalCursadasPage.css";
 
 export default function PortalCursadasPage() {
   const { student, available, enrolled, loading, error, setError, enroll, unenroll } = useStudentSections();
+  const { showToast } = useToast();
 
   const { periods, loading: loadingPeriods, isOpen: enrollmentOpen } = useOpenEnrollmentPeriods("CURSADA");
   const [search, setSearch] = useState("");
@@ -46,6 +48,7 @@ export default function PortalCursadasPage() {
     setError("");
     try {
       await enroll(sectionId);
+      showToast("Inscripción confirmada");
     } catch (e) {
       setError(getErrorMessage(e, "No pudimos completar la inscripción."));
     } finally {
@@ -69,6 +72,7 @@ export default function PortalCursadasPage() {
     setError("");
     try {
       await unenroll(enrollment.id);
+      showToast("Baja de la cursada confirmada");
     } catch (e) {
       setError(getErrorMessage(e, "No pudimos dar de baja la inscripción."));
     } finally {
