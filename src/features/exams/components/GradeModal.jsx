@@ -3,6 +3,7 @@ import Modal from "../../../shared/ui/Modal";
 import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { EXAM_ENROLLMENT_STATUS } from "../services/examEnrollmentService";
+import { getAcademicThresholds } from "../services/academicThresholdsService";
 
 // Carga de nota de un alumno en una mesa. El estado se deduce de la nota
 // (aprobado/desaprobado) salvo que se marque ausente.
@@ -12,6 +13,7 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [thresholds, setThresholds] = useState(null);
 
   useEffect(() => {
     if (open) {
@@ -19,6 +21,7 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
       setAbsent(enrollment?.status === EXAM_ENROLLMENT_STATUS.ABSENT);
       setError("");
       setFieldErrors({});
+      getAcademicThresholds().then(setThresholds).catch(() => setThresholds(null));
     }
   }, [open, enrollment]);
 
@@ -61,6 +64,9 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
       <p className="users-confirm-text">
         {enrollment?.studentFirstName} {enrollment?.studentLastName} — legajo {enrollment?.enrollmentNumber}
       </p>
+      {thresholds && (
+        <p className="users-subtitle">Aprueba con nota ≥ {thresholds.minFinalApproved}</p>
+      )}
 
       {error && <p className="users-form-error">{error}</p>}
 

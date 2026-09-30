@@ -5,10 +5,41 @@ import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
 const EMPTY_FORM = { name: "", code: "", credit_hours: "" };
 
-export default function CourseFormModal({ open, mode, initialData, onClose, onSubmit }) {
+const STOPWORDS = new Set(["de", "del", "la", "el", "los", "las", "en", "y", "a", "con", "para"]);
+
+function normalize(text) {
+  return text
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toUpperCase();
+}
+
+// Sugiere un código a partir del nombre (inicial de hasta 4 palabras significativas,
+// con fallback a las primeras letras del nombre); nunca se autoasigna en silencio,
+// el campo Código sigue siendo editable siempre (a diferencia del legajo docente,
+// en SIU-Guaraní el código de materia siempre lo confirma una persona a mano).
+export function suggestCourseCode(name, existingCodes = []) {
+  const words = normalize(name)
+    .split(/[^A-Z0-9]+/)
+    .filter((w) => w.length > 0 && !STOPWORDS.has(w.toLowerCase()));
+
+  let base = words.slice(0, 4).map((w) => w[0]).join("");
+  if (!base) base = normalize(name).replace(/[^A-Z0-9]/g, "").slice(0, 3);
+  if (!base) return "";
+
+  const taken = new Set(existingCodes.map((c) => normalize(c ?? "")));
+  if (!taken.has(base)) return base;
+
+  let suffix = 2;
+  while (taken.has(`${base}${suffix}`)) suffix += 1;
+  return `${base}${suffix}`;
+}
+
+export default function CourseFormModal({ open, mode, initialData, existingCodes = [], onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  const [codeManuallyEdited, setCodeManuallyEdited] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -17,12 +48,23 @@ export default function CourseFormModal({ open, mode, initialData, onClose, onSu
           ? { name: initialData.name, code: initialData.code, credit_hours: initialData.creditHours }
           : EMPTY_FORM,
       );
+      setCodeManuallyEdited(mode === "edit");
       setError("");
       setFieldErrors({});
     }
-  }, [open, initialData]);
+  }, [open, initialData, mode]);
 
   function handleChange(field, value) {
+    if (field === "code") {
+      setCodeManuallyEdited(true);
+      setForm((prev) => ({ ...prev, code: value }));
+      return;
+    }
+    if (field === "name" && !codeManuallyEdited) {
+      const codesToAvoid = existingCodes.filter((c) => c !== initialData?.code);
+      setForm((prev) => ({ ...prev, name: value, code: suggestCourseCode(value, codesToAvoid) }));
+      return;
+    }
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
@@ -44,7 +86,7 @@ export default function CourseFormModal({ open, mode, initialData, onClose, onSu
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label">Nombre</label>
           <input
@@ -68,10 +110,11 @@ export default function CourseFormModal({ open, mode, initialData, onClose, onSu
             <FieldError errors={fieldErrors} field="code" />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Carga horaria</label>
+            <label className="users-form-label">Carga horaria total (según plan de estudios)</label>
             <input
               type="number"
               min="1"
+              max="400"
               value={form.credit_hours}
               onChange={(e) => handleChange("credit_hours", e.target.value)}
               className="users-form-input"

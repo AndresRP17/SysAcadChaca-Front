@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { getCurrentStudent } from "../../../shared/api/currentStudent";
+import { getStudent } from "../../users/services/studentService";
 import { getErrorMessage } from "../../../shared/api/api";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
 import { getExamBoards } from "../services/examBoardService";
@@ -14,7 +15,7 @@ import { isPast } from "../../../shared/utils/formatters";
 // Mesas de examen que le corresponden al alumno (las de las materias de su
 // plan) separadas en "disponibles" y "mis inscripciones", igual que el portal
 // de cursadas.
-export function useStudentExamBoards() {
+export function useStudentExamBoards(studentIdOverride) {
   const { user } = useAuth();
 
   const [student, setStudent] = useState(null);
@@ -28,7 +29,9 @@ export function useStudentExamBoards() {
     setLoading(true);
     setError("");
     try {
-      const currentStudent = await getCurrentStudent(user);
+      const currentStudent = studentIdOverride
+        ? await getStudent(studentIdOverride)
+        : await getCurrentStudent(user);
       setStudent(currentStudent);
 
       const [boardsData, enrollmentsData] = await Promise.all([
@@ -50,7 +53,7 @@ export function useStudentExamBoards() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, studentIdOverride]);
 
   useEffect(() => {
     reload();

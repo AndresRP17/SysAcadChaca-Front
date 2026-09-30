@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { getCurrentStudent } from "../../../shared/api/currentStudent";
+import { getStudent } from "../../users/services/studentService";
 import { getErrorMessage } from "../../../shared/api/api";
 import { getSections } from "../../sections/services/sectionService";
 import { getAllSectionSchedules } from "../../sections/services/sectionScheduleService";
@@ -25,7 +26,7 @@ async function getEnrollmentsSafe() {
 // las que ya está inscripto. El backend no tiene un endpoint que devuelva la
 // oferta ya filtrada, así que traemos comisiones (con availableSeats calculado
 // por el backend) + horarios + inscripciones y cruzamos acá (son pocos registros, van todos con size=1000).
-export function useStudentSections() {
+export function useStudentSections(studentIdOverride) {
   const { user } = useAuth();
 
   const [student, setStudent] = useState(null);
@@ -40,7 +41,9 @@ export function useStudentSections() {
     setLoading(true);
     setError("");
     try {
-      const currentStudent = await getCurrentStudent(user);
+      const currentStudent = studentIdOverride
+        ? await getStudent(studentIdOverride)
+        : await getCurrentStudent(user);
       setStudent(currentStudent);
 
       const [sectionsData, schedulesData, enrollmentsData] = await Promise.all([
@@ -65,7 +68,7 @@ export function useStudentSections() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, studentIdOverride]);
 
   useEffect(() => {
     reload();

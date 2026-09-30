@@ -172,6 +172,7 @@ export default function CurriculumTab() {
       <AssignCourseModal
         open={assignOpen}
         courses={availableCourses}
+        durationYears={programs.find((p) => String(p.id) === String(programId))?.durationYears}
         onClose={() => setAssignOpen(false)}
         onSubmit={handleAssignCourse}
       />

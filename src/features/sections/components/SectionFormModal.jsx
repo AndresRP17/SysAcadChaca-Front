@@ -61,7 +61,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label">Materia</label>
           <select

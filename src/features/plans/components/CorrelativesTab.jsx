@@ -111,7 +111,13 @@ export default function CorrelativesTab() {
   // Una materia no puede ser correlativa de si misma, y ya la sacamos por curriculum_course_id de la lista de la izquierda.
   const availableCourses = curriculumCourses
     .filter((cc) => cc.id !== selectedCurriculumCourseId)
-    .map((cc) => ({ id: cc.courseId, code: cc.courseCode, name: cc.courseName }));
+    .map((cc) => ({
+      id: cc.courseId,
+      code: cc.courseCode,
+      name: cc.courseName,
+      yearNumber: cc.yearNumber,
+      term: cc.term,
+    }));
 
   return (
     <div>
@@ -185,6 +191,7 @@ export default function CorrelativesTab() {
                     <div className="plans-toolbar">
                       <p className="users-subtitle">
                         Correlativas de <strong>{selectedCourse?.courseName}</strong>
+                        {selectedCourse && ` (${selectedCourse.yearNumber}° año, ${selectedCourse.term}° cuat.)`}
                       </p>
                       <button
                         type="button"

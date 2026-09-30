@@ -1,8 +1,14 @@
 import ScheduleLines from "./ScheduleLines";
 
-export default function EnrolledSectionsList({ items, onUnenroll, submitting }) {
+export default function EnrolledSectionsList({
+  items,
+  onUnenroll,
+  submitting,
+  actionLabel = "Darme de baja",
+  emptyLabel = "Todavía no te inscribiste en ninguna comisión.",
+}) {
   if (items.length === 0) {
-    return <p className="users-empty">Todavía no te inscribiste en ninguna comisión.</p>;
+    return <p className="users-empty">{emptyLabel}</p>;
   }
 
   return (
@@ -28,7 +34,7 @@ export default function EnrolledSectionsList({ items, onUnenroll, submitting }) 
               disabled={submitting}
               onClick={() => onUnenroll(enrollment)}
             >
-              Darme de baja
+              {actionLabel}
             </button>
           </div>
         </article>

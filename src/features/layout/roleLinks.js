@@ -6,10 +6,10 @@
 // carreras/materias/planes/usuarios (sí alumnos: alta/edición/baja); Docente ahora tiene la Planilla
 // (asistencia/notas) — ver planillaDocentePage.
 export const LINKS_BY_ROLE = {
-  Administrador: ["usuarios", "alumnos", "planes", "cursadas", "actas", "certificados"],
+  Administrador: ["usuarios", "alumnos", "planes", "cursadas", "inscribir-alumno", "actas", "certificados"],
   Alumno: ["alumno", "historial", "mis-cursadas", "finales", "certificados"],
   Docente: ["mis-comisiones", "planilla", "actas"],
-  Bedel: ["cursadas", "alumnos", "actas", "certificados"],
+  Bedel: ["cursadas", "alumnos", "inscribir-alumno", "actas", "certificados"],
 };
 
 export function getDefaultRouteForRole(role) {

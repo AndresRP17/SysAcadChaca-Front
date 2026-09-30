@@ -4,7 +4,7 @@ export default function SearchBar({ value, onChange }) {
       type="text"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      placeholder="Buscar por nombre, apellido, legajo o email..."
+      placeholder="Buscar por nombre, apellido, legajo, DNI o email..."
       className="users-search-input"
     />
   );

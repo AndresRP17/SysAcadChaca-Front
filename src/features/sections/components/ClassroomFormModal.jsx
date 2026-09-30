@@ -51,7 +51,7 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label">Nombre</label>
           <input

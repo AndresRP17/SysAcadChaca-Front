@@ -48,7 +48,7 @@ export default function StudyPlanFormModal({ open, mode = "create", initialData,
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label">Año de resolución</label>
           <input

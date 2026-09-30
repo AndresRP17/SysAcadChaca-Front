@@ -34,7 +34,7 @@ export default function PrerequisiteFormModal({ open, courseOptions, onClose, on
 
   return (
     <Modal open={open} title="Agregar correlativa" onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label">Materia requerida</label>
           <select
@@ -47,7 +47,7 @@ export default function PrerequisiteFormModal({ open, courseOptions, onClose, on
               : <option value="">Seleccioná una materia...</option>}
             {courseOptions.map((course) => (
               <option key={course.id} value={course.id}>
-                {course.code} - {course.name}
+                {course.code} - {course.name} ({course.yearNumber}° año, {course.term}° cuat.)
               </option>
             ))}
           </select>

@@ -50,13 +50,16 @@ export default function ActaDetail({ board, enrollments, loading, closed, canGra
       {!closed && !held && (
         <p className="users-subtitle">El acta se puede cerrar recién después de la fecha del examen.</p>
       )}
-      {!closed && held && pending > 0 && (
+      {!closed && held && enrollments.length === 0 && (
+        <p className="users-subtitle">No se puede cerrar el acta: no hay ningún alumno inscripto.</p>
+      )}
+      {!closed && held && enrollments.length > 0 && pending > 0 && (
         <p className="users-subtitle">
           Falta cargar {pending} nota{pending !== 1 ? "s" : ""} para poder cerrar el acta.
         </p>
       )}
       {!closed && !canGrade && (
-        <p className="users-subtitle">Las notas las cargan el docente presidente de la mesa o el Administrador.</p>
+        <p className="users-subtitle">Las notas las carga el docente presidente o vocal de la mesa, o el Administrador.</p>
       )}
 
       {loading && <p className="users-empty">Cargando inscriptos...</p>}

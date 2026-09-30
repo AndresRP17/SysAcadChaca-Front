@@ -1,22 +1,21 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
 import FieldError from "../../../shared/ui/FieldError";
+import Combobox from "../../../shared/ui/Combobox";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
 const EMPTY_FORM = { course_id: "", year_number: "", term: "1" };
 
-export default function AssignCourseModal({ open, courses, onClose, onSubmit }) {
+export default function AssignCourseModal({ open, courses, durationYears, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
-  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (open) {
       setForm(EMPTY_FORM);
       setError("");
       setFieldErrors({});
-      setQuery("");
     }
   }, [open, courses]);
 
@@ -24,11 +23,13 @@ export default function AssignCourseModal({ open, courses, onClose, onSubmit }) 
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  const filteredCourses = courses.filter((c) => {
-    const q = query.trim().toLowerCase();
-    if (!q) return true;
-    return c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q);
-  });
+  const courseOptions = courses.map((c) => ({
+    value: c.id,
+    label: `${c.code} - ${c.name}`,
+    searchText: `${c.code} ${c.name}`,
+  }));
+
+  const yearOptions = Array.from({ length: durationYears || 1 }, (_, i) => i + 1);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -50,47 +51,34 @@ export default function AssignCourseModal({ open, courses, onClose, onSubmit }) 
 
   return (
     <Modal open={open} title="Asignar materia al plan" onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
-        <div className="users-form-field">
-          <label className="users-form-label">Buscar materia</label>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Nombre o código..."
-            className="users-form-input"
-          />
-        </div>
-
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label">Materia</label>
-          <select
+          <Combobox
+            options={courseOptions}
             value={form.course_id}
-            onChange={(e) => handleChange("course_id", e.target.value)}
-            className="users-form-input"
-          >
-            {filteredCourses.length === 0
-              ? <option value="">No hay materias disponibles</option>
-              : <option value="">Seleccioná una materia...</option>}
-            {filteredCourses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.code} - {course.name}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => handleChange("course_id", v)}
+            placeholder="Buscar por nombre o código..."
+            emptyLabel="No hay materias disponibles"
+          />
           <FieldError errors={fieldErrors} field="course_id" />
         </div>
 
         <div className="users-form-row">
           <div className="users-form-field">
-            <label className="users-form-label">Año de la carrera</label>
-            <input
-              type="number"
-              min="1"
+            <label className="users-form-label">Año de cursada</label>
+            <select
               value={form.year_number}
               onChange={(e) => handleChange("year_number", e.target.value)}
               className="users-form-input"
-            />
+            >
+              <option value="">Seleccioná el año...</option>
+              {yearOptions.map((y) => (
+                <option key={y} value={y}>
+                  {y}° año
+                </option>
+              ))}
+            </select>
             <FieldError errors={fieldErrors} field="year_number" />
           </div>
           <div className="users-form-field">

@@ -112,7 +112,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         {!studentsOnly && (
         <div className="users-form-field">
           <label className="users-form-label">Rol</label>

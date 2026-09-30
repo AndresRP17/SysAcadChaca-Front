@@ -73,7 +73,7 @@ export default function EnrollmentPeriodFormModal({ open, mode, initialData, onC
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-row">
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="ep-type">Tipo</label>

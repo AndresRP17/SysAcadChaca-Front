@@ -103,7 +103,7 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
 
   return (
     <Modal open={open} title="Nueva mesa de examen" onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form">
+      <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-row">
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="xb-program">Carrera</label>

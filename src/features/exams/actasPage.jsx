@@ -22,8 +22,9 @@ const FILTERS = [
 ];
 
 // Quién puede qué (espeja el backend): Administrador y Bedel programan mesas;
-// cargan notas el Administrador y el docente presidente de la mesa (por eso el
-// Docente solo ve las mesas que preside); Bedel puede cerrar pero no calificar.
+// cargan notas y cierran el acta el Administrador y el docente presidente O
+// vocal de la mesa (por eso el Docente solo ve las mesas donde participa,
+// como presidente o como vocal); Bedel puede cerrar pero no calificar.
 const ROLES_THAT_MANAGE_BOARDS = ["Administrador", "Bedel"];
 const ROLES_THAT_GRADE = ["Administrador", "Docente"];
 
@@ -54,7 +55,7 @@ export default function ActasPage() {
       let data = await getExamBoards();
       if (role === "Docente") {
         const me = await getMyTeacherProfile();
-        data = data.filter((b) => b.chairTeacherId === me.id);
+        data = data.filter((b) => b.chairTeacherId === me.id || b.memberTeacherId === me.id);
       }
       setBoards(data.sort((a, b) => String(b.scheduledAt).localeCompare(String(a.scheduledAt))));
     } catch (e) {

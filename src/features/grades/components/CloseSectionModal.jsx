@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
 import { getErrorMessage } from "../../../shared/api/api";
+import { getAcademicThresholds } from "../../exams/services/academicThresholdsService";
 
 const OUTCOME_LABELS = {
   PROMOCIONADO: "Promocionado",
@@ -17,12 +18,14 @@ export default function CloseSectionModal({ open, section, onClose, onSubmit }) 
   const [results, setResults] = useState([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [thresholds, setThresholds] = useState(null);
 
   useEffect(() => {
     if (open) {
       setPhase("confirm");
       setResults([]);
       setError("");
+      getAcademicThresholds().then(setThresholds).catch(() => setThresholds(null));
     }
   }, [open, section]);
 
@@ -51,6 +54,11 @@ export default function CloseSectionModal({ open, section, onClose, onSubmit }) 
             se calcula la nota final y el resultado (Promocionado/Regular/Libre) de cada alumno
             inscripto, a partir de la asistencia y las notas ya cargadas.
           </p>
+          {thresholds && (
+            <p className="users-subtitle">
+              Regulariza con nota final ≥ {thresholds.minRegular}, promociona con ≥ {thresholds.minPromotion}.
+            </p>
+          )}
           <p className="users-confirm-text">Esta acción no tiene vuelta atrás en la práctica. ¿Confirmás?</p>
 
           {error && <p className="users-form-error">{error}</p>}
