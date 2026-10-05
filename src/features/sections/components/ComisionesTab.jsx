@@ -115,6 +115,24 @@ export default function ComisionesTab() {
     await reloadSections();
   }
 
+  async function handleToggleSectionActive(section) {
+    try {
+      await updateSection(section.id, {
+        curriculum_course_id: section.curriculumCourseId,
+        teacher_id: section.teacherId,
+        name: section.name,
+        academic_year: section.academicYear,
+        term: section.term,
+        max_capacity: section.maxCapacity,
+        shift: section.shift,
+        active: !section.active,
+      });
+      await reloadSections();
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+
   function openCreateSchedule() {
     setScheduleFormMode("create");
     setEditingSchedule(null);
@@ -219,7 +237,10 @@ export default function ComisionesTab() {
                   >
                     <span className="correlatives-course-code">{s.name}</span>
                     <span>{s.courseName}</span>
-                    <span className="correlatives-course-year">{s.academicYear} - {s.shift}</span>
+                    <span className="correlatives-course-year">
+                      {s.academicYear} - {s.shift}
+                      {!s.active && <span className="users-badge users-badge--inactive"> Inactiva</span>}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -234,10 +255,21 @@ export default function ComisionesTab() {
                     <div className="plans-toolbar">
                       <p className="users-subtitle">
                         <strong>{selectedSection.name}</strong> — {selectedSection.courseName} — {selectedSection.teacherFirstName} {selectedSection.teacherLastName} — cupo {selectedSection.maxCapacity}
+                        {" "}
+                        <span className={`users-badge ${selectedSection.active ? "users-badge--active" : "users-badge--inactive"}`}>
+                          {selectedSection.active ? "Activa" : "Inactiva"}
+                        </span>
                       </p>
                       <div>
                         <button type="button" className="users-action-btn" onClick={() => openEditSection(selectedSection)}>
                           Editar
+                        </button>
+                        <button
+                          type="button"
+                          className="users-action-btn"
+                          onClick={() => handleToggleSectionActive(selectedSection)}
+                        >
+                          {selectedSection.active ? "Desactivar" : "Activar"}
                         </button>
                         <button
                           type="button"

@@ -77,6 +77,7 @@ export function useStudentExamBoards(studentIdOverride) {
       .filter((b) => planCourseIds.size === 0 || planCourseIds.has(b.curriculumCourseId))
       .filter((b) => !enrolledBoardIds.has(b.id))
       .filter((b) => !isPast(b.scheduledAt))
+      .filter((b) => !b.cancelled)
       .sort((a, b) => String(a.scheduledAt).localeCompare(String(b.scheduledAt)));
   }, [boards, curriculumCourseIds, myEnrollments]);
 

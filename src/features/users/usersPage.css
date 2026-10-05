@@ -286,6 +286,15 @@
   filter: brightness(0.92);
 }
 
+.users-btn--success {
+  background: var(--success);
+  color: #ffffff;
+}
+
+.users-btn--success:hover {
+  filter: brightness(0.92);
+}
+
 /* Formulario de los modales */
 .users-form {
   display: flex;

@@ -3,7 +3,7 @@ import Modal from "../../../shared/ui/Modal";
 import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
-export default function PrerequisiteFormModal({ open, courseOptions, onClose, onSubmit }) {
+export default function PrerequisiteFormModal({ open, mode = "create", initialData, courseOptions, onClose, onSubmit }) {
   const [requiredCourseId, setRequiredCourseId] = useState("");
   const [conditionType, setConditionType] = useState("CURSADA");
   const [error, setError] = useState("");
@@ -11,12 +11,12 @@ export default function PrerequisiteFormModal({ open, courseOptions, onClose, on
 
   useEffect(() => {
     if (open) {
-      setRequiredCourseId("");
-      setConditionType("CURSADA");
+      setRequiredCourseId(initialData ? String(initialData.requiredCourseId) : "");
+      setConditionType(initialData ? initialData.conditionType : "CURSADA");
       setError("");
       setFieldErrors({});
     }
-  }, [open, courseOptions]);
+  }, [open, courseOptions, initialData]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -32,8 +32,10 @@ export default function PrerequisiteFormModal({ open, courseOptions, onClose, on
     }
   }
 
+  const title = mode === "edit" ? "Editar correlativa" : "Agregar correlativa";
+
   return (
-    <Modal open={open} title="Agregar correlativa" onClose={onClose}>
+    <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label">Materia requerida</label>
@@ -74,7 +76,7 @@ export default function PrerequisiteFormModal({ open, courseOptions, onClose, on
             Cancelar
           </button>
           <button type="submit" className="users-btn users-btn--primary">
-            Agregar
+            {mode === "edit" ? "Guardar" : "Agregar"}
           </button>
         </div>
       </form>

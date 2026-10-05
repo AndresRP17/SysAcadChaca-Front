@@ -4,9 +4,7 @@ import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
 import { getSections } from "../services/sectionService";
 import { getAllSectionSchedules } from "../services/sectionScheduleService";
-import { weekdayLabel, formatTime } from "./SectionScheduleFormModal";
-
-const WEEKDAYS = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
+import WeekScheduleGrid from "../../../shared/ui/WeekScheduleGrid";
 
 export default function GrillaHorariaTab() {
   const { programs } = usePrograms();
@@ -46,13 +44,7 @@ export default function GrillaHorariaTab() {
 
   const curriculumCourseIds = new Set(curriculumCourses.map((cc) => cc.id));
   const sectionIds = new Set(allSections.filter((s) => curriculumCourseIds.has(s.curriculumCourseId)).map((s) => s.id));
-  const scheduleByDay = WEEKDAYS.reduce((acc, day) => {
-    acc[day] = allSchedules
-      .filter((sch) => sectionIds.has(sch.sectionId) && sch.weekday === day)
-      .sort((a, b) => a.startTime.localeCompare(b.startTime));
-    return acc;
-  }, {});
-  const hasAnySchedule = Object.values(scheduleByDay).some((list) => list.length > 0);
+  const schedulesForPlan = allSchedules.filter((sch) => sectionIds.has(sch.sectionId));
 
   return (
     <div>
@@ -90,28 +82,21 @@ export default function GrillaHorariaTab() {
 
       {studyPlanId && loading && <p className="users-empty">Cargando...</p>}
 
-      {studyPlanId && !loading && !hasAnySchedule && (
-        <p className="users-empty">Este plan todavía no tiene comisiones con horarios cargados.</p>
-      )}
-
-      {studyPlanId && !loading && hasAnySchedule && (
-        <div className="grilla-horaria">
-          {WEEKDAYS.map((day) => (
-            <div key={day} className="grilla-horaria-col">
-              <div className="grilla-horaria-col-header">{weekdayLabel(day)}</div>
-              {scheduleByDay[day].length === 0 && <p className="grilla-horaria-empty">—</p>}
-              {scheduleByDay[day].map((sch) => (
-                <div key={sch.id} className="grilla-horaria-block" title={`${sch.classroomName} — ${sch.teacherFirstName} ${sch.teacherLastName}`}>
-                  <span className="grilla-horaria-block-time">{formatTime(sch.startTime)}–{formatTime(sch.endTime)}</span>
-                  <span className="grilla-horaria-block-course">{sch.courseName}</span>
-                  <span className="grilla-horaria-block-section">{sch.sectionName}</span>
-                  <span className="grilla-horaria-block-classroom">{sch.classroomName}</span>
-                  <span className="grilla-horaria-block-teacher">{sch.teacherFirstName} {sch.teacherLastName}</span>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
+      {studyPlanId && !loading && (
+        <WeekScheduleGrid
+          schedules={schedulesForPlan}
+          emptyMessage="Este plan todavía no tiene comisiones con horarios cargados."
+          getKey={(sch) => sch.id}
+          getBlockTitle={(sch) => `${sch.classroomName} — ${sch.teacherFirstName} ${sch.teacherLastName}`}
+          renderBlock={(sch) => (
+            <>
+              <span className="grilla-horaria-block-course">{sch.courseName}</span>
+              <span className="grilla-horaria-block-section">{sch.sectionName}</span>
+              <span className="grilla-horaria-block-classroom">{sch.classroomName}</span>
+              <span className="grilla-horaria-block-teacher">{sch.teacherFirstName} {sch.teacherLastName}</span>
+            </>
+          )}
+        />
       )}
     </div>
   );

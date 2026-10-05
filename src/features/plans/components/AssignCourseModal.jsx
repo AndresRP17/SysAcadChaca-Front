@@ -4,7 +4,7 @@ import FieldError from "../../../shared/ui/FieldError";
 import Combobox from "../../../shared/ui/Combobox";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
-const EMPTY_FORM = { course_id: "", year_number: "", term: "1" };
+const EMPTY_FORM = { course_id: "", year_number: "", term: "1", credit_hours: "" };
 
 export default function AssignCourseModal({ open, courses, durationYears, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
@@ -33,7 +33,7 @@ export default function AssignCourseModal({ open, courses, durationYears, onClos
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.course_id || !form.year_number) {
+    if (!form.course_id || !form.year_number || !form.credit_hours) {
       setError("Completá todos los campos.");
       return;
     }
@@ -42,6 +42,7 @@ export default function AssignCourseModal({ open, courses, durationYears, onClos
         course_id: Number(form.course_id),
         year_number: Number(form.year_number),
         term: Number(form.term),
+        credit_hours: Number(form.credit_hours),
       });
     } catch (err) {
       setError(getErrorMessage(err));
@@ -93,6 +94,19 @@ export default function AssignCourseModal({ open, courses, durationYears, onClos
             </select>
             <FieldError errors={fieldErrors} field="term" />
           </div>
+        </div>
+
+        <div className="users-form-field">
+          <label className="users-form-label">Carga horaria total (según plan de estudios)</label>
+          <input
+            type="number"
+            min="1"
+            max="400"
+            value={form.credit_hours}
+            onChange={(e) => handleChange("credit_hours", e.target.value)}
+            className="users-form-input"
+          />
+          <FieldError errors={fieldErrors} field="credit_hours" />
         </div>
 
         {error && <p className="users-form-error">{error}</p>}

@@ -14,7 +14,7 @@ import "../enrollments/portalCursadasPage.css";
 function badgeForEnrollment(enrollment) {
   const result = getResultStatus(enrollment);
   if (result === "passed") return "active";
-  if (result === "failed" || result === "absent") return "inactive";
+  if (result === "failed" || result === "absent" || result === "cancelled") return "inactive";
   return "navy";
 }
 
@@ -114,8 +114,9 @@ export default function PortalFinalesPage() {
             <div className="portal-cards">
               {enrolled.map(({ enrollment, board }) => {
                 // Una vez que pasó la fecha (o que ya tiene nota) la baja deja
-                // de tener sentido: el acta la cierra Bedelía.
-                const closed = isPast(board.scheduledAt) || enrollment.finalGrade !== null;
+                // de tener sentido: el acta la cierra Bedelía. Si la mesa fue
+                // cancelada tampoco hay baja (ya está rechazada).
+                const closed = isPast(board.scheduledAt) || enrollment.finalGrade !== null || board.cancelled;
 
                 return (
                   <ExamBoardCard

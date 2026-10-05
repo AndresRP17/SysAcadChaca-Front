@@ -9,6 +9,7 @@ import {
   getCertificateReport,
 } from "./services/certificateService";
 import CertificateReportView from "./components/CertificateReportView";
+import ConfirmModal from "../../shared/ui/ConfirmModal";
 import "../users/usersPage.css";
 import "./certificatesPage.css";
 
@@ -25,6 +26,24 @@ const STATUS_BADGE_CLASS = {
   REJECTED: "users-badge users-badge--inactive",
 };
 
+const CONFIRM_COPY = {
+  request: (label) => ({
+    title: "Solicitar certificado",
+    message: `¿Confirmás la solicitud de "${label}"?`,
+    confirmLabel: "Solicitar",
+  }),
+  issue: (label) => ({
+    title: "Emitir certificado",
+    message: `¿Confirmás la emisión del certificado de ${label}?`,
+    confirmLabel: "Emitir",
+  }),
+  reject: (label) => ({
+    title: "Rechazar certificado",
+    message: `¿Confirmás el rechazo de la solicitud de ${label}?`,
+    confirmLabel: "Rechazar",
+  }),
+};
+
 export default function CertificatesPage() {
   const { user } = useAuth();
   const isAlumno = user?.role === "Alumno";
@@ -35,6 +54,7 @@ export default function CertificatesPage() {
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [reportView, setReportView] = useState(null); // { certificate, report }
+  const [confirmAction, setConfirmAction] = useState(null); // { type: 'request'|'issue'|'reject', payload, label }
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -52,41 +72,21 @@ export default function CertificatesPage() {
     reload();
   }, [reload]);
 
-  async function handleRequest(type) {
-    setError("");
-    try {
-      await requestCertificate(type);
-      await reload();
-    } catch (e) {
-      setError(getErrorMessage(e));
-    }
+  function openConfirm(type, payload, label) {
+    setConfirmAction({ type, payload, label });
   }
 
-  async function handleIssue(id) {
-    setBusyId(id);
-    setError("");
-    try {
-      const result = await issueCertificate(id);
-      setReportView(result);
-      await reload();
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      setBusyId(null);
+  async function handleConfirmAction() {
+    const action = confirmAction;
+    if (action.type === "request") {
+      await requestCertificate(action.payload);
+    } else if (action.type === "issue") {
+      setReportView(await issueCertificate(action.payload));
+    } else if (action.type === "reject") {
+      await rejectCertificate(action.payload);
     }
-  }
-
-  async function handleReject(id) {
-    setBusyId(id);
-    setError("");
-    try {
-      await rejectCertificate(id);
-      await reload();
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      setBusyId(null);
-    }
+    setConfirmAction(null);
+    await reload();
   }
 
   async function handleView(id) {
@@ -112,6 +112,8 @@ export default function CertificatesPage() {
     );
   }
 
+  const confirmCopy = confirmAction ? CONFIRM_COPY[confirmAction.type](confirmAction.label) : null;
+
   return (
     <div className="users-page">
       <div className="users-header">
@@ -128,7 +130,12 @@ export default function CertificatesPage() {
       {isAlumno && (
         <div className="certificate-types">
           {TYPES.map((t) => (
-            <button key={t.key} type="button" className="users-btn users-btn--primary" onClick={() => handleRequest(t.key)}>
+            <button
+              key={t.key}
+              type="button"
+              className="users-btn users-btn--primary"
+              onClick={() => openConfirm("request", t.key, t.label)}
+            >
               Solicitar {t.label}
             </button>
           ))}
@@ -153,55 +160,66 @@ export default function CertificatesPage() {
               </tr>
             </thead>
             <tbody>
-              {certificates.map((c) => (
-                <tr key={c.id}>
-                  {canManage && <td className="users-td">{c.studentName}</td>}
-                  <td className="users-td">{TYPES.find((t) => t.key === c.type)?.label ?? c.type}</td>
-                  <td className="users-td users-td--center">
-                    <span className={STATUS_BADGE_CLASS[c.status] ?? "dash-badge dash-badge--gray"}>
-                      {STATUS_LABELS[c.status] ?? c.status}
-                    </span>
-                  </td>
-                  <td className="users-td">{c.requestDate}</td>
-                  <td className="users-td">{c.issueDate ?? "—"}</td>
-                  <td className="users-td users-td--center">
-                    {canManage && c.status === "PENDING" && (
-                      <>
-                        <button
-                          type="button"
-                          className="users-btn users-btn--primary"
-                          disabled={busyId === c.id}
-                          onClick={() => handleIssue(c.id)}
-                        >
-                          Emitir
-                        </button>{" "}
+              {certificates.map((c) => {
+                const typeLabel = TYPES.find((t) => t.key === c.type)?.label ?? c.type;
+
+                return (
+                  <tr key={c.id}>
+                    {canManage && <td className="users-td">{c.studentName}</td>}
+                    <td className="users-td">{typeLabel}</td>
+                    <td className="users-td users-td--center">
+                      <span className={STATUS_BADGE_CLASS[c.status] ?? "dash-badge dash-badge--gray"}>
+                        {STATUS_LABELS[c.status] ?? c.status}
+                      </span>
+                    </td>
+                    <td className="users-td">{c.requestDate}</td>
+                    <td className="users-td">{c.issueDate ?? "—"}</td>
+                    <td className="users-td users-td--center">
+                      {canManage && c.status === "PENDING" && (
+                        <>
+                          <button
+                            type="button"
+                            className="users-btn users-btn--primary"
+                            onClick={() => openConfirm("issue", c.id, typeLabel)}
+                          >
+                            Emitir
+                          </button>{" "}
+                          <button
+                            type="button"
+                            className="users-btn users-btn--ghost"
+                            onClick={() => openConfirm("reject", c.id, typeLabel)}
+                          >
+                            Rechazar
+                          </button>
+                        </>
+                      )}
+                      {c.status === "ISSUED" && (
                         <button
                           type="button"
                           className="users-btn users-btn--ghost"
                           disabled={busyId === c.id}
-                          onClick={() => handleReject(c.id)}
+                          onClick={() => handleView(c.id)}
                         >
-                          Rechazar
+                          Ver
                         </button>
-                      </>
-                    )}
-                    {c.status === "ISSUED" && (
-                      <button
-                        type="button"
-                        className="users-btn users-btn--ghost"
-                        disabled={busyId === c.id}
-                        onClick={() => handleView(c.id)}
-                      >
-                        Ver
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!confirmAction}
+        title={confirmCopy?.title ?? ""}
+        message={confirmCopy?.message ?? ""}
+        confirmLabel={confirmCopy?.confirmLabel}
+        onCancel={() => setConfirmAction(null)}
+        onConfirm={handleConfirmAction}
+      />
     </div>
   );
 }

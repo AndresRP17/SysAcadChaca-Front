@@ -7,11 +7,13 @@ export const EXAM_ENROLLMENT_STATUS = {
   PENDING: "pending",
   PRESENT: "present",
   ABSENT: "absent",
+  CANCELLED: "cancelled",
 };
 
 export const PASSING_GRADE = 6;
 
 export function getResultStatus(enrollment) {
+  if (enrollment.status === EXAM_ENROLLMENT_STATUS.CANCELLED) return "cancelled";
   if (enrollment.status === EXAM_ENROLLMENT_STATUS.ABSENT) return "absent";
   if (enrollment.status === EXAM_ENROLLMENT_STATUS.PRESENT) {
     return enrollment.finalGrade != null && enrollment.finalGrade >= PASSING_GRADE ? "passed" : "failed";
@@ -24,6 +26,7 @@ const RESULT_LABEL = {
   absent: "Ausente",
   passed: "Aprobado",
   failed: "Desaprobado",
+  cancelled: "Cancelada",
 };
 
 export function getResultLabel(enrollment) {

@@ -5,11 +5,12 @@ import { getErrorMessage } from "../../shared/api/api";
 import { formatDateTime, isPast } from "../../shared/utils/formatters";
 import ConfirmModal, { DELETE_NOTE } from "../../shared/ui/ConfirmModal";
 import { getMyTeacherProfile } from "../users/services/teacherService";
-import { getExamBoards, createExamBoard, closeExamBoard, deleteExamBoard } from "./services/examBoardService";
+import { getExamBoards, createExamBoard, closeExamBoard, deleteExamBoard, cancelExamBoard } from "./services/examBoardService";
 import { getExamEnrollments, updateExamEnrollment } from "./services/examEnrollmentService";
 import ActaDetail from "./components/ActaDetail";
 import GradeModal from "./components/GradeModal";
 import CloseActaModal from "./components/CloseActaModal";
+import CancelActaModal from "./components/CancelActaModal";
 import ExamBoardFormModal from "./components/ExamBoardFormModal";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
@@ -47,6 +48,7 @@ export default function ActasPage() {
   const [closeModalOpen, setCloseModalOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [boardToDelete, setBoardToDelete] = useState(null);
+  const [boardToCancel, setBoardToCancel] = useState(null);
 
   const reloadBoards = useCallback(async () => {
     setLoadingBoards(true);
@@ -89,7 +91,7 @@ export default function ActasPage() {
   }, [selectedBoardId, reloadEnrollments]);
 
   const visibleBoards = boards.filter((b) => {
-    if (filter === "abiertas") return !b.closed;
+    if (filter === "abiertas") return !b.closed && !b.cancelled;
     if (filter === "cerradas") return b.closed;
     return true;
   });
@@ -124,6 +126,14 @@ export default function ActasPage() {
     setBoardToDelete(null);
     if (board.id === selectedBoardId) setSelectedBoardId(null);
     await reloadBoards();
+  }
+
+  async function handleConfirmCancel(reason) {
+    // Si falla, el error se propaga al CancelActaModal, que queda abierto y lo muestra.
+    await cancelExamBoard(boardToCancel.id, reason);
+    setBoardToCancel(null);
+    await reloadBoards();
+    showToast("Mesa cancelada: se rechazaron sus inscripciones");
   }
 
   return (
@@ -179,8 +189,18 @@ export default function ActasPage() {
               >
                 <span>{board.courseName}</span>
                 <span className="portal-card-sub">{formatDateTime(board.scheduledAt)}</span>
-                <span className={`users-badge ${board.closed ? "users-badge--gray" : "users-badge--navy"}`}>
-                  {board.closed ? "Cerrada" : isPast(board.scheduledAt) ? "Pendiente de cierre" : "Programada"}
+                <span
+                  className={`users-badge ${
+                    board.cancelled ? "users-badge--inactive" : board.closed ? "users-badge--gray" : "users-badge--navy"
+                  }`}
+                >
+                  {board.cancelled
+                    ? "Cancelada"
+                    : board.closed
+                    ? "Cerrada"
+                    : isPast(board.scheduledAt)
+                    ? "Pendiente de cierre"
+                    : "Programada"}
                 </span>
               </button>
             ))}
@@ -201,6 +221,7 @@ export default function ActasPage() {
                 onGrade={setEnrollmentToGrade}
                 onCloseActa={() => setCloseModalOpen(true)}
                 onDeleteBoard={canManageBoards ? () => setBoardToDelete(selectedBoard) : null}
+                onCancelBoard={canManageBoards ? () => setBoardToCancel(selectedBoard) : null}
               />
             )}
           </div>
@@ -234,6 +255,13 @@ export default function ActasPage() {
         message={boardToDelete ? `¿Seguro que querés eliminar la mesa de "${boardToDelete.courseName}"? Esta acción no se puede deshacer.` : ""}
         onCancel={() => setBoardToDelete(null)}
         onConfirm={handleConfirmDelete}
+      />
+
+      <CancelActaModal
+        open={!!boardToCancel}
+        board={boardToCancel}
+        onClose={() => setBoardToCancel(null)}
+        onSubmit={handleConfirmCancel}
       />
     </div>
   );

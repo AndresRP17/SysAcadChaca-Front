@@ -27,3 +27,12 @@ export async function closeExamBoard(id, { record_book, record_folio }) {
 export async function deleteExamBoard(id) {
   await api.delete(`/exam-boards/${id}`);
 }
+
+// Cancela una mesa que ya tiene alumnos inscriptos: el backend marca todas sus
+// inscripciones como 'cancelled' con el motivo dado (como hace SIU-Guarani,
+// que no tiene "desactivar mesa" sino un rechazo masivo). La mesa no se borra,
+// queda como registro histórico visible para el alumno.
+export async function cancelExamBoard(id, reason) {
+  const res = await api.post(`/exam-boards/${id}/cancel`, { reason });
+  return res.data;
+}

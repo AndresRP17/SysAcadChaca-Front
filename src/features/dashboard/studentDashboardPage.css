@@ -1,6 +1,9 @@
 /* La paleta de colores (--navy, --bg, --surface, etc.) vive en
    src/styles/theme.css, compartida por toda la app. */
 @import "../../shared/ui/badges.css";
+/* Clases .grilla-horaria* para la Agenda semanal (WeeklyAgenda), las mismas
+   que usa Cursadas > Grilla horaria — no se duplican acá. */
+@import "../sections/cursadasPage.css";
 
 .dash-page {
   max-width: 1000px;

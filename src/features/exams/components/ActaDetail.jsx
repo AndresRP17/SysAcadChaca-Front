@@ -8,11 +8,17 @@ function statusBadgeClass(enrollment) {
   return "users-badge users-badge--gray";
 }
 
-export default function ActaDetail({ board, enrollments, loading, closed, canGrade, onGrade, onCloseActa, onDeleteBoard }) {
+export default function ActaDetail({ board, enrollments, loading, closed, canGrade, onGrade, onCloseActa, onDeleteBoard, onCancelBoard }) {
   const pending = enrollments.filter((e) => getResultStatus(e) === "pending").length;
   const held = isPast(board.scheduledAt);
-  const canClose = !closed && held && enrollments.length > 0 && pending === 0;
-  const canDelete = !closed && !!onDeleteBoard && board.enrolledCount === 0;
+  const cancelled = board.cancelled;
+  const canClose = !closed && !cancelled && held && enrollments.length > 0 && pending === 0;
+  const canDelete = !closed && !cancelled && !!onDeleteBoard && board.enrolledCount === 0;
+  // "Cancelar mesa" es el equivalente a eliminar cuando ya hay inscriptos: no
+  // existe "desactivar mesa" (como en SIU-Guarani), se rechazan en bloque las
+  // inscripciones con un motivo. La mesa no se borra, queda como registro
+  // histórico (a diferencia de SIU) para que el alumno vea el motivo.
+  const canCancel = !closed && !cancelled && !!onCancelBoard && board.enrolledCount > 0;
 
   return (
     <div className="portal-acta-detail">
@@ -28,12 +34,20 @@ export default function ActaDetail({ board, enrollments, loading, closed, canGra
               Acta cerrada — libro {board.recordBook}, folio {board.recordFolio}
             </p>
           )}
+          {cancelled && (
+            <p className="users-subtitle">Mesa cancelada — motivo: {board.cancellationReason}</p>
+          )}
         </div>
 
         <div className="users-header-actions">
           {canDelete && (
             <button type="button" className="users-btn users-btn--ghost" onClick={onDeleteBoard}>
               Eliminar mesa
+            </button>
+          )}
+          {canCancel && (
+            <button type="button" className="users-btn users-btn--ghost" onClick={onCancelBoard}>
+              Cancelar mesa
             </button>
           )}
           <button
@@ -47,18 +61,18 @@ export default function ActaDetail({ board, enrollments, loading, closed, canGra
         </div>
       </div>
 
-      {!closed && !held && (
+      {!closed && !cancelled && !held && (
         <p className="users-subtitle">El acta se puede cerrar recién después de la fecha del examen.</p>
       )}
-      {!closed && held && enrollments.length === 0 && (
+      {!closed && !cancelled && held && enrollments.length === 0 && (
         <p className="users-subtitle">No se puede cerrar el acta: no hay ningún alumno inscripto.</p>
       )}
-      {!closed && held && enrollments.length > 0 && pending > 0 && (
+      {!closed && !cancelled && held && enrollments.length > 0 && pending > 0 && (
         <p className="users-subtitle">
           Falta cargar {pending} nota{pending !== 1 ? "s" : ""} para poder cerrar el acta.
         </p>
       )}
-      {!closed && !canGrade && (
+      {!closed && !cancelled && !canGrade && (
         <p className="users-subtitle">Las notas las carga el docente presidente o vocal de la mesa, o el Administrador.</p>
       )}
 
@@ -97,7 +111,7 @@ export default function ActaDetail({ board, enrollments, loading, closed, canGra
                     <button
                       type="button"
                       className="users-action-btn"
-                      disabled={closed || !canGrade}
+                      disabled={closed || cancelled || !canGrade}
                       onClick={() => onGrade(e)}
                     >
                       {e.finalGrade === null || e.finalGrade === undefined ? "Cargar nota" : "Editar nota"}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useStudyPlanSelector } from "../hooks/useStudyPlanSelector";
 import { getCurriculumCourses } from "../services/curriculumCourseService";
-import { getPrerequisites, createPrerequisite, deletePrerequisite } from "../services/prerequisiteService";
+import { getPrerequisites, createPrerequisite, updatePrerequisite, deletePrerequisite } from "../services/prerequisiteService";
 import StudyPlanSelector from "./StudyPlanSelector";
 import StudyPlanFormModal from "./StudyPlanFormModal";
 import PrerequisiteFormModal from "./PrerequisiteFormModal";
@@ -28,6 +28,8 @@ export default function CorrelativesTab() {
   const [editingPlan, setEditingPlan] = useState(null);
   const [planToDelete, setPlanToDelete] = useState(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [prereqFormMode, setPrereqFormMode] = useState("create");
+  const [editingPrereq, setEditingPrereq] = useState(null);
   const [prereqToDelete, setPrereqToDelete] = useState(null);
 
   async function reloadCurriculumCourses(forStudyPlanId) {
@@ -95,8 +97,24 @@ export default function CorrelativesTab() {
     await reloadStudyPlans();
   }
 
+  function openAddPrerequisite() {
+    setPrereqFormMode("create");
+    setEditingPrereq(null);
+    setAddOpen(true);
+  }
+
+  function openEditPrerequisite(prerequisite) {
+    setPrereqFormMode("edit");
+    setEditingPrereq(prerequisite);
+    setAddOpen(true);
+  }
+
   async function handleAddPrerequisite(data) {
-    await createPrerequisite({ ...data, curriculum_course_id: selectedCurriculumCourseId });
+    if (prereqFormMode === "edit" && editingPrereq) {
+      await updatePrerequisite(editingPrereq.id, { ...data, curriculum_course_id: selectedCurriculumCourseId });
+    } else {
+      await createPrerequisite({ ...data, curriculum_course_id: selectedCurriculumCourseId });
+    }
     setAddOpen(false);
     await reloadPrerequisites(selectedCurriculumCourseId);
   }
@@ -197,7 +215,7 @@ export default function CorrelativesTab() {
                         type="button"
                         className="users-btn users-btn--primary"
                         disabled={availableCourses.length === 0}
-                        onClick={() => setAddOpen(true)}
+                        onClick={openAddPrerequisite}
                       >
                         + Agregar correlativa
                       </button>
@@ -217,13 +235,22 @@ export default function CorrelativesTab() {
                                 {pr.conditionType === "APROBADA" ? "Aprobada" : "Cursada"}
                               </span>
                             </span>
-                            <button
-                              type="button"
-                              className="users-action-btn users-action-btn--danger"
-                              onClick={() => setPrereqToDelete(pr)}
-                            >
-                              Quitar
-                            </button>
+                            <span className="correlatives-prereq-actions">
+                              <button
+                                type="button"
+                                className="users-action-btn"
+                                onClick={() => openEditPrerequisite(pr)}
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                className="users-action-btn users-action-btn--danger"
+                                onClick={() => setPrereqToDelete(pr)}
+                              >
+                                Quitar
+                              </button>
+                            </span>
                           </li>
                         ))}
                       </ul>
@@ -247,6 +274,8 @@ export default function CorrelativesTab() {
 
       <PrerequisiteFormModal
         open={addOpen}
+        mode={prereqFormMode}
+        initialData={editingPrereq}
         courseOptions={availableCourses}
         onClose={() => setAddOpen(false)}
         onSubmit={handleAddPrerequisite}

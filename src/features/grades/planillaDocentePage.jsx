@@ -131,7 +131,7 @@ export default function PlanillaDocentePage() {
           <div className="users-form-actions">
             <button
               type="button"
-              className="users-btn users-btn--danger"
+              className="users-btn users-btn--success"
               onClick={() => setCloseModalOpen(true)}
             >
               Cerrar comisión
