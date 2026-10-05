@@ -14,11 +14,11 @@ export default function ActaDetail({ board, enrollments, loading, closed, canGra
   const cancelled = board.cancelled;
   const canClose = !closed && !cancelled && held && enrollments.length > 0 && pending === 0;
   const canDelete = !closed && !cancelled && !!onDeleteBoard && board.enrolledCount === 0;
-  // "Cancelar mesa" es el equivalente a eliminar cuando ya hay inscriptos: no
-  // existe "desactivar mesa" (como en SIU-Guarani), se rechazan en bloque las
-  // inscripciones con un motivo. La mesa no se borra, queda como registro
-  // histórico (a diferencia de SIU) para que el alumno vea el motivo.
-  const canCancel = !closed && !cancelled && !!onCancelBoard && board.enrolledCount > 0;
+  // "Cancelar mesa" rechaza en bloque las inscripciones (si hay) con un motivo
+  // y marca la mesa como cancelada sin borrarla (queda como registro histórico,
+  // visible para el alumno con el motivo). A diferencia de "Eliminar", funciona
+  // tenga o no inscriptos: es la única acción que deja un motivo registrado.
+  const canCancel = !closed && !cancelled && !!onCancelBoard;
 
   return (
     <div className="portal-acta-detail">
@@ -50,16 +50,27 @@ export default function ActaDetail({ board, enrollments, loading, closed, canGra
               Cancelar mesa
             </button>
           )}
-          <button
-            type="button"
-            className="users-btn users-btn--primary"
-            disabled={!canClose}
-            onClick={onCloseActa}
-          >
-            Cerrar acta
-          </button>
+          {!cancelled && (
+            <button
+              type="button"
+              className="users-btn users-btn--primary"
+              disabled={!canClose}
+              onClick={onCloseActa}
+            >
+              Cerrar acta
+            </button>
+          )}
         </div>
       </div>
+
+      {!closed && !cancelled && (
+        <p className="users-subtitle">
+          <strong>Eliminar</strong>: solo si no hay inscriptos, borra la mesa sin dejar rastro.{" "}
+          <strong>Cancelar</strong>: rechaza a los inscriptos (si hay) con un motivo; la mesa queda como
+          registro histórico, visible para el alumno. <strong>Cerrar acta</strong>: recién después de la
+          fecha del examen, con todas las notas cargadas.
+        </p>
+      )}
 
       {!closed && !cancelled && !held && (
         <p className="users-subtitle">El acta se puede cerrar recién después de la fecha del examen.</p>

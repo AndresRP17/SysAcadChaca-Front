@@ -13,7 +13,7 @@ const OUTCOME_LABELS = {
 // (POST /sections/{id}/close): calcula nota final y resultado por alumno a
 // partir de la asistencia y las notas ya cargadas. Es idempotente del lado
 // del backend, pero en la practica no tiene vuelta atras -- se confirma antes.
-export default function CloseSectionModal({ open, section, onClose, onSubmit }) {
+export default function CloseSectionModal({ open, section, onClose, onSubmit, onClosed }) {
   const [phase, setPhase] = useState("confirm"); // "confirm" | "result"
   const [results, setResults] = useState([]);
   const [error, setError] = useState("");
@@ -38,6 +38,7 @@ export default function CloseSectionModal({ open, section, onClose, onSubmit }) 
       const response = await onSubmit();
       setResults(response.results ?? []);
       setPhase("result");
+      onClosed?.();
     } catch (e) {
       setError(getErrorMessage(e, "No se pudo cerrar la comision."));
     } finally {
