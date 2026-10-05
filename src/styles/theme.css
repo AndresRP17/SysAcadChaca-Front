@@ -9,8 +9,9 @@
   --border: #0a0a09;
   --text-primary: #111111;
   --text-secondary: #141111;
-  --text-muted: #0e0e0c;
+  --text-muted: #767674;
   --error: #b5482f;
+  --success: #2e7d4f;
   --panel-logo-bg: #ffffff;
 }
 
@@ -22,8 +23,9 @@
   --border: #e5e8ec;
   --text-primary: #f2f2f0;
   --text-secondary: #e7e9ed;
-  --text-muted: #ebeef2;
+  --text-muted: #8b9098;
   --error: #e5735a;
+  --success: #4caf7d;
   --panel-logo-bg: #ffffff;
 }
 

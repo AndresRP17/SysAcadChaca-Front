@@ -1,0 +1,168 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { getErrorMessage } from "../../shared/api/api";
+import { formatDateTime } from "../../shared/utils/formatters";
+import { getMyTeacherProfile } from "../users/services/teacherService";
+import { getMySections, closeSection } from "../sections/services/sectionService";
+import { getEnrollmentsBySection } from "./services/enrollmentService";
+import AsistenciaTab from "./components/AsistenciaTab";
+import NotasTab from "./components/NotasTab";
+import CloseSectionModal from "./components/CloseSectionModal";
+import "../users/usersPage.css";
+import "../plans/plansPage.css";
+
+const TABS = [
+  { key: "asistencia", label: "Asistencia" },
+  { key: "notas", label: "Notas" },
+];
+
+export default function PlanillaDocentePage() {
+  const [searchParams] = useSearchParams();
+  const preselectedSectionId = searchParams.get("section");
+
+  const [activeTab, setActiveTab] = useState(TABS[0].key);
+  const [sections, setSections] = useState([]);
+  const [sectionId, setSectionId] = useState("");
+  const [enrollments, setEnrollments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [closeModalOpen, setCloseModalOpen] = useState(false);
+
+  const loadMySections = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const me = await getMyTeacherProfile();
+
+      const mine = await getMySections(me.id);
+      setSections(mine);
+
+      if (preselectedSectionId && mine.some((s) => String(s.id) === preselectedSectionId)) {
+        setSectionId(preselectedSectionId);
+      } else if (mine.length > 0) {
+        setSectionId((current) => current || String(mine[0].id));
+      }
+    } catch (err) {
+      setError(getErrorMessage(err, "No se pudieron cargar tus comisiones."));
+    } finally {
+      setLoading(false);
+    }
+  }, [preselectedSectionId]);
+
+  useEffect(() => {
+    loadMySections();
+  }, [loadMySections]);
+
+  useEffect(() => {
+    if (!sectionId) {
+      setEnrollments([]);
+      return;
+    }
+
+    getEnrollmentsBySection(sectionId)
+      .then(setEnrollments)
+      .catch((err) => setError(getErrorMessage(err, "No se pudieron cargar los alumnos de la comision.")));
+  }, [sectionId]);
+
+  const selectedSection = useMemo(
+    () => sections.find((s) => String(s.id) === sectionId),
+    [sections, sectionId],
+  );
+
+  if (loading) {
+    return (
+      <div className="users-page">
+        <p className="users-empty">Cargando...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="users-page">
+      <div className="users-header">
+        <div>
+          <h1 className="users-title">Planilla del docente</h1>
+          <p className="users-subtitle">Asistencia y notas de tus comisiones</p>
+        </div>
+      </div>
+
+      {error && <p className="users-form-error">{error}</p>}
+
+      <div className="users-form-field" style={{ maxWidth: 400 }}>
+        <label className="users-form-label">Comision</label>
+        <select
+          value={sectionId}
+          onChange={(e) => setSectionId(e.target.value)}
+          className="users-form-input"
+        >
+          <option value="">Seleccioná una comision...</option>
+          {sections.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.courseName ?? "Materia"} — {s.name} ({s.shift}){s.closed ? " · Cerrada" : ""}
+            </option>
+          ))}
+        </select>
+        {sections.length === 0 && !error && (
+          <p className="users-empty">No tenes comisiones asignadas todavia.</p>
+        )}
+      </div>
+
+      {selectedSection && (
+        <>
+          <p>
+            <span className={`users-badge ${selectedSection.closed ? "users-badge--inactive" : "users-badge--active"}`}>
+              {selectedSection.closed ? "Cerrada" : "Abierta"}
+            </span>
+          </p>
+
+          {selectedSection.closed ? (
+            <p className="users-empty">
+              Esta comisión está cerrada desde el {formatDateTime(selectedSection.closedAt)}. No se puede cargar
+              asistencia ni notas.
+            </p>
+          ) : (
+            <>
+              <div className="plans-tabs">
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    className={`plans-tab ${activeTab === tab.key ? "plans-tab--active" : ""}`}
+                    onClick={() => setActiveTab(tab.key)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {activeTab === "asistencia" && (
+                <AsistenciaTab sectionId={selectedSection.id} enrollments={enrollments} />
+              )}
+              {activeTab === "notas" && (
+                <NotasTab sectionId={selectedSection.id} enrollments={enrollments} />
+              )}
+
+              <div className="users-form-actions">
+                <button
+                  type="button"
+                  className="users-btn users-btn--success"
+                  onClick={() => setCloseModalOpen(true)}
+                >
+                  Cerrar comisión
+                </button>
+              </div>
+            </>
+          )}
+
+          <CloseSectionModal
+            open={closeModalOpen}
+            section={selectedSection}
+            onClose={() => setCloseModalOpen(false)}
+            onSubmit={() => closeSection(selectedSection.id)}
+            onClosed={loadMySections}
+          />
+        </>
+      )}
+    </div>
+  );
+}

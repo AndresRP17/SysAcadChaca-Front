@@ -1,0 +1,51 @@
+import { useState } from "react";
+import AulasTab from "./components/AulasTab";
+import ComisionesTab from "./components/ComisionesTab";
+import GrillaHorariaTab from "./components/GrillaHorariaTab";
+import EdificiosTab from "./components/EdificiosTab";
+import PeriodosTab from "./components/PeriodosTab";
+import "../users/usersPage.css";
+import "../plans/plansPage.css";
+import "./cursadasPage.css";
+
+const TABS = [
+  { key: "edificios", label: "Edificios" },
+  { key: "aulas", label: "Aulas" },
+  { key: "comisiones", label: "Comisiones" },
+  { key: "grilla", label: "Grilla horaria" },
+  { key: "periodos", label: "Períodos de inscripción" },
+];
+
+export default function CursadasPage() {
+  const [activeTab, setActiveTab] = useState(TABS[0].key);
+
+  return (
+    <div className="users-page">
+      <div className="users-header">
+        <div>
+          <h1 className="users-title">Cursadas</h1>
+          <p className="users-subtitle">Aulas, comisiones y su grilla horaria</p>
+        </div>
+      </div>
+
+      <div className="plans-tabs">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            className={`plans-tab ${activeTab === tab.key ? "plans-tab--active" : ""}`}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "edificios" && <EdificiosTab />}
+      {activeTab === "aulas" && <AulasTab />}
+      {activeTab === "comisiones" && <ComisionesTab />}
+      {activeTab === "grilla" && <GrillaHorariaTab />}
+      {activeTab === "periodos" && <PeriodosTab />}
+    </div>
+  );
+}

@@ -1,0 +1,70 @@
+import { Link, useLocation } from "react-router-dom";
+import { Users, Contact, GraduationCap, UserCircle, CalendarClock, ClipboardList, FileText, NotebookPen, LayoutList, ChevronLeft, ChevronRight, History, Award, UserPlus } from "lucide-react";
+import { useAuth } from "../../../../context/AuthContext";
+import { LINKS_BY_ROLE } from "../../roleLinks";
+import "./Sidebar.css";
+
+const ALL_LINKS = {
+  alumnos: { to: "/alumnos", icon: <Contact size={18} />, label: "Alumnos" },
+  usuarios: { to: "/usuarios", icon: <Users size={18} />, label: "Usuarios" },
+  planes: { to: "/planes", icon: <GraduationCap size={18} />, label: "Planes de estudio" },
+  cursadas: { to: "/cursadas", icon: <CalendarClock size={18} />, label: "Cursadas" },
+  alumno: { to: "/alumno", icon: <UserCircle size={18} />, label: "Vista alumno" },
+  historial: { to: "/historial", icon: <History size={18} />, label: "Historial académico" },
+  "inscribir-alumno": { to: "/inscribir-alumno", icon: <UserPlus size={18} />, label: "Inscribir alumno" },
+  "mis-cursadas": { to: "/mis-cursadas", icon: <ClipboardList size={18} />, label: "Inscripción a cursadas" },
+  finales: { to: "/finales", icon: <FileText size={18} />, label: "Inscripción a finales" },
+  actas: { to: "/actas", icon: <NotebookPen size={18} />, label: "Actas de examen" },
+  "mis-comisiones": { to: "/mis-comisiones", icon: <LayoutList size={18} />, label: "Mis comisiones" },
+  planilla: { to: "/planilla", icon: <ClipboardList size={18} />, label: "Planilla" },
+  certificados: { to: "/certificados", icon: <Award size={18} />, label: "Certificados" },
+};
+
+const Sidebar = ({ collapsed, onToggle }) => {
+  const location = useLocation();
+  const { user } = useAuth();
+
+  const links = (LINKS_BY_ROLE[user?.role] ?? []).map((key) => ALL_LINKS[key]);
+
+  return (
+    <>
+      <div className={`sidebar-overlay ${!collapsed ? "active" : ""}`} onClick={onToggle} />
+
+      <aside className={`sidebar ${collapsed ? "collapsed" : "open"}`}>
+        <div className="sidebar-content">
+          <button className="toggle-btn" onClick={onToggle} aria-label="Alternar navegación">
+            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+
+          {!collapsed && (
+            <div className="sidebar-brand">
+              <span className="sidebar-brand-title">SGA</span>
+            </div>
+          )}
+
+          <nav className="sidebar-nav">
+            {links.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`nav-link ${location.pathname === link.to ? "active" : ""}`}
+                onClick={() => {
+                  if (window.innerWidth < 768 && !collapsed) onToggle();
+                }}
+              >
+                <span className="nav-icon">{link.icon}</span>
+                {!collapsed && <span className="nav-label">{link.label}</span>}
+              </Link>
+            ))}
+
+            {!collapsed && links.length === 0 && (
+              <p className="sidebar-empty">Todavía no hay vistas disponibles para tu rol.</p>
+            )}
+          </nav>
+        </div>
+      </aside>
+    </>
+  );
+};
+
+export default Sidebar;
