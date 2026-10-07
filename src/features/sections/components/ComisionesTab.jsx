@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePrograms } from "../../plans/hooks/usePrograms";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
@@ -10,6 +10,15 @@ import { getEnrollments } from "../../enrollments/services/enrollmentService";
 import SectionFormModal from "./SectionFormModal";
 import SectionScheduleFormModal, { weekdayLabel, formatTime } from "./SectionScheduleFormModal";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
+
+function periodKey(section) {
+  return `${section.academicYear}-${section.term}`;
+}
+
+function periodLabel(key) {
+  const [year, term] = key.split("-");
+  return `${year} · ${term}º cuatrimestre`;
+}
 
 export default function ComisionesTab() {
   const { programs } = usePrograms();
@@ -38,6 +47,8 @@ export default function ComisionesTab() {
 
   const [rosterOpen, setRosterOpen] = useState(false);
   const [roster, setRoster] = useState(null);
+
+  const [selectedPeriod, setSelectedPeriod] = useState("");
 
   useEffect(() => {
     getTeachers().then(setTeachers).catch((e) => setError(e.message));
@@ -73,6 +84,22 @@ export default function ComisionesTab() {
 
   const curriculumCourseIds = new Set(curriculumCourses.map((cc) => cc.id));
   const sections = allSections.filter((s) => curriculumCourseIds.has(s.curriculumCourseId));
+
+  const periodOptions = useMemo(() => {
+    const keys = new Set(sections.map(periodKey));
+    return [...keys].sort().reverse();
+  }, [sections]);
+
+  // Mismo criterio que "Mis comisiones" del docente: por defecto se ve solo
+  // el período más reciente -- las comisiones (cerradas incluidas) no se
+  // borran nunca, así que con varios años cargados la lista sin agrupar se
+  // vuelve ilegible.
+  useEffect(() => {
+    if (periodOptions.length === 0) return;
+    if (!periodOptions.includes(selectedPeriod)) setSelectedPeriod(periodOptions[0]);
+  }, [periodOptions, selectedPeriod]);
+
+  const visibleSections = sections.filter((s) => periodKey(s) === selectedPeriod);
 
   async function reloadSchedules(sectionId) {
     if (!sectionId) {
@@ -168,7 +195,7 @@ export default function ComisionesTab() {
     await reloadSchedules(selectedSectionId);
   }
 
-  const selectedSection = sections.find((s) => s.id === selectedSectionId);
+  const selectedSection = visibleSections.find((s) => s.id === selectedSectionId);
 
   return (
     <div>
@@ -209,7 +236,7 @@ export default function ComisionesTab() {
       {studyPlanId && !loadingSections && (
         <>
           <div className="plans-toolbar">
-            <p className="users-subtitle">{sections.length} comisión{sections.length !== 1 ? "es" : ""}</p>
+            <p className="users-subtitle">{visibleSections.length} comisión{visibleSections.length !== 1 ? "es" : ""}</p>
             <button
               type="button"
               className="users-btn users-btn--primary"
@@ -220,6 +247,21 @@ export default function ComisionesTab() {
               + Nueva comisión
             </button>
           </div>
+
+          {periodOptions.length > 0 && (
+            <div className="users-form-field" style={{ maxWidth: 260 }}>
+              <label className="users-form-label">Período</label>
+              <select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="users-form-input"
+              >
+                {periodOptions.map((key) => (
+                  <option key={key} value={key}>{periodLabel(key)}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {curriculumCourses.length === 0 && (
             <p className="users-empty">
@@ -232,10 +274,14 @@ export default function ComisionesTab() {
             <p className="users-empty">Este plan todavía no tiene comisiones abiertas.</p>
           )}
 
-          {sections.length > 0 && (
+          {sections.length > 0 && visibleSections.length === 0 && (
+            <p className="users-empty">No hay comisiones en este período.</p>
+          )}
+
+          {visibleSections.length > 0 && (
             <div className="correlatives-layout">
               <div className="correlatives-list">
-                {sections.map((s) => (
+                {visibleSections.map((s) => (
                   <button
                     key={s.id}
                     type="button"
@@ -244,7 +290,10 @@ export default function ComisionesTab() {
                   >
                     <span className="correlatives-course-code">{s.name}</span>
                     <span>{s.courseName}</span>
-                    <span className="correlatives-course-year">{s.academicYear} - {s.shift}</span>
+                    <span className="correlatives-course-year">
+                      {s.academicYear} - {s.shift}
+                      {s.closed && <span className="users-badge users-badge--inactive"> Cerrada</span>}
+                    </span>
                   </button>
                 ))}
               </div>
