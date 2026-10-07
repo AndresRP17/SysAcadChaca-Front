@@ -88,19 +88,30 @@ export function useStudentSections(studentIdOverride) {
     [allEnrollments, student],
   );
 
+  // GET /enrollments devuelve todas las inscripciones del alumno, incluidas
+  // las dadas de baja (status "dropped"). Para "¿en qué está inscripto ahora?"
+  // solo cuentan las activas -- si no, una comisión de la que se dio de baja
+  // sigue bloqueando tanto "Mis cursadas" (le queda el botón de baja de nuevo)
+  // como la oferta (no puede volver a anotarse ahí ni en ninguna otra
+  // comisión de la misma materia).
+  const activeEnrollments = useMemo(
+    () => myEnrollments.filter((e) => e.status === "active"),
+    [myEnrollments],
+  );
+
   const enrolled = useMemo(() => {
-    return myEnrollments
+    return activeEnrollments
       .map((enrollment) => ({
         enrollment,
         section: sections.find((s) => s.id === enrollment.sectionId) ?? null,
         schedules: schedulesBySection.get(enrollment.sectionId) ?? [],
       }))
       .filter((item) => item.section !== null);
-  }, [myEnrollments, sections, schedulesBySection]);
+  }, [activeEnrollments, sections, schedulesBySection]);
 
   const available = useMemo(() => {
     const planCourseIds = new Set(curriculumCourseIds);
-    const enrolledSectionIds = new Set(myEnrollments.map((e) => e.sectionId));
+    const enrolledSectionIds = new Set(activeEnrollments.map((e) => e.sectionId));
     // Ya inscripto en otra comisión de la misma materia: no debería poder
     // anotarse dos veces en la misma materia.
     const enrolledCourseIds = new Set(
@@ -108,6 +119,7 @@ export function useStudentSections(studentIdOverride) {
     );
 
     return sections
+      .filter((s) => s.active)
       .filter((s) => planCourseIds.size === 0 || planCourseIds.has(s.curriculumCourseId))
       .filter((s) => !enrolledSectionIds.has(s.id))
       .filter((s) => !enrolledCourseIds.has(s.curriculumCourseId))
@@ -115,7 +127,7 @@ export function useStudentSections(studentIdOverride) {
         section,
         schedules: schedulesBySection.get(section.id) ?? [],
       }));
-  }, [sections, curriculumCourseIds, myEnrollments, enrolled, schedulesBySection]);
+  }, [sections, curriculumCourseIds, activeEnrollments, enrolled, schedulesBySection]);
 
   async function enroll(sectionId) {
     await createEnrollment({ studentId: student.id, sectionId });
