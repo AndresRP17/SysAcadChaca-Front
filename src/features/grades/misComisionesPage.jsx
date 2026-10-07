@@ -17,6 +17,8 @@ function periodLabel(key) {
   return `${year} · ${term}º cuatrimestre`;
 }
 
+const WEEKDAYS = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
+
 const WEEKDAY_LABEL = {
   LUNES: "Lunes",
   MARTES: "Martes",
@@ -25,6 +27,68 @@ const WEEKDAY_LABEL = {
   VIERNES: "Viernes",
   SABADO: "Sábado",
 };
+
+const WEEKDAY_SHORT = {
+  LUNES: "Lun",
+  MARTES: "Mar",
+  MIERCOLES: "Mié",
+  JUEVES: "Jue",
+  VIERNES: "Vie",
+  SABADO: "Sáb",
+};
+
+function timeToHour(time) {
+  const [h, m] = time.split(":").map(Number);
+  return h + m / 60;
+}
+
+function formatHour(h) {
+  const hh = Math.floor(h);
+  const mm = Math.round((h - hh) * 60);
+  return `${hh}:${mm ? String(mm).padStart(2, "0") : "00"}`;
+}
+
+// Arma la semana del docente a partir de los horarios de las comisiones
+// visibles (ya filtradas por período). El rango de horas se calcula a partir
+// de los horarios reales (primera clase - 1h a última clase + 1h) en vez de
+// uno fijo, para no obligar a hacer scroll si las clases son a la mañana, a
+// la noche, o lo que sea.
+function buildWeek(visibleSections, schedulesBySection) {
+  const events = [];
+  visibleSections.forEach((section) => {
+    (schedulesBySection[section.id] ?? []).forEach((sch) => {
+      events.push({
+        day: WEEKDAYS.indexOf(sch.weekday),
+        start: timeToHour(sch.startTime),
+        end: timeToHour(sch.endTime),
+        title: `${section.courseName ?? "Materia"} — ${section.name}`,
+        room: sch.classroomName,
+      });
+    });
+  });
+
+  if (events.length === 0) {
+    return { days: [], baseHour: 8, endHour: 22, events: [] };
+  }
+
+  const baseHour = Math.max(0, Math.floor(Math.min(...events.map((e) => e.start))) - 1);
+  const endHour = Math.min(24, Math.ceil(Math.max(...events.map((e) => e.end))) + 1);
+
+  const days = WEEKDAYS.map((weekday, i) => ({
+    key: weekday,
+    label: WEEKDAY_SHORT[weekday],
+    events: events
+      .filter((e) => e.day === i)
+      .map((e) => ({
+        ...e,
+        top: (e.start - baseHour) * 44,
+        height: (e.end - e.start) * 44 - 3,
+      }))
+      .sort((a, b) => a.start - b.start),
+  }));
+
+  return { days, baseHour, endHour, events };
+}
 
 export default function MisComisionesPage() {
   const navigate = useNavigate();
@@ -35,6 +99,7 @@ export default function MisComisionesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("");
+  const [selectedDay, setSelectedDay] = useState(() => Math.min(new Date().getDay() === 0 ? 5 : new Date().getDay() - 1, 5));
 
   useEffect(() => {
     async function load() {
@@ -80,6 +145,17 @@ export default function MisComisionesPage() {
     () => sections.filter((s) => periodKey(s) === selectedPeriod),
     [sections, selectedPeriod],
   );
+
+  const week = useMemo(
+    () => buildWeek(visibleSections, schedulesBySection),
+    [visibleSections, schedulesBySection],
+  );
+
+  const hourLabels = useMemo(() => {
+    const labels = [];
+    for (let h = week.baseHour; h <= week.endHour; h++) labels.push(h);
+    return labels;
+  }, [week.baseHour, week.endHour]);
 
   async function toggleRoster(sectionId) {
     if (expandedSectionId === sectionId) {
@@ -139,6 +215,67 @@ export default function MisComisionesPage() {
 
       {sections.length > 0 && visibleSections.length === 0 && (
         <p className="users-empty">No tenés comisiones en este período.</p>
+      )}
+
+      {week.events.length > 0 && (
+        <div className="mis-comisiones-week">
+          <h2 className="mis-comisiones-week-title">Mi semana</h2>
+
+          <div className="mis-comisiones-daystrip">
+            {week.days.map((day, i) => (
+              <button
+                key={day.key}
+                type="button"
+                className={`mis-comisiones-day-pill ${i === selectedDay ? "mis-comisiones-day-pill--selected" : ""}`}
+                onClick={() => setSelectedDay(i)}
+              >
+                <span>{day.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mis-comisiones-agenda">
+            {week.days[selectedDay].events.length === 0 && (
+              <p className="users-empty">Sin clases este día.</p>
+            )}
+            {week.days[selectedDay].events.map((e, i) => (
+              <div key={i} className="mis-comisiones-event">
+                <span className="mis-comisiones-event-time">
+                  {formatHour(e.start)}–{formatHour(e.end)}
+                </span>
+                <div>
+                  <div className="mis-comisiones-event-title">{e.title}</div>
+                  <div className="mis-comisiones-event-room">{e.room}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mis-comisiones-grid">
+            <div className="mis-comisiones-head-cell" style={{ borderLeft: "none" }} />
+            {week.days.map((day) => (
+              <div key={day.key} className="mis-comisiones-head-cell">{day.label}</div>
+            ))}
+
+            <div>
+              {hourLabels.map((h, i) => (
+                <div key={h} className={`mis-comisiones-hour-label ${i === 0 ? "mis-comisiones-hour-label--first" : ""}`}>
+                  {h}
+                </div>
+              ))}
+            </div>
+            {week.days.map((day) => (
+              <div key={day.key} className="mis-comisiones-daycol" style={{ minHeight: (week.endHour - week.baseHour) * 44 }}>
+                {day.events.map((e, i) => (
+                  <div key={i} className="mis-comisiones-block" style={{ top: e.top, height: e.height }}>
+                    <b>{e.title}</b>
+                    <span>{e.room}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       <div className="mis-comisiones-list">

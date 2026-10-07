@@ -1,3 +1,154 @@
+.mis-comisiones-week {
+  margin-bottom: 24px;
+}
+
+.mis-comisiones-week-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.mis-comisiones-daystrip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+}
+
+.mis-comisiones-day-pill {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface, #fff);
+  color: var(--text-primary);
+  font-family: inherit;
+  cursor: pointer;
+  min-width: 48px;
+}
+
+.mis-comisiones-day-pill span {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.mis-comisiones-day-pill--selected {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+.mis-comisiones-day-pill--selected span {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.mis-comisiones-agenda {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mis-comisiones-event {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--surface, #fff);
+}
+
+.mis-comisiones-event-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  min-width: 90px;
+}
+
+.mis-comisiones-event-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mis-comisiones-event-room {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.mis-comisiones-grid {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .mis-comisiones-agenda {
+    display: none;
+  }
+
+  .mis-comisiones-grid {
+    display: grid;
+    grid-template-columns: 52px repeat(6, 1fr);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface, #fff);
+  }
+
+  .mis-comisiones-head-cell {
+    padding: 8px 6px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+  }
+
+  .mis-comisiones-hour-label {
+    height: 44px;
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    text-align: right;
+    padding: 2px 6px;
+    border-top: 1px solid var(--border);
+  }
+
+  .mis-comisiones-hour-label--first {
+    border-top: none;
+  }
+
+  .mis-comisiones-daycol {
+    position: relative;
+    border-left: 1px solid var(--border);
+    background-image: repeating-linear-gradient(to bottom, transparent, transparent 43px, var(--border) 43px, var(--border) 44px);
+  }
+
+  .mis-comisiones-block {
+    position: absolute;
+    left: 3px;
+    right: 3px;
+    border-radius: 6px;
+    padding: 4px 6px;
+    overflow: hidden;
+    background: var(--navy);
+    color: #fff;
+  }
+
+  .mis-comisiones-block b {
+    display: block;
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .mis-comisiones-block span {
+    font-size: 9.5px;
+    opacity: 0.85;
+  }
+}
+
 .mis-comisiones-list {
   display: flex;
   flex-direction: column;
