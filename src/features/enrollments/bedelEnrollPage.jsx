@@ -254,8 +254,8 @@ export default function BedelEnrollPage() {
 
   const studentOptions = students.map((s) => ({
     value: s.id,
-    label: `${s.lastName}, ${s.firstName} — legajo ${s.enrollmentNumber} (DNI ${s.nationalId})`,
-    searchText: `${s.lastName} ${s.firstName} ${s.enrollmentNumber} ${s.nationalId}`,
+    label: `${s.lastName}, ${s.firstName} — legajo ${s.enrollmentNumber} (DNI ${s.nationalId}) · ${s.programName}`,
+    searchText: `${s.lastName} ${s.firstName} ${s.enrollmentNumber} ${s.nationalId} ${s.programName}`,
   }));
 
   return (

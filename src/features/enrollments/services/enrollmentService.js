@@ -10,8 +10,8 @@ export const ENROLLMENT_STATUS = {
   FAILED: "LIBRE",
 };
 
-export async function getEnrollments({ studentId, sectionId } = {}) {
-  const qs = buildParams({ student_id: studentId, section_id: sectionId, size: 1000 });
+export async function getEnrollments({ studentId, sectionId, status } = {}) {
+  const qs = buildParams({ student_id: studentId, section_id: sectionId, status, size: 1000 });
   const { data } = await api.get(`/enrollments?${qs}`);
   return data;
 }
