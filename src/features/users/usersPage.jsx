@@ -88,7 +88,7 @@ export default function UsersPage({ studentsOnly = false }) {
 
       {!loading && (
         <div className="users-table-wrapper">
-          <UserTable users={users} onEdit={openEditModal} onDelete={setUserToDelete} />
+          <UserTable users={users} onEdit={openEditModal} onDelete={setUserToDelete} studentsOnly={studentsOnly} />
         </div>
       )}
 

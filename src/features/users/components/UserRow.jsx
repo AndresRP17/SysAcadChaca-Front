@@ -1,10 +1,13 @@
-export default function UserRow({ user, onEdit, onDelete }) {
+export default function UserRow({ user, onEdit, onDelete, showCareer = false }) {
   return (
     <tr className="users-row">
       <td className="users-td users-td--mono" data-label="Legajo">{user.legajo}</td>
       <td className="users-td" data-label="Nombre">
         {user.nombre} {user.apellido}
       </td>
+      {showCareer && (
+        <td className="users-td" data-label="Carrera">{user.carrera || "—"}</td>
+      )}
       <td className="users-td" data-label="Email">{user.email}</td>
       <td className="users-td" data-label="Rol">
         <span

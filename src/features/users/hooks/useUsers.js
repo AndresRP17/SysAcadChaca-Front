@@ -14,6 +14,7 @@ function studentToRow(s) {
     apellido: s.lastName,
     email: s.email,
     dni: s.nationalId,
+    carrera: s.programName,
     rol: "Alumno",
     estado: s.active ? "Activo" : "Inactivo",
     raw: s,
