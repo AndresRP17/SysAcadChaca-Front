@@ -16,6 +16,14 @@ export default function NotasTab({ sectionId, enrollments }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    // Si no se resetea acá, al cambiar de comisión queda seleccionada la
+    // evaluación de la comisión anterior cuando la nueva todavía no tiene
+    // ninguna — y las notas que se guarden quedan cruzadas (evaluation_id
+    // de una comisión, enrollment_id de otra).
+    setEvaluationId("");
+    setEvaluations([]);
+    setRows([]);
+
     if (!sectionId) return;
 
     getEvaluationsBySection(sectionId)
