@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../../shared/api/api";
 import { getMyTeacherProfile } from "../users/services/teacherService";
@@ -7,6 +7,15 @@ import { getSectionSchedules } from "../sections/services/sectionScheduleService
 import { getEnrollmentsBySection } from "./services/enrollmentService";
 import "../users/usersPage.css";
 import "./misComisionesPage.css";
+
+function periodKey(section) {
+  return `${section.academicYear}-${section.term}`;
+}
+
+function periodLabel(key) {
+  const [year, term] = key.split("-");
+  return `${year} · ${term}º cuatrimestre`;
+}
 
 const WEEKDAY_LABEL = {
   LUNES: "Lunes",
@@ -25,6 +34,7 @@ export default function MisComisionesPage() {
   const [expandedSectionId, setExpandedSectionId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -41,6 +51,16 @@ export default function MisComisionesPage() {
           map[s.id] = schedules[i];
         });
         setSchedulesBySection(map);
+
+        // Por defecto se ve solo el cuatrimestre más reciente -- con varios
+        // años de comisiones acumuladas (nunca se borran, ni las cerradas),
+        // mostrarlas todas juntas y sin agrupar se vuelve ilegible.
+        if (mySections.length > 0) {
+          const [latest] = [...mySections].sort(
+            (a, b) => b.academicYear - a.academicYear || b.term - a.term,
+          );
+          setSelectedPeriod(periodKey(latest));
+        }
       } catch (err) {
         setError(getErrorMessage(err, "No se pudieron cargar tus comisiones."));
       } finally {
@@ -50,6 +70,16 @@ export default function MisComisionesPage() {
 
     load();
   }, []);
+
+  const periodOptions = useMemo(() => {
+    const keys = new Set(sections.map(periodKey));
+    return [...keys].sort().reverse();
+  }, [sections]);
+
+  const visibleSections = useMemo(
+    () => sections.filter((s) => periodKey(s) === selectedPeriod),
+    [sections, selectedPeriod],
+  );
 
   async function toggleRoster(sectionId) {
     if (expandedSectionId === sectionId) {
@@ -92,8 +122,27 @@ export default function MisComisionesPage() {
         <p className="users-empty">No tenés comisiones asignadas todavía.</p>
       )}
 
+      {periodOptions.length > 0 && (
+        <div className="users-form-field" style={{ maxWidth: 260 }}>
+          <label className="users-form-label">Período</label>
+          <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            className="users-form-input"
+          >
+            {periodOptions.map((key) => (
+              <option key={key} value={key}>{periodLabel(key)}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {sections.length > 0 && visibleSections.length === 0 && (
+        <p className="users-empty">No tenés comisiones en este período.</p>
+      )}
+
       <div className="mis-comisiones-list">
-        {sections.map((section) => {
+        {visibleSections.map((section) => {
           const schedules = schedulesBySection[section.id] ?? [];
           const roster = rosterBySection[section.id];
 
@@ -103,6 +152,9 @@ export default function MisComisionesPage() {
                 <h2 className="mis-comisiones-card-title">{section.courseName ?? "Materia"}</h2>
                 <span className="mis-comisiones-card-subtitle">
                   {section.name} · {section.academicYear} · {section.shift}
+                </span>
+                <span className={`users-badge ${section.closed ? "users-badge--inactive" : "users-badge--active"}`}>
+                  {section.closed ? "Cerrada" : "Abierta"}
                 </span>
               </div>
 
@@ -130,7 +182,7 @@ export default function MisComisionesPage() {
                   className="users-btn users-btn--primary"
                   onClick={() => navigate(`/planilla?section=${section.id}`)}
                 >
-                  Cargar planilla
+                  {section.closed ? "Ver resultado" : "Cargar planilla"}
                 </button>
               </div>
 
