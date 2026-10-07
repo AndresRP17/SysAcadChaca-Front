@@ -4,6 +4,14 @@ import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { EXAM_ENROLLMENT_STATUS } from "../services/examEnrollmentService";
 import { getAcademicThresholds } from "../services/academicThresholdsService";
+import { getEnrollments } from "../../enrollments/services/enrollmentService";
+
+function cursadaCondition(finalGrade, thresholds) {
+  if (finalGrade == null || !thresholds) return null;
+  if (finalGrade >= thresholds.minPromotion) return "Promocionó";
+  if (finalGrade >= thresholds.minRegular) return "Regular";
+  return "Libre";
+}
 
 // Carga de nota de un alumno en una mesa. El estado se deduce de la nota
 // (aprobado/desaprobado) salvo que se marque ausente.
@@ -14,6 +22,7 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
   const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [thresholds, setThresholds] = useState(null);
+  const [cursada, setCursada] = useState(null);
 
   useEffect(() => {
     if (open) {
@@ -21,7 +30,17 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
       setAbsent(enrollment?.status === EXAM_ENROLLMENT_STATUS.ABSENT);
       setError("");
       setFieldErrors({});
+      setCursada(null);
       getAcademicThresholds().then(setThresholds).catch(() => setThresholds(null));
+
+      // Nota con la que el alumno terminó la cursada de esta materia -- para
+      // que quien carga el final vea con qué llegó (ej. promocionó con 9, o
+      // regularizó con 6) y no cargue el final a ciegas.
+      if (enrollment?.studentId && enrollment?.courseId) {
+        getEnrollments({ studentId: enrollment.studentId, status: "completed" })
+          .then((rows) => setCursada(rows.find((r) => r.courseId === enrollment.courseId) ?? null))
+          .catch(() => setCursada(null));
+      }
     }
   }, [open, enrollment]);
 
@@ -66,6 +85,13 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
       </p>
       {thresholds && (
         <p className="users-subtitle">Aprueba con nota ≥ {thresholds.minFinalApproved}</p>
+      )}
+
+      {cursada && (
+        <p className="users-subtitle">
+          Cursada: nota {cursada.finalGrade}
+          {cursadaCondition(cursada.finalGrade, thresholds) && ` (${cursadaCondition(cursada.finalGrade, thresholds)})`}
+        </p>
       )}
 
       {error && <p className="users-form-error">{error}</p>}
