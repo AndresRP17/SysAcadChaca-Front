@@ -6,6 +6,7 @@ import { getTeachers } from "../../users/services/teacherService";
 import { useClassrooms } from "../hooks/useClassrooms";
 import { getSections, createSection, updateSection, deleteSection } from "../services/sectionService";
 import { getSectionSchedules, createSectionSchedule, updateSectionSchedule, deleteSectionSchedule } from "../services/sectionScheduleService";
+import { getEnrollments } from "../../enrollments/services/enrollmentService";
 import SectionFormModal from "./SectionFormModal";
 import SectionScheduleFormModal, { weekdayLabel, formatTime } from "./SectionScheduleFormModal";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
@@ -34,6 +35,9 @@ export default function ComisionesTab() {
   const [scheduleFormMode, setScheduleFormMode] = useState("create");
   const [editingSchedule, setEditingSchedule] = useState(null);
   const [scheduleToDelete, setScheduleToDelete] = useState(null);
+
+  const [rosterOpen, setRosterOpen] = useState(false);
+  const [roster, setRoster] = useState(null);
 
   useEffect(() => {
     getTeachers().then(setTeachers).catch((e) => setError(e.message));
@@ -84,7 +88,28 @@ export default function ComisionesTab() {
 
   useEffect(() => {
     reloadSchedules(selectedSectionId);
+    // Cambió la comisión seleccionada: el roster que se ve, si había uno
+    // abierto, es de otra comisión. Se vuelve a pedir si lo abren de nuevo.
+    setRosterOpen(false);
+    setRoster(null);
   }, [selectedSectionId]);
+
+  async function toggleRoster() {
+    if (rosterOpen) {
+      setRosterOpen(false);
+      return;
+    }
+
+    setRosterOpen(true);
+    if (roster !== null) return;
+
+    try {
+      const enrollments = await getEnrollments({ sectionId: selectedSectionId });
+      setRoster(enrollments.filter((e) => e.status === "active"));
+    } catch (e) {
+      setError(e.message);
+    }
+  }
 
   function openCreateSection() {
     setSectionFormMode("create");
@@ -236,6 +261,9 @@ export default function ComisionesTab() {
                         <strong>{selectedSection.name}</strong> — {selectedSection.courseName} — {selectedSection.teacherFirstName} {selectedSection.teacherLastName} — cupo {selectedSection.maxCapacity}
                       </p>
                       <div>
+                        <button type="button" className="users-action-btn" onClick={toggleRoster}>
+                          {rosterOpen ? "Ocultar alumnos inscriptos" : "Ver alumnos inscriptos"}
+                        </button>
                         <button type="button" className="users-action-btn" onClick={() => openEditSection(selectedSection)}>
                           Editar
                         </button>
@@ -248,6 +276,27 @@ export default function ComisionesTab() {
                         </button>
                       </div>
                     </div>
+
+                    {rosterOpen && (
+                      <div className="plans-toolbar" style={{ flexDirection: "column", alignItems: "stretch" }}>
+                        <p className="users-subtitle">
+                          Alumnos inscriptos {roster !== null ? `(${roster.length})` : ""}
+                        </p>
+                        {roster === null && <p className="users-empty">Cargando...</p>}
+                        {roster !== null && roster.length === 0 && (
+                          <p className="users-empty">No hay alumnos inscriptos en esta comisión.</p>
+                        )}
+                        {roster !== null && roster.length > 0 && (
+                          <ul className="correlatives-prereq-list">
+                            {roster.map((e) => (
+                              <li key={e.id} className="correlatives-prereq-item">
+                                <span>{e.studentFirstName} {e.studentLastName}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
 
                     <div className="plans-toolbar">
                       <p className="users-subtitle">Horarios</p>
