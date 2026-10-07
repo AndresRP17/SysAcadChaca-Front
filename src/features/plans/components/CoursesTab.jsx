@@ -54,22 +54,20 @@ export default function CoursesTab() {
             <tr>
               <th className="users-th">Nombre</th>
               <th className="users-th">Código</th>
-              <th className="users-th">Carga horaria</th>
               <th className="users-th users-th--actions">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
-              <tr><td className="users-empty" colSpan={4}>Cargando...</td></tr>
+              <tr><td className="users-empty" colSpan={3}>Cargando...</td></tr>
             )}
             {!loading && courses.length === 0 && (
-              <tr><td className="users-empty" colSpan={4}>No hay materias cargadas.</td></tr>
+              <tr><td className="users-empty" colSpan={3}>No hay materias cargadas.</td></tr>
             )}
             {courses.map((course) => (
               <tr key={course.id} className="users-row">
                 <td className="users-td" data-label="Nombre">{course.name}</td>
                 <td className="users-td" data-label="Código">{course.code}</td>
-                <td className="users-td" data-label="Carga horaria">{course.creditHours} hs</td>
                 <td className="users-td users-td--actions" data-label="Acciones">
                   <button type="button" className="users-action-btn" onClick={() => openEditModal(course)}>
                     Editar

@@ -26,6 +26,10 @@ export default function ExamBoardCard({ board, badge, badgeVariant = "navy", act
         </p>
       )}
 
+      {board.cancelled && (
+        <p className="portal-card-sub">Mesa cancelada — motivo: {board.cancellationReason}</p>
+      )}
+
       {actionLabel && (
         <div className="portal-card-actions">
           <button

@@ -127,15 +127,16 @@ export default function CurriculumTab() {
                   <th className="users-th">Código</th>
                   <th className="users-th">Año</th>
                   <th className="users-th">Cuatrimestre</th>
+                  <th className="users-th">Carga horaria</th>
                   <th className="users-th users-th--actions">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {loadingCourses && (
-                  <tr><td className="users-empty" colSpan={5}>Cargando...</td></tr>
+                  <tr><td className="users-empty" colSpan={6}>Cargando...</td></tr>
                 )}
                 {!loadingCourses && curriculumCourses.length === 0 && (
-                  <tr><td className="users-empty" colSpan={5}>Todavía no hay materias asignadas a este plan.</td></tr>
+                  <tr><td className="users-empty" colSpan={6}>Todavía no hay materias asignadas a este plan.</td></tr>
                 )}
                 {!loadingCourses && curriculumCourses.map((cc) => (
                   <tr key={cc.id} className="users-row">
@@ -143,6 +144,7 @@ export default function CurriculumTab() {
                     <td className="users-td" data-label="Código">{cc.courseCode}</td>
                     <td className="users-td" data-label="Año">{cc.yearNumber}°</td>
                     <td className="users-td" data-label="Cuatrimestre">{cc.term}°</td>
+                    <td className="users-td" data-label="Carga horaria">{cc.creditHours} hs</td>
                     <td className="users-td users-td--actions" data-label="Acciones">
                       <button
                         type="button"

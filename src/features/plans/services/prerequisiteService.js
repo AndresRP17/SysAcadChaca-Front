@@ -12,6 +12,11 @@ export async function createPrerequisite(data) {
   return res.data;
 }
 
+export async function updatePrerequisite(id, data) {
+  const res = await api.put(`/prerequisites/${id}`, data);
+  return res.data;
+}
+
 export async function deletePrerequisite(id) {
   await api.delete(`/prerequisites/${id}`);
 }

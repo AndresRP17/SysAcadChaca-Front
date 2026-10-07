@@ -3,7 +3,7 @@ import Modal from "../../../shared/ui/Modal";
 import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 
-const EMPTY_FORM = { name: "", code: "", credit_hours: "" };
+const EMPTY_FORM = { name: "", code: "" };
 
 const STOPWORDS = new Set(["de", "del", "la", "el", "los", "las", "en", "y", "a", "con", "para"]);
 
@@ -45,7 +45,7 @@ export default function CourseFormModal({ open, mode, initialData, existingCodes
     if (open) {
       setForm(
         initialData
-          ? { name: initialData.name, code: initialData.code, credit_hours: initialData.creditHours }
+          ? { name: initialData.name, code: initialData.code }
           : EMPTY_FORM,
       );
       setCodeManuallyEdited(mode === "edit");
@@ -70,12 +70,12 @@ export default function CourseFormModal({ open, mode, initialData, existingCodes
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.name.trim() || !form.code.trim() || !form.credit_hours) {
+    if (!form.name.trim() || !form.code.trim()) {
       setError("Completá todos los campos.");
       return;
     }
     try {
-      await onSubmit({ ...form, credit_hours: Number(form.credit_hours) });
+      await onSubmit(form);
     } catch (err) {
       setError(getErrorMessage(err));
       setFieldErrors(getFieldErrors(err));
@@ -98,29 +98,15 @@ export default function CourseFormModal({ open, mode, initialData, existingCodes
           <FieldError errors={fieldErrors} field="name" />
         </div>
 
-        <div className="users-form-row">
-          <div className="users-form-field">
-            <label className="users-form-label">Código</label>
-            <input
-              type="text"
-              value={form.code}
-              onChange={(e) => handleChange("code", e.target.value)}
-              className="users-form-input"
-            />
-            <FieldError errors={fieldErrors} field="code" />
-          </div>
-          <div className="users-form-field">
-            <label className="users-form-label">Carga horaria total (según plan de estudios)</label>
-            <input
-              type="number"
-              min="1"
-              max="400"
-              value={form.credit_hours}
-              onChange={(e) => handleChange("credit_hours", e.target.value)}
-              className="users-form-input"
-            />
-            <FieldError errors={fieldErrors} field="credit_hours" />
-          </div>
+        <div className="users-form-field">
+          <label className="users-form-label">Código</label>
+          <input
+            type="text"
+            value={form.code}
+            onChange={(e) => handleChange("code", e.target.value)}
+            className="users-form-input"
+          />
+          <FieldError errors={fieldErrors} field="code" />
         </div>
 
         {error && <p className="users-form-error">{error}</p>}

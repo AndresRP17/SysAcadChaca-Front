@@ -115,22 +115,14 @@ export function useUsers({ studentsOnly = false } = {}) {
   }, [rawUsers, searchTerm, roleFilter]);
 
   async function addUser(data) {
-    try {
-      if (data.rol === "Alumno") {
-        await createStudent(data.payload);
-      } else if (data.rol === "Docente") {
-        await createTeacher(data.payload);
-      } else {
-        await createUser({ ...data.payload, role_id: bedelRoleId });
-      }
-      await reload();
-    } catch (e) {
-      // devuelve los errores de validación al componente
-      if (e.response?.status === 422) {
-        throw e.response.data; // { error, errors: { campo: mensaje } }
-      }
-      throw e;
+    if (data.rol === "Alumno") {
+      await createStudent(data.payload);
+    } else if (data.rol === "Docente") {
+      await createTeacher(data.payload);
+    } else {
+      await createUser({ ...data.payload, role_id: bedelRoleId });
     }
+    await reload();
   }
 
   async function updateUser(user, data) {

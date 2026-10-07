@@ -258,6 +258,11 @@
   transition: background-color 0.15s ease;
 }
 
+.users-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .users-btn--primary {
   background: var(--navy);
   color: #ffffff;
@@ -283,6 +288,15 @@
 }
 
 .users-btn--danger:hover {
+  filter: brightness(0.92);
+}
+
+.users-btn--success {
+  background: var(--success);
+  color: #ffffff;
+}
+
+.users-btn--success:hover {
   filter: brightness(0.92);
 }
 
