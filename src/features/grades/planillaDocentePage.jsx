@@ -28,8 +28,14 @@ export default function PlanillaDocentePage() {
   const [error, setError] = useState("");
   const [closeModalOpen, setCloseModalOpen] = useState(false);
 
-  const loadMySections = useCallback(async () => {
-    setLoading(true);
+  // silent=true: recarga en segundo plano (ej. después de cerrar una
+  // comisión) sin pasar por el loading de página completa -- si no, el
+  // "Cargando..." de abajo desmonta toda la página, incluido el modal de
+  // cierre que en ese momento está mostrando el resultado por alumno. Al
+  // volver a montar, closeModalOpen sigue en true pero el modal arranca de
+  // cero en su fase de confirmación, como si nunca se hubiera cerrado.
+  const loadMySections = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     setError("");
     try {
       const me = await getMyTeacherProfile();
@@ -45,7 +51,7 @@ export default function PlanillaDocentePage() {
     } catch (err) {
       setError(getErrorMessage(err, "No se pudieron cargar tus comisiones."));
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [preselectedSectionId]);
 
@@ -159,7 +165,7 @@ export default function PlanillaDocentePage() {
             section={selectedSection}
             onClose={() => setCloseModalOpen(false)}
             onSubmit={() => closeSection(selectedSection.id)}
-            onClosed={loadMySections}
+            onClosed={() => loadMySections({ silent: true })}
           />
         </>
       )}
