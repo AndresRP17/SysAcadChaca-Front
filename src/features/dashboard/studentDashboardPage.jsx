@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { getErrorMessage } from "../../shared/api/api";
 import { getStudentSummary } from "./services/studentSummaryService";
+import { getStudentHistory } from "./services/studentHistoryService";
 import { useStudentSections } from "../enrollments/hooks/useStudentSections";
 import { useStudentExamBoards } from "../exams/hooks/useStudentExamBoards";
 import { isPast } from "../../shared/utils/formatters";
 import ProfileCard from "./components/ProfileCard";
 import StatsRow from "./components/StatsRow";
 import CourseList from "./components/CourseList";
+import CompletedCourses from "./components/CompletedCourses";
 import WeeklyAgenda from "./components/WeeklyAgenda";
 import UpcomingExamBoards from "./components/UpcomingExamBoards";
 import "../users/usersPage.css";
@@ -16,6 +18,7 @@ export default function StudentDashboard() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [completedCourses, setCompletedCourses] = useState([]);
 
   // Agenda (cursadas + mesas, al estilo SIU-Guaraní): estos dos hooks ya
   // traen los horarios por comisión inscripta y las mesas de final del
@@ -32,6 +35,24 @@ export default function StudentDashboard() {
     () => enrolledBoards.filter(({ board }) => !isPast(board.scheduledAt)),
     [enrolledBoards],
   );
+
+  // El summary solo trae cursadas activas; las cerradas (Regular/Promocionado/
+  // Libre) salen del historial. Si falla no bloqueamos el home: el panel
+  // queda vacío y el alumno igual puede ir a /historial.
+  useEffect(() => {
+    let cancelled = false;
+    getStudentHistory()
+      .then((data) => {
+        if (cancelled) return;
+        setCompletedCourses(
+          (data?.courses ?? []).filter((c) => c.result !== "EN_CURSO" && c.result !== "BAJA"),
+        );
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +90,8 @@ export default function StudentDashboard() {
             <CourseList courses={summary.currentCourses} />
             <UpcomingExamBoards boards={upcomingBoards} />
           </div>
+
+          <CompletedCourses courses={completedCourses} />
 
           <WeeklyAgenda schedules={weekSchedules} />
         </>

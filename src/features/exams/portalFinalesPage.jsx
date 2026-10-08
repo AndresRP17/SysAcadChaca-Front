@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "../../context/ToastContext";
 import { useStudentExamBoards } from "./hooks/useStudentExamBoards";
 import { getResultStatus, getResultLabel } from "./services/examEnrollmentService";
 import { getErrorMessage } from "../../shared/api/api";
@@ -20,6 +21,7 @@ function badgeForEnrollment(enrollment) {
 
 export default function PortalFinalesPage() {
   const { student, available, enrolled, loading, error, setError, enroll, unenroll } = useStudentExamBoards();
+  const { showToast } = useToast();
 
   const { periods, loading: loadingPeriods, isOpen: enrollmentOpen } = useOpenEnrollmentPeriods("FINAL");
   const [submitting, setSubmitting] = useState(false);
@@ -30,6 +32,7 @@ export default function PortalFinalesPage() {
     setError("");
     try {
       await enroll(examBoardId);
+      showToast("Inscripción a la mesa confirmada");
     } catch (e) {
       setError(getErrorMessage(e, "No pudimos inscribirte a la mesa."));
     } finally {
@@ -44,6 +47,7 @@ export default function PortalFinalesPage() {
     setError("");
     try {
       await unenroll(enrollment.id);
+      showToast("Baja de la mesa confirmada");
     } catch (e) {
       setError(getErrorMessage(e, "No pudimos dar de baja tu inscripción."));
     } finally {
