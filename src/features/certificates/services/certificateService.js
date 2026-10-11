@@ -6,8 +6,10 @@ export async function getCertificates({ status } = {}) {
   return data;
 }
 
-export async function requestCertificate(type) {
-  const { data } = await api.post("/certificates", { type });
+// studentId solo lo usan Administrador/Bedel para pedirlo en nombre de un alumno;
+// para el Alumno el backend lo ignora y usa su propio legajo.
+export async function requestCertificate(type, studentId) {
+  const { data } = await api.post("/certificates", studentId ? { type, student_id: studentId } : { type });
   return data;
 }
 
