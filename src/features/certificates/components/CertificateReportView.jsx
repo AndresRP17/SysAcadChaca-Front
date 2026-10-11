@@ -23,7 +23,7 @@ export default function CertificateReportView({ certificate, report }) {
 
   const courses = isAlumnoRegular
     ? []
-    : (report.courses ?? []).filter((c) => !approvedOnly || c.result === "PROMOCIONADO" || c.result === "REGULAR");
+    : (report.courses ?? []).filter((c) => !approvedOnly || c.result === "PROMOCIONADO");
 
   const approvedExams = isAlumnoRegular
     ? []
@@ -52,7 +52,7 @@ export default function CertificateReportView({ certificate, report }) {
 
       {!isAlumnoRegular && (
         <div className="dash-panel">
-          <h3 className="dash-panel-title">{approvedOnly ? "Materias aprobadas (cursada)" : "Materias cursadas"}</h3>
+          <h3 className="dash-panel-title">{approvedOnly ? "Materias promocionadas" : "Materias cursadas"}</h3>
           {courses.length === 0 ? (
             <p className="users-empty">No hay materias para mostrar.</p>
           ) : (
