@@ -10,6 +10,8 @@ import {
 } from "./services/certificateService";
 import CertificateReportView from "./components/CertificateReportView";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
+import Combobox from "../../shared/ui/Combobox";
+import { getStudents } from "../users/services/studentService";
 import "../users/usersPage.css";
 import "./certificatesPage.css";
 
@@ -55,6 +57,8 @@ export default function CertificatesPage() {
   const [busyId, setBusyId] = useState(null);
   const [reportView, setReportView] = useState(null); // { certificate, report }
   const [confirmAction, setConfirmAction] = useState(null); // { type: 'request'|'issue'|'reject', payload, label }
+  const [students, setStudents] = useState([]);
+  const [selectedStudentId, setSelectedStudentId] = useState("");
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -72,6 +76,21 @@ export default function CertificatesPage() {
     reload();
   }, [reload]);
 
+  // Bedel/Administrador piden el certificado en nombre de un alumno: hace falta la lista para elegirlo.
+  useEffect(() => {
+    if (!canManage) return;
+    getStudents()
+      .then(setStudents)
+      .catch((e) => setError(getErrorMessage(e, "No pudimos cargar la lista de alumnos.")));
+  }, [canManage]);
+
+  const studentOptions = students.map((s) => ({
+    value: s.id,
+    label: `${s.lastName}, ${s.firstName} — legajo ${s.enrollmentNumber} (DNI ${s.nationalId}) · ${s.programName}`,
+    searchText: `${s.lastName} ${s.firstName} ${s.enrollmentNumber} ${s.nationalId} ${s.programName}`,
+  }));
+  const selectedStudent = students.find((s) => String(s.id) === String(selectedStudentId));
+
   function openConfirm(type, payload, label) {
     setConfirmAction({ type, payload, label });
   }
@@ -79,7 +98,7 @@ export default function CertificatesPage() {
   async function handleConfirmAction() {
     const action = confirmAction;
     if (action.type === "request") {
-      await requestCertificate(action.payload);
+      await requestCertificate(action.payload, canManage ? Number(selectedStudentId) : undefined);
     } else if (action.type === "issue") {
       setReportView(await issueCertificate(action.payload));
     } else if (action.type === "reject") {
@@ -139,6 +158,37 @@ export default function CertificatesPage() {
               Solicitar {t.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {canManage && (
+        <div className="dash-panel">
+          <h3 className="dash-panel-title">Nuevo certificado para un alumno</h3>
+          <div className="users-form-field" style={{ maxWidth: 480 }}>
+            <label className="users-form-label">Alumno</label>
+            <Combobox
+              options={studentOptions}
+              value={selectedStudentId}
+              onChange={setSelectedStudentId}
+              placeholder="Buscar por apellido, nombre, legajo o DNI..."
+              emptyLabel="No se encontraron alumnos"
+            />
+          </div>
+          <div className="certificate-types">
+            {TYPES.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                className="users-btn users-btn--primary"
+                disabled={!selectedStudentId}
+                onClick={() =>
+                  openConfirm("request", t.key, `${t.label} de ${selectedStudent?.lastName}, ${selectedStudent?.firstName}`)
+                }
+              >
+                Crear {t.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
