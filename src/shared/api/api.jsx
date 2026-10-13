@@ -25,7 +25,7 @@ api.interceptors.request.use((config) => {
 
 // Rutas públicas: un 401 acá es "credenciales inválidas", no una sesión vencida,
 // así que no corresponde cerrar sesión ni recargar (se perdería el mensaje).
-const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password", "/resend-verify-email"];
+const PUBLIC_PATHS = ["/login", "/logout", "/forgot-password", "/reset-password", "/resend-verify-email"];
 
 api.interceptors.response.use(
   (response) => response,
