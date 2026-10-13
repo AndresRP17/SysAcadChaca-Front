@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import "./Combobox.css";
 
 // Input de texto + lista desplegable de opciones filtradas. Reemplaza el
 // patrón de "input de búsqueda separado + <select>" por un único control.
 // options: [{ value, label, searchText? }]
-export default function Combobox({ options, value, onChange, placeholder, emptyLabel = "Sin resultados" }) {
+export default function Combobox({ options, value, onChange, placeholder, emptyLabel = "Sin resultados", id, ariaLabel }) {
+  const listId = useId();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
@@ -41,10 +42,24 @@ export default function Combobox({ options, value, onChange, placeholder, emptyL
   return (
     <div className="combobox" ref={rootRef}>
       <input
+        id={id}
         type="text"
         className="users-form-input"
+        role="combobox"
+        aria-expanded={open}
+        aria-controls={listId}
+        aria-autocomplete="list"
+        aria-label={id ? undefined : ariaLabel ?? placeholder}
+        autoComplete="off"
         value={query}
         placeholder={placeholder}
+        onKeyDown={(e) => {
+          if (e.key === "Escape" && open) {
+            e.stopPropagation();
+            setOpen(false);
+            setQuery(selected ? selected.label : "");
+          }
+        }}
         onFocus={() => setOpen(true)}
         onChange={(e) => {
           setQuery(e.target.value);
@@ -53,7 +68,7 @@ export default function Combobox({ options, value, onChange, placeholder, emptyL
         }}
       />
       {open && (
-        <ul className="combobox-list">
+        <ul className="combobox-list" id={listId}>
           {filtered.length === 0 && <li className="combobox-empty">{emptyLabel}</li>}
           {filtered.map((option) => (
             <li key={option.value}>

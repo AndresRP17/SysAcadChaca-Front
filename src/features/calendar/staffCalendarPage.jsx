@@ -224,8 +224,8 @@ export default function StaffCalendarPage() {
         <summary className="cal-filters-summary">Filtros{activeFilters > 0 ? ` (${activeFilters})` : ""}</summary>
         <div className="cal-filters-grid">
           <div className="users-form-field">
-            <label className="users-form-label">Carrera</label>
-            <Combobox
+            <label className="users-form-label" htmlFor="staffCalendarPage-1">Carrera</label>
+            <Combobox id="staffCalendarPage-1"
               options={programOptions}
               value={filters.programId}
               onChange={(v) => changeFilter("programId", v)}
@@ -233,8 +233,8 @@ export default function StaffCalendarPage() {
             />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Plan de estudio</label>
-            <Combobox
+            <label className="users-form-label" htmlFor="staffCalendarPage-2">Plan de estudio</label>
+            <Combobox id="staffCalendarPage-2"
               options={planOptions}
               value={filters.studyPlanId}
               onChange={(v) => changeFilter("studyPlanId", v)}
@@ -242,8 +242,8 @@ export default function StaffCalendarPage() {
             />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Aula</label>
-            <Combobox
+            <label className="users-form-label" htmlFor="staffCalendarPage-3">Aula</label>
+            <Combobox id="staffCalendarPage-3"
               options={classroomOptions}
               value={filters.classroomId}
               onChange={(v) => changeFilter("classroomId", v)}
@@ -251,8 +251,8 @@ export default function StaffCalendarPage() {
             />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Docente</label>
-            <Combobox
+            <label className="users-form-label" htmlFor="staffCalendarPage-4">Docente</label>
+            <Combobox id="staffCalendarPage-4"
               options={teacherOptions}
               value={filters.teacherId}
               onChange={(v) => changeFilter("teacherId", v)}

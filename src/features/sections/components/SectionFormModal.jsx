@@ -63,8 +63,8 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
     <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
-          <label className="users-form-label">Materia</label>
-          <select
+          <label className="users-form-label" htmlFor="sectionFormModal-1">Materia</label>
+          <select id="sectionFormModal-1"
             value={form.curriculum_course_id}
             onChange={(e) => handleChange("curriculum_course_id", e.target.value)}
             className="users-form-input"
@@ -80,8 +80,8 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Docente</label>
-          <select
+          <label className="users-form-label" htmlFor="sectionFormModal-2">Docente</label>
+          <select id="sectionFormModal-2"
             value={form.teacher_id}
             onChange={(e) => handleChange("teacher_id", e.target.value)}
             className="users-form-input"
@@ -97,8 +97,8 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Nombre de la comisión</label>
-          <input
+          <label className="users-form-label" htmlFor="sectionFormModal-3">Nombre de la comisión</label>
+          <input id="sectionFormModal-3"
             type="text"
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
@@ -110,9 +110,10 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
 
         <div className="users-form-row">
           <div className="users-form-field">
-            <label className="users-form-label">Año lectivo</label>
-            <input
+            <label className="users-form-label" htmlFor="sectionFormModal-4">Año lectivo</label>
+            <input id="sectionFormModal-4"
               type="number"
+              inputMode="numeric"
               min="2000"
               value={form.academic_year}
               onChange={(e) => handleChange("academic_year", e.target.value)}
@@ -121,8 +122,8 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
             <FieldError errors={fieldErrors} field="academic_year" />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Cuatrimestre</label>
-            <select
+            <label className="users-form-label" htmlFor="sectionFormModal-5">Cuatrimestre</label>
+            <select id="sectionFormModal-5"
               value={form.term}
               onChange={(e) => handleChange("term", e.target.value)}
               className="users-form-input"
@@ -134,9 +135,10 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
             <FieldError errors={fieldErrors} field="term" />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Cupo máximo</label>
-            <input
+            <label className="users-form-label" htmlFor="sectionFormModal-6">Cupo máximo</label>
+            <input id="sectionFormModal-6"
               type="number"
+              inputMode="numeric"
               min="1"
               value={form.max_capacity}
               onChange={(e) => handleChange("max_capacity", e.target.value)}
@@ -145,8 +147,8 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
             <FieldError errors={fieldErrors} field="max_capacity" />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Turno</label>
-            <select
+            <label className="users-form-label" htmlFor="sectionFormModal-7">Turno</label>
+            <select id="sectionFormModal-7"
               value={form.shift}
               onChange={(e) => handleChange("shift", e.target.value)}
               className="users-form-input"

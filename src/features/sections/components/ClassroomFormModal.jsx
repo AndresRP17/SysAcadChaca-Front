@@ -53,8 +53,8 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
     <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
-          <label className="users-form-label">Nombre</label>
-          <input
+          <label className="users-form-label" htmlFor="classroomFormModal-1">Nombre</label>
+          <input id="classroomFormModal-1"
             type="text"
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
@@ -64,8 +64,8 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Edificio</label>
-          <select
+          <label className="users-form-label" htmlFor="classroomFormModal-2">Edificio</label>
+          <select id="classroomFormModal-2"
             value={form.buildingId}
             onChange={(e) => handleChange("buildingId", e.target.value)}
             className="users-form-input"
@@ -82,9 +82,10 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
 
         <div className="users-form-row">
           <div className="users-form-field">
-            <label className="users-form-label">Capacidad</label>
-            <input
+            <label className="users-form-label" htmlFor="classroomFormModal-3">Capacidad</label>
+            <input id="classroomFormModal-3"
               type="number"
+              inputMode="numeric"
               min="1"
               value={form.capacity}
               onChange={(e) => handleChange("capacity", e.target.value)}
@@ -93,8 +94,8 @@ export default function ClassroomFormModal({ open, mode, initialData, onClose, o
             <FieldError errors={fieldErrors} field="capacity" />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Ubicación (ej. Planta baja, Ala norte)</label>
-            <input
+            <label className="users-form-label" htmlFor="classroomFormModal-4">Ubicación (ej. Planta baja, Ala norte)</label>
+            <input id="classroomFormModal-4"
               type="text"
               value={form.location}
               onChange={(e) => handleChange("location", e.target.value)}

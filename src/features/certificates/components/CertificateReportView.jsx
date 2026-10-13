@@ -12,6 +12,12 @@ const RESULT_LABELS = {
   BAJA: "Baja",
 };
 
+// "2026-09-27" -> "27/09/2026" (el backend manda la fecha ISO).
+function formatIssueDate(value) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value ?? ""));
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(value ?? "");
+}
+
 // El reporte que devuelve el backend al emitir (GET/PUT .../issue) es siempre
 // el mismo expediente completo para ANALITICO/MATERIAS_APROBADAS (ver
 // StudentHistoryService::summarizeForStudent) -- acá se decide qué mostrar de
@@ -31,9 +37,14 @@ export default function CertificateReportView({ certificate, report }) {
 
   return (
     <div className="certificate-report">
+      <header className="certificate-letterhead">
+        <p className="certificate-letterhead-univ">Universidad Tecnológica Nacional</p>
+        <p className="certificate-letterhead-fac">Facultad Regional Chacabuco</p>
+      </header>
       <h2 className="certificate-report-title">{TYPE_TITLES[certificate.type] ?? certificate.type}</h2>
       <p className="certificate-report-meta">
-        Emitido el {certificate.issueDate} — {certificate.issuedByName}
+        {certificate.id != null && <span>Folio N° {String(certificate.id).padStart(6, "0")} · </span>}
+        Emitido el {formatIssueDate(certificate.issueDate)} — {certificate.issuedByName}
       </p>
 
       <div className="dash-panel">
@@ -93,6 +104,13 @@ export default function CertificateReportView({ certificate, report }) {
           )}
         </div>
       )}
+
+      <div className="certificate-signature">
+        <div className="certificate-signature-line" />
+        <p className="certificate-signature-name">{certificate.issuedByName}</p>
+        <p className="certificate-signature-role">Secretaría Académica — Facultad Regional Chacabuco</p>
+        <p className="certificate-signature-date">Chacabuco, {formatIssueDate(certificate.issueDate)}</p>
+      </div>
 
       <button type="button" className="users-btn users-btn--primary no-print" onClick={() => window.print()}>
         Imprimir / Guardar como PDF

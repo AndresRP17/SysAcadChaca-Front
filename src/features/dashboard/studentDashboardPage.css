@@ -80,11 +80,11 @@
   font-family: Georgia, "Times New Roman", serif;
   font-size: 30px;
   margin: 0;
-  color: var(--navy);
+  color: var(--accent);
 }
 
 /* Ajuste puntual: en modo oscuro, .dash-stat-value usa un color
-   propio en vez de var(--navy), que ahí se ve con poco contraste. */
+   propio en vez de var(--accent), que ahí se ve con poco contraste. */
 [data-theme="dark"] .dash-stat-value {
   color: #8fb3e0;
 }

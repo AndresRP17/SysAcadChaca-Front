@@ -184,8 +184,8 @@ export default function CertificatesPage() {
         <div className="dash-panel">
           <h3 className="dash-panel-title">Nuevo certificado para un alumno</h3>
           <div className="users-form-field" style={{ maxWidth: 480 }}>
-            <label className="users-form-label">Alumno</label>
-            <Combobox
+            <label className="users-form-label" htmlFor="certificatesPage-1">Alumno</label>
+            <Combobox id="certificatesPage-1"
               options={studentOptions}
               value={selectedStudentId}
               onChange={setSelectedStudentId}

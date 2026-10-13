@@ -1,4 +1,4 @@
-import { formatDateTime, isPast } from "../../../shared/utils/formatters";
+import { classroomLabel, formatDateTime, isPast } from "../../../shared/utils/formatters";
 import { getResultStatus, getResultLabel } from "../services/examEnrollmentService";
 
 function statusBadgeClass(enrollment) {
@@ -27,7 +27,7 @@ export default function ActaDetail({ board, enrollments, loading, closed, canGra
           <h2 className="portal-section-title">{board.courseName}</h2>
           <p className="users-subtitle">
             {formatDateTime(board.scheduledAt)}
-            {board.classroomName ? ` · Aula ${board.classroomName}` : ""}
+            {board.classroomName ? ` · ${classroomLabel(board.classroomName)}` : ""}
           </p>
           {closed && (
             <p className="users-subtitle">

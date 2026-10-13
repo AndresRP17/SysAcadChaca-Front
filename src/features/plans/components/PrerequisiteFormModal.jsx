@@ -38,8 +38,8 @@ export default function PrerequisiteFormModal({ open, mode = "create", initialDa
     <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
-          <label className="users-form-label">Materia requerida</label>
-          <select
+          <label className="users-form-label" htmlFor="prerequisiteFormModal-1">Materia requerida</label>
+          <select id="prerequisiteFormModal-1"
             value={requiredCourseId}
             onChange={(e) => setRequiredCourseId(e.target.value)}
             className="users-form-input"
@@ -57,8 +57,8 @@ export default function PrerequisiteFormModal({ open, mode = "create", initialDa
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Condición</label>
-          <select
+          <label className="users-form-label" htmlFor="prerequisiteFormModal-2">Condición</label>
+          <select id="prerequisiteFormModal-2"
             value={conditionType}
             onChange={(e) => setConditionType(e.target.value)}
             className="users-form-input"

@@ -32,3 +32,98 @@
     background: var(--surface);
   }
 }
+
+/* Membrete y firma: se ven en pantalla y salen en la hoja impresa. */
+.certificate-letterhead {
+  text-align: center;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--text-primary);
+}
+
+.certificate-letterhead-univ {
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.certificate-letterhead-fac {
+  margin: 2px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.certificate-signature {
+  margin: 56px 0 32px auto;
+  width: min(320px, 100%);
+  text-align: center;
+  break-inside: avoid;
+}
+
+.certificate-signature-line {
+  border-top: 1px solid var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.certificate-signature-name,
+.certificate-signature-role,
+.certificate-signature-date {
+  margin: 0;
+  font-size: 13px;
+}
+
+.certificate-signature-role,
+.certificate-signature-date {
+  color: var(--text-secondary);
+}
+
+/* Hoja impresa: A4, fondo blanco, texto negro, sin menu ni botones. */
+@page {
+  size: A4;
+  margin: 20mm 18mm;
+}
+
+@media print {
+  html,
+  body,
+  .layout,
+  .layout-body,
+  .main-content {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .main-content {
+    padding: 0 !important;
+  }
+
+  .users-page {
+    padding: 0 !important;
+    max-width: none !important;
+    color: #000 !important;
+  }
+
+  .certificate-report .dash-panel {
+    background: #fff !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .certificate-report * {
+    color: #000 !important;
+  }
+
+  .certificate-report .dash-badge {
+    background: #fff !important;
+    border: 1px solid #000;
+  }
+
+  .certificate-letterhead,
+  .certificate-signature-line {
+    border-color: #000 !important;
+  }
+}

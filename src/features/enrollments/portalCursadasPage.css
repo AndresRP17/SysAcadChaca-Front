@@ -32,7 +32,7 @@
 }
 
 .portal-card--enrolled {
-  border-left: 3px solid var(--navy);
+  border-left: 3px solid var(--accent);
 }
 
 .portal-card-head {
@@ -142,7 +142,7 @@
 }
 
 .portal-acta-btn--active {
-  border-left: 3px solid var(--navy);
+  border-left: 3px solid var(--accent);
   font-weight: 600;
 }
 

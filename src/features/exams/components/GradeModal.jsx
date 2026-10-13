@@ -103,6 +103,7 @@ export default function GradeModal({ open, enrollment, onClose, onSubmit }) {
         <input
           id="acta-grade"
           type="number"
+          inputMode="decimal"
           min="1"
           max="10"
           step="1"
