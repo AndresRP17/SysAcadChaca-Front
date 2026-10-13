@@ -6,10 +6,10 @@
 // carreras/materias/planes/usuarios (sí alumnos: alta/edición/baja); Docente toma asistencia desde
 // el Calendario y gestiona notas/cierre desde la pantalla de cada comisión.
 export const LINKS_BY_ROLE = {
-  Administrador: ["usuarios", "alumnos", "planes", "cursadas", "calendario", "inscribir-alumno", "actas", "certificados"],
-  Alumno: ["alumno", "calendario", "historial", "mis-cursadas", "finales", "certificados"],
-  Docente: ["calendario", "mis-comisiones", "actas"],
-  Bedel: ["cursadas", "calendario", "alumnos", "inscribir-alumno", "actas", "certificados"],
+  Administrador: ["usuarios", "alumnos", "planes", "cursadas", "calendario", "inscribir-alumno", "actas", "certificados", "equivalencias"],
+  Alumno: ["alumno", "calendario", "historial", "mis-cursadas", "finales", "certificados", "equivalencias"],
+  Docente: ["calendario", "mis-comisiones", "actas", "equivalencias"],
+  Bedel: ["cursadas", "calendario", "alumnos", "inscribir-alumno", "actas", "certificados", "equivalencias"],
 };
 
 export function getDefaultRouteForRole(role) {

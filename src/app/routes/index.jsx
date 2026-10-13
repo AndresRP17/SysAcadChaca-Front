@@ -13,6 +13,7 @@ import StudentDashboardPage from "../../features/dashboard/studentDashboardPage"
 import HistorialAlumnoPage from "../../features/dashboard/historialAlumnoPage";
 import CertificatesPage from "../../features/certificates/certificatesPage";
 import PortalCursadasPage from "../../features/enrollments/portalCursadasPage";
+import EquivalencesPage from "../../features/equivalences/equivalencesPage";
 import BedelEnrollPage from "../../features/enrollments/bedelEnrollPage";
 import PortalFinalesPage from "../../features/exams/portalFinalesPage";
 import ActasPage from "../../features/exams/actasPage";
@@ -88,6 +89,14 @@ export const router = createBrowserRouter([
         element: (
           <RequireRole allow={getRolesAllowedForLink("certificados")}>
             <CertificatesPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/equivalencias",
+        element: (
+          <RequireRole allow={getRolesAllowedForLink("equivalencias")}>
+            <EquivalencesPage />
           </RequireRole>
         ),
       },
