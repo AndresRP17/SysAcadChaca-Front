@@ -9,10 +9,17 @@ export const LINKS_BY_ROLE = {
   Administrador: ["usuarios", "alumnos", "planes", "cursadas", "calendario", "inscribir-alumno", "actas", "certificados"],
   Alumno: ["alumno", "calendario", "historial", "mis-cursadas", "finales", "certificados"],
   Docente: ["calendario", "mis-comisiones", "actas"],
-  Bedel: ["cursadas", "calendario", "alumnos", "inscribir-alumno", "actas", "certificados"],
+  Bedel: ["calendario", "cursadas", "alumnos", "inscribir-alumno", "actas", "certificados"],
+};
+
+// Docente y Bedel aterrizan en el Calendario (lo que más usan: clases del día, asistencia, faltas).
+const LANDING_BY_ROLE = {
+  Docente: "/calendario",
+  Bedel: "/calendario",
 };
 
 export function getDefaultRouteForRole(role) {
+  if (LANDING_BY_ROLE[role]) return LANDING_BY_ROLE[role];
   const keys = LINKS_BY_ROLE[role] ?? [];
   if (keys.includes("usuarios")) return "/usuarios";
   if (keys.includes("planes")) return "/planes";

@@ -4,6 +4,7 @@
   flex-direction: column;
   align-items: stretch;
   gap: 10px;
+  margin: 0 0 12px 0;
   padding: 12px 14px;
   border: 1px solid var(--error);
   border-left-width: 4px;

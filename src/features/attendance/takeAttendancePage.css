@@ -165,3 +165,53 @@
     width: 260px;
   }
 }
+
+/* Buscador de alumnos (con listas largas) */
+.take-attendance-search {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.take-attendance-search .users-form-input {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.take-attendance-unmarked {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  min-height: 32px;
+}
+
+.take-attendance-more {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 12px;
+}
+
+.take-attendance-footer .form-error {
+  margin: 8px 0 0 0;
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  .take-attendance-search {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .take-attendance-search .users-form-input {
+    max-width: 320px;
+  }
+
+  .take-attendance-more {
+    width: auto;
+  }
+}
