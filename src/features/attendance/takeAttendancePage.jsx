@@ -31,7 +31,7 @@ function formatLongDate(isoDate) {
 }
 
 function normalize(text) {
-  return String(text).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  return String(text).normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 }
 
 const AttendanceRow = memo(function AttendanceRow({ row, onChoose }) {
@@ -181,7 +181,9 @@ export default function TakeAttendancePage() {
 
     for (let i = 0; i < pending.length; i += FALLBACK_CONCURRENCY) {
       const chunk = pending.slice(i, i + FALLBACK_CONCURRENCY);
-      await Promise.all(
+      // allSettled: si uno falla, los demas del grupo terminan igual antes de cortar, para que
+      // despues se pueda sincronizar exactamente que quedo guardado.
+      const outcomes = await Promise.allSettled(
         chunk.map(async (row) => {
           const payload = { enrollment_id: row.enrollmentId, date, present: row.present === true ? 1 : 0 };
           if (row.attendanceId) {
@@ -194,6 +196,8 @@ export default function TakeAttendancePage() {
           setProgress({ done, total: pending.length });
         }),
       );
+      const failed = outcomes.find((o) => o.status === "rejected");
+      if (failed) throw failed.reason;
     }
   }
 
@@ -218,8 +222,9 @@ export default function TakeAttendancePage() {
       navigate("/calendario");
     } catch (err) {
       await syncAttendanceIds();
+      const reason = getErrorMessage(err, "No se pudo guardar la asistencia.").replace(/[.\s]*$/, ".");
       setSaveError(
-        `${getErrorMessage(err, "No se pudo guardar la asistencia.")} Lo que marcaste sigue acá: podés volver a tocar "Guardar asistencia" sin perder nada.`,
+        `${reason} Lo que marcaste sigue acá: podés volver a tocar "Guardar asistencia" sin perder nada.`,
       );
       setSaving(false);
       setProgress(null);
