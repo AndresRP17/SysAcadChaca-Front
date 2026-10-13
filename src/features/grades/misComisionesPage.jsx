@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../../shared/api/api";
 import { getMyTeacherProfile } from "../users/services/teacherService";
 import { getMySections } from "../sections/services/sectionService";
-import { getSectionSchedules } from "../sections/services/sectionScheduleService";
-import { getEnrollmentsBySection } from "./services/enrollmentService";
 import LoadError from "../../shared/ui/LoadError";
 import "../users/usersPage.css";
 import "./misComisionesPage.css";
@@ -41,18 +39,15 @@ export default function MisComisionesPage() {
     setError("");
     try {
       const me = await getMyTeacherProfile();
-      const mySections = await getMySections(me.id);
+      // Un solo pedido trae las comisiones con sus horarios y la cantidad de inscriptos.
+      const mySections = await getMySections(me.id, { includeSchedules: true });
       setSections(mySections);
 
-      const [schedules, rosters] = await Promise.all([
-        Promise.all(mySections.map((s) => getSectionSchedules(s.id))),
-        Promise.all(mySections.map((s) => getEnrollmentsBySection(s.id).catch(() => null))),
-      ]);
       const scheduleMap = {};
       const countMap = {};
-      mySections.forEach((s, i) => {
-        scheduleMap[s.id] = schedules[i];
-        if (rosters[i]) countMap[s.id] = rosters[i].length;
+      mySections.forEach((s) => {
+        scheduleMap[s.id] = s.schedules ?? [];
+        if (s.enrolledCount !== undefined) countMap[s.id] = s.enrolledCount;
       });
       setSchedulesBySection(scheduleMap);
       setStudentCountBySection(countMap);
