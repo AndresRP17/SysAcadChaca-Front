@@ -13,8 +13,8 @@ export default function StudyPlanSelector({
     <>
       <div className="plans-selectors">
         <div className="users-form-field">
-          <label className="users-form-label">Carrera</label>
-          <select
+          <label className="users-form-label" htmlFor="studyPlanSelector-1">Carrera</label>
+          <select id="studyPlanSelector-1"
             value={programId}
             onChange={(e) => onProgramChange(e.target.value)}
             className="users-form-input"
@@ -28,8 +28,8 @@ export default function StudyPlanSelector({
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Plan de estudio</label>
-          <select
+          <label className="users-form-label" htmlFor="studyPlanSelector-2">Plan de estudio</label>
+          <select id="studyPlanSelector-2"
             value={studyPlanId}
             onChange={(e) => onStudyPlanChange(e.target.value)}
             className="users-form-input"

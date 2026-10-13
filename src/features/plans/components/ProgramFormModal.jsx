@@ -46,8 +46,8 @@ export default function ProgramFormModal({ open, mode, initialData, onClose, onS
     <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
-          <label className="users-form-label">Nombre</label>
-          <input
+          <label className="users-form-label" htmlFor="programFormModal-1">Nombre</label>
+          <input id="programFormModal-1"
             type="text"
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
@@ -58,8 +58,8 @@ export default function ProgramFormModal({ open, mode, initialData, onClose, onS
 
         <div className="users-form-row">
           <div className="users-form-field">
-            <label className="users-form-label">Código</label>
-            <input
+            <label className="users-form-label" htmlFor="programFormModal-2">Código</label>
+            <input id="programFormModal-2"
               type="text"
               value={form.code}
               onChange={(e) => handleChange("code", e.target.value)}
@@ -68,8 +68,8 @@ export default function ProgramFormModal({ open, mode, initialData, onClose, onS
             <FieldError errors={fieldErrors} field="code" />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Duración (años)</label>
-            <select
+            <label className="users-form-label" htmlFor="programFormModal-3">Duración (años)</label>
+            <select id="programFormModal-3"
               value={form.duration_years}
               onChange={(e) => handleChange("duration_years", e.target.value)}
               className="users-form-input"

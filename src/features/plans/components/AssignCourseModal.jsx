@@ -54,8 +54,8 @@ export default function AssignCourseModal({ open, courses, durationYears, onClos
     <Modal open={open} title="Asignar materia al plan" onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
-          <label className="users-form-label">Materia</label>
-          <Combobox
+          <label className="users-form-label" htmlFor="assignCourseModal-1">Materia</label>
+          <Combobox id="assignCourseModal-1"
             options={courseOptions}
             value={form.course_id}
             onChange={(v) => handleChange("course_id", v)}
@@ -67,8 +67,8 @@ export default function AssignCourseModal({ open, courses, durationYears, onClos
 
         <div className="users-form-row">
           <div className="users-form-field">
-            <label className="users-form-label">Año de cursada</label>
-            <select
+            <label className="users-form-label" htmlFor="assignCourseModal-2">Año de cursada</label>
+            <select id="assignCourseModal-2"
               value={form.year_number}
               onChange={(e) => handleChange("year_number", e.target.value)}
               className="users-form-input"
@@ -83,8 +83,8 @@ export default function AssignCourseModal({ open, courses, durationYears, onClos
             <FieldError errors={fieldErrors} field="year_number" />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Cuatrimestre</label>
-            <select
+            <label className="users-form-label" htmlFor="assignCourseModal-3">Cuatrimestre</label>
+            <select id="assignCourseModal-3"
               value={form.term}
               onChange={(e) => handleChange("term", e.target.value)}
               className="users-form-input"
@@ -97,9 +97,10 @@ export default function AssignCourseModal({ open, courses, durationYears, onClos
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Carga horaria total (según plan de estudios)</label>
-          <input
+          <label className="users-form-label" htmlFor="assignCourseModal-4">Carga horaria total (según plan de estudios)</label>
+          <input id="assignCourseModal-4"
             type="number"
+            inputMode="numeric"
             min="1"
             max="400"
             value={form.credit_hours}

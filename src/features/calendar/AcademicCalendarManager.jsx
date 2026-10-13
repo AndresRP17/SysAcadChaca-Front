@@ -124,6 +124,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
               <input
                 id="term-year"
                 type="number"
+                inputMode="numeric"
                 className="users-form-input"
                 value={termForm.year}
                 onChange={(e) => setTermForm({ ...termForm, year: e.target.value })}

@@ -52,8 +52,8 @@ export default function GrillaHorariaTab() {
 
       <div className="plans-selectors">
         <div className="users-form-field">
-          <label className="users-form-label">Carrera</label>
-          <select value={programId} onChange={(e) => setProgramId(e.target.value)} className="users-form-input">
+          <label className="users-form-label" htmlFor="grillaHorariaTab-1">Carrera</label>
+          <select id="grillaHorariaTab-1" value={programId} onChange={(e) => setProgramId(e.target.value)} className="users-form-input">
             {programs.length === 0 && <option value="">No hay carreras cargadas</option>}
             {programs.length > 0 && <option value="">Seleccioná una carrera...</option>}
             {programs.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -61,8 +61,8 @@ export default function GrillaHorariaTab() {
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Plan de estudio</label>
-          <select
+          <label className="users-form-label" htmlFor="grillaHorariaTab-2">Plan de estudio</label>
+          <select id="grillaHorariaTab-2"
             value={studyPlanId}
             onChange={(e) => setStudyPlanId(e.target.value)}
             className="users-form-input"

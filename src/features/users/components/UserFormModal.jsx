@@ -115,8 +115,8 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
       <form onSubmit={handleSubmit} className="users-form" noValidate>
         {!studentsOnly && (
         <div className="users-form-field">
-          <label className="users-form-label">Rol</label>
-          <select
+          <label className="users-form-label" htmlFor="userFormModal-1">Rol</label>
+          <select id="userFormModal-1"
             value={form.rol}
             onChange={(e) => handleChange("rol", e.target.value)}
             className="users-form-input"
@@ -131,8 +131,8 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
 
         <div className="users-form-row">
           <div className="users-form-field">
-            <label className="users-form-label">Nombre</label>
-            <input
+            <label className="users-form-label" htmlFor="userFormModal-2">Nombre</label>
+            <input id="userFormModal-2"
               type="text"
               value={form.first_name}
               onChange={(e) => handleChange("first_name", e.target.value)}
@@ -141,8 +141,8 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
             <FieldError errors={fieldErrors} field="first_name" />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Apellido</label>
-            <input
+            <label className="users-form-label" htmlFor="userFormModal-3">Apellido</label>
+            <input id="userFormModal-3"
               type="text"
               value={form.last_name}
               onChange={(e) => handleChange("last_name", e.target.value)}
@@ -154,9 +154,11 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
 
         <div className="users-form-row">
           <div className="users-form-field">
-            <label className="users-form-label">Email</label>
-            <input
+            <label className="users-form-label" htmlFor="userFormModal-4">Email</label>
+            <input id="userFormModal-4"
               type="email"
+              inputMode="email"
+              autoComplete="off"
               value={form.email}
               onChange={(e) => handleChange("email", e.target.value)}
               className="users-form-input"
@@ -164,9 +166,11 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
             <FieldError errors={fieldErrors} field="email" />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">DNI</label>
-            <input
+            <label className="users-form-label" htmlFor="userFormModal-5">DNI</label>
+            <input id="userFormModal-5"
               type="text"
+              inputMode="numeric"
+              autoComplete="off"
               value={form.national_id}
               onChange={(e) => handleChange("national_id", e.target.value)}
               className="users-form-input"
@@ -176,11 +180,12 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">
+          <label className="users-form-label" htmlFor="userFormModal-6">
             Contraseña {mode === "edit" && "(dejar vacío para no cambiarla)"}
           </label>
-          <input
+          <input id="userFormModal-6"
             type="password"
+            autoComplete="new-password"
             value={form.password}
             onChange={(e) => handleChange("password", e.target.value)}
             className="users-form-input"
@@ -191,8 +196,8 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
         {form.rol === "Alumno" ? (
           <>
             <div className="users-form-field">
-              <label className="users-form-label">Plan de estudio</label>
-              <select
+              <label className="users-form-label" htmlFor="userFormModal-7">Plan de estudio</label>
+              <select id="userFormModal-7"
                 value={form.study_plan_id}
                 onChange={(e) => handleChange("study_plan_id", e.target.value)}
                 className="users-form-input"
@@ -210,13 +215,13 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
             <div className="users-form-row">
               {mode === "edit" && (
                 <div className="users-form-field">
-                  <label className="users-form-label">Legajo</label>
-                  <input type="text" value={form.enrollment_number} disabled className="users-form-input" />
+                  <label className="users-form-label" htmlFor="userFormModal-8">Legajo</label>
+                  <input id="userFormModal-8" type="text" value={form.enrollment_number} disabled className="users-form-input" />
                 </div>
               )}
               <div className="users-form-field">
-                <label className="users-form-label">Fecha de ingreso</label>
-                <input
+                <label className="users-form-label" htmlFor="userFormModal-9">Fecha de ingreso</label>
+                <input id="userFormModal-9"
                   type="date"
                   value={form.enrollment_date}
                   onChange={(e) => handleChange("enrollment_date", e.target.value)}
@@ -243,8 +248,8 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
             <div className="users-form-row">
               {(mode === "edit" || form.manual_employee_number) && (
                 <div className="users-form-field">
-                  <label className="users-form-label">Legajo</label>
-                  <input
+                  <label className="users-form-label" htmlFor="userFormModal-10">Legajo</label>
+                  <input id="userFormModal-10"
                     type="text"
                     value={form.employee_number}
                     onChange={(e) => handleChange("employee_number", e.target.value)}
@@ -255,8 +260,8 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
                 </div>
               )}
               <div className="users-form-field">
-                <label className="users-form-label">Título</label>
-                <input
+                <label className="users-form-label" htmlFor="userFormModal-11">Título</label>
+                <input id="userFormModal-11"
                   type="text"
                   value={form.degree}
                   onChange={(e) => handleChange("degree", e.target.value)}

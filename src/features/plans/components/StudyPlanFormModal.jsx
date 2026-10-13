@@ -50,9 +50,10 @@ export default function StudyPlanFormModal({ open, mode = "create", initialData,
     <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
-          <label className="users-form-label">Año de resolución</label>
-          <input
+          <label className="users-form-label" htmlFor="studyPlanFormModal-1">Año de resolución</label>
+          <input id="studyPlanFormModal-1"
             type="number"
+            inputMode="numeric"
             min="1990"
             value={form.resolution_year}
             onChange={(e) => handleChange("resolution_year", e.target.value)}

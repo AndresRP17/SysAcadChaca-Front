@@ -88,8 +88,8 @@ export default function CourseFormModal({ open, mode, initialData, existingCodes
     <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
-          <label className="users-form-label">Nombre</label>
-          <input
+          <label className="users-form-label" htmlFor="courseFormModal-1">Nombre</label>
+          <input id="courseFormModal-1"
             type="text"
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
@@ -99,8 +99,8 @@ export default function CourseFormModal({ open, mode, initialData, existingCodes
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Código</label>
-          <input
+          <label className="users-form-label" htmlFor="courseFormModal-2">Código</label>
+          <input id="courseFormModal-2"
             type="text"
             value={form.code}
             onChange={(e) => handleChange("code", e.target.value)}

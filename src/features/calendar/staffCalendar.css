@@ -136,8 +136,8 @@
 }
 
 .cal-day--selected {
-  border-color: var(--navy);
-  box-shadow: 0 0 0 2px var(--navy);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .cal-day--holiday {

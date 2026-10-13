@@ -275,8 +275,8 @@ export default function BedelEnrollPage() {
 
       {!loadingStudents && (
         <div className="users-form-field" style={{ maxWidth: 480 }}>
-          <label className="users-form-label">Alumno</label>
-          <Combobox
+          <label className="users-form-label" htmlFor="bedelEnrollPage-1">Alumno</label>
+          <Combobox id="bedelEnrollPage-1"
             options={studentOptions}
             value={selectedStudentId}
             onChange={setSelectedStudentId}

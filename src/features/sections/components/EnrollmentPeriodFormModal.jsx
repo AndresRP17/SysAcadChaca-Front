@@ -94,6 +94,7 @@ export default function EnrollmentPeriodFormModal({ open, mode, initialData, onC
             <input
               id="ep-year"
               type="number"
+              inputMode="numeric"
               min="2000"
               value={form.academic_year}
               onChange={(e) => handleChange("academic_year", e.target.value)}

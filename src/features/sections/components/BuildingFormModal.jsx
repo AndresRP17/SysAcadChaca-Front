@@ -46,8 +46,8 @@ export default function BuildingFormModal({ open, mode, initialData, onClose, on
     <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
-          <label className="users-form-label">Nombre</label>
-          <input
+          <label className="users-form-label" htmlFor="buildingFormModal-1">Nombre</label>
+          <input id="buildingFormModal-1"
             type="text"
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
@@ -57,8 +57,8 @@ export default function BuildingFormModal({ open, mode, initialData, onClose, on
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Dirección</label>
-          <input
+          <label className="users-form-label" htmlFor="buildingFormModal-2">Dirección</label>
+          <input id="buildingFormModal-2"
             type="text"
             value={form.address}
             onChange={(e) => handleChange("address", e.target.value)}
