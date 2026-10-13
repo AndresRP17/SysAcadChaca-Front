@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { useToast } from "../../context/ToastContext";
+import LoadError from "../../shared/ui/LoadError";
+import FormError from "../../shared/ui/FormError";
 import { getErrorMessage } from "../../shared/api/api";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import { formatDate } from "./ClassSheet";
@@ -17,6 +20,7 @@ const currentYear = new Date().getFullYear();
 // Calendario academico: fechas de cursado de cada cuatrimestre y feriados. Sin esas
 // fechas el calendario no puede mostrar las clases de las comisiones.
 export default function AcademicCalendarManager({ onBack, onChanged }) {
+  const { showToast } = useToast();
   const [terms, setTerms] = useState([]);
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,6 +68,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
         end_date: termForm.end,
       });
       setTermForm((f) => ({ ...f, start: "", end: "" }));
+      showToast("Cuatrimestre agregado.");
       await reload();
       onChanged();
     } catch (err) {
@@ -81,6 +86,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
     try {
       await createNonTeachingDay({ date: holidayForm.date, reason: holidayForm.reason.trim() });
       setHolidayForm({ date: "", reason: "" });
+      showToast("Feriado agregado.");
       await reload();
       onChanged();
     } catch (err) {
@@ -91,6 +97,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
   async function confirmDelete() {
     if (toDelete.kind === "term") await deleteAcademicTerm(toDelete.item.id);
     else await deleteNonTeachingDay(toDelete.item.id);
+    showToast(toDelete.kind === "term" ? "Cuatrimestre eliminado." : "Feriado eliminado.");
     setToDelete(null);
     await reload();
     onChanged();
@@ -108,7 +115,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
         </button>
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={reload} />
       {loading && <p className="users-empty">Cargando...</p>}
 
       <section className="cal-card">
@@ -162,8 +169,8 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
               />
             </div>
           </div>
-          {termError && <p className="users-form-error" role="alert">{termError}</p>}
           <button type="submit" className="users-btn users-btn--primary">Agregar cuatrimestre</button>
+          <FormError message={termError} />
         </form>
 
         {!loading && terms.length === 0 && <p className="users-empty">Todavía no hay cuatrimestres cargados.</p>}
@@ -214,8 +221,8 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
               />
             </div>
           </div>
-          {holidayError && <p className="users-form-error" role="alert">{holidayError}</p>}
           <button type="submit" className="users-btn users-btn--primary">Agregar feriado</button>
+          <FormError message={holidayError} />
         </form>
 
         {!loading && holidays.length === 0 && <p className="users-empty">Todavía no hay feriados cargados.</p>}

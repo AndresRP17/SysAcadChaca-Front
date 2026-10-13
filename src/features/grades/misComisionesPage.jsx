@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../../shared/api/api";
 import { getMyTeacherProfile } from "../users/services/teacherService";
 import { getMySections } from "../sections/services/sectionService";
-import { getSectionSchedules } from "../sections/services/sectionScheduleService";
-import { getEnrollmentsBySection } from "./services/enrollmentService";
+import LoadError from "../../shared/ui/LoadError";
 import "../users/usersPage.css";
 import "./misComisionesPage.css";
 
@@ -35,46 +34,43 @@ export default function MisComisionesPage() {
   const [error, setError] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("");
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      setError("");
-      try {
-        const me = await getMyTeacherProfile();
-        const mySections = await getMySections(me.id);
-        setSections(mySections);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const me = await getMyTeacherProfile();
+      // Un solo pedido trae las comisiones con sus horarios y la cantidad de inscriptos.
+      const mySections = await getMySections(me.id, { includeSchedules: true });
+      setSections(mySections);
 
-        const [schedules, rosters] = await Promise.all([
-          Promise.all(mySections.map((s) => getSectionSchedules(s.id))),
-          Promise.all(mySections.map((s) => getEnrollmentsBySection(s.id).catch(() => null))),
-        ]);
-        const scheduleMap = {};
-        const countMap = {};
-        mySections.forEach((s, i) => {
-          scheduleMap[s.id] = schedules[i];
-          if (rosters[i]) countMap[s.id] = rosters[i].length;
-        });
-        setSchedulesBySection(scheduleMap);
-        setStudentCountBySection(countMap);
+      const scheduleMap = {};
+      const countMap = {};
+      mySections.forEach((s) => {
+        scheduleMap[s.id] = s.schedules ?? [];
+        if (s.enrolledCount !== undefined) countMap[s.id] = s.enrolledCount;
+      });
+      setSchedulesBySection(scheduleMap);
+      setStudentCountBySection(countMap);
 
-        // Por defecto se ve solo el cuatrimestre más reciente -- con varios
-        // años de comisiones acumuladas (nunca se borran, ni las cerradas),
-        // mostrarlas todas juntas y sin agrupar se vuelve ilegible.
-        if (mySections.length > 0) {
-          const [latest] = [...mySections].sort(
-            (a, b) => b.academicYear - a.academicYear || b.term - a.term,
-          );
-          setSelectedPeriod(periodKey(latest));
-        }
-      } catch (err) {
-        setError(getErrorMessage(err, "No se pudieron cargar tus comisiones."));
-      } finally {
-        setLoading(false);
+      // Por defecto se ve solo el cuatrimestre más reciente -- con varios
+      // años de comisiones acumuladas (nunca se borran, ni las cerradas),
+      // mostrarlas todas juntas y sin agrupar se vuelve ilegible.
+      if (mySections.length > 0) {
+        const [latest] = [...mySections].sort(
+          (a, b) => b.academicYear - a.academicYear || b.term - a.term,
+        );
+        setSelectedPeriod(periodKey(latest));
       }
+    } catch (err) {
+      setError(getErrorMessage(err, "No se pudieron cargar tus comisiones."));
+    } finally {
+      setLoading(false);
     }
-
-    load();
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const periodOptions = useMemo(() => {
     const keys = new Set(sections.map(periodKey));
@@ -103,7 +99,7 @@ export default function MisComisionesPage() {
         </div>
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={load} />
 
       {sections.length === 0 && !error && (
         <p className="users-empty">No tenés comisiones asignadas todavía.</p>

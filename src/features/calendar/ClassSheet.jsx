@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getErrorMessage } from "../../shared/api/api";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
+import FormError from "../../shared/ui/FormError";
+import { useToast } from "../../context/ToastContext";
 import { createCancelledClass, deleteCancelledClass, getCancelledClasses } from "./services/staffCalendarService";
 import "./staffCalendar.css";
 
@@ -14,6 +16,7 @@ export function formatDate(isoDate) {
 // Hoja con el detalle de una clase y sus acciones. En celular ocupa el borde inferior de la
 // pantalla (casi completa); en escritorio es un panel centrado.
 export default function ClassSheet({ item, info, onClose, onChanged, onOpenSection }) {
+  const { showToast } = useToast();
   const [mode, setMode] = useState("view"); // view | cancel
   const [reason, setReason] = useState(DEFAULT_REASON);
   const [busy, setBusy] = useState(false);
@@ -41,6 +44,7 @@ export default function ClassSheet({ item, info, onClose, onChanged, onOpenSecti
     setError("");
     try {
       await createCancelledClass(item.sectionId, item.date, text);
+      showToast(`Clase del ${formatDate(item.date)} marcada como cancelada.`);
       await onChanged();
     } catch (e) {
       setError(getErrorMessage(e, "No se pudo marcar la falta."));
@@ -52,6 +56,7 @@ export default function ClassSheet({ item, info, onClose, onChanged, onOpenSecti
     const list = await getCancelledClasses(item.sectionId);
     const found = list.find((c) => c.date === item.date);
     if (found) await deleteCancelledClass(found.id);
+    showToast("Cancelación quitada: la clase vuelve a dictarse.");
     setConfirmRemove(false);
     await onChanged();
   }
@@ -113,12 +118,6 @@ export default function ClassSheet({ item, info, onClose, onChanged, onOpenSecti
             )}
           </dl>
 
-          {error && (
-            <p className="users-form-error" role="alert">
-              {error}
-            </p>
-          )}
-
           {mode === "cancel" && (
             <div className="cal-sheet-cancel">
               <p className="users-confirm-text">
@@ -145,6 +144,7 @@ export default function ClassSheet({ item, info, onClose, onChanged, onOpenSecti
                   Confirmar cancelación
                 </button>
               </div>
+              <FormError message={error} />
             </div>
           )}
 

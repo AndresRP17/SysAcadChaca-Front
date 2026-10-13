@@ -5,7 +5,7 @@ import { SiInstagram, SiFacebook, SiX, SiYoutube } from "@icons-pack/react-simpl
 import { useAuth } from "../../../../../context/AuthContext";
 import { useTheme } from "../../../../../context/ThemeContext";
 import { getDefaultRouteForRole } from "../../../../layout/roleLinks";
-import { getErrorMessage } from "../../../../../shared/api/api";
+import { getErrorMessage, SESSION_EXPIRED_KEY } from "../../../../../shared/api/api";
 import utnLogo from "./utn-logo.jpg";
 import "./login.css";
 
@@ -20,6 +20,16 @@ export default function Login() {
   const [focused, setFocused] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // El interceptor de la API deja esta marca cuando un 401 cierra la sesión.
+  const [expiredNotice] = useState(() => {
+    try {
+      const expired = sessionStorage.getItem(SESSION_EXPIRED_KEY) === "1";
+      sessionStorage.removeItem(SESSION_EXPIRED_KEY);
+      return expired;
+    } catch {
+      return false;
+    }
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -150,7 +160,16 @@ export default function Login() {
                 </div>
               </div>
 
-              {error && <p className="sysacad-error">{error}</p>}
+              {expiredNotice && !error && (
+                <p className="sysacad-error" role="status">
+                  Tu sesión expiró, ingresá de nuevo.
+                </p>
+              )}
+              {error && (
+                <p className="sysacad-error" role="alert">
+                  {error}
+                </p>
+              )}
 
               <label className="sysacad-checkbox-row">
                 <input

@@ -16,6 +16,7 @@ import { todayIso } from "../../shared/utils/formatters";
 import { getCalendar } from "./services/calendarService";
 import { AgendaEvent, GridEvent } from "./calendarEventViews";
 import Modal from "../../shared/ui/Modal";
+import LoadError from "../../shared/ui/LoadError";
 import "../users/usersPage.css";
 import "./calendarPage.css";
 import "./calendarEvents.css";
@@ -92,7 +93,35 @@ function toCalendarEvents(classes, isDocente) {
   return events;
 }
 
+// El calendario de Schedule-X pide sus eventos al montarse: para "Reintentar" se remonta
+// entero (cambiando la key) en vez de intentar forzarle una recarga desde afuera.
 export default function CalendarPage() {
+  const [attempt, setAttempt] = useState(0);
+  return <CalendarContent key={attempt} onRetry={() => setAttempt((n) => n + 1)} />;
+}
+
+function addDays(isoDate, delta) {
+  const d = new Date(`${isoDate}T00:00:00`);
+  d.setDate(d.getDate() + delta);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// Asistencia del Alumno: presentes sobre las clases en las que ya hay asistencia cargada.
+// El backend limita cada pedido a 100 dias, asi que se piden los ultimos 200 en dos tandas.
+async function loadAttendanceSummary() {
+  const today = todayIso();
+  const ranges = [
+    [addDays(today, -199), addDays(today, -100)],
+    [addDays(today, -99), today],
+  ];
+  const results = await Promise.all(ranges.map(([from, to]) => getCalendar(from, to)));
+  const classes = results.flatMap((r) => r.events).filter((c) => c.status === "SCHEDULED" && c.attendanceStatus);
+  const present = classes.filter((c) => c.attendanceStatus === "PRESENT").length;
+  return { total: classes.length, present, percentage: classes.length ? Math.round((present / classes.length) * 100) : null };
+}
+
+function CalendarContent({ onRetry }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isDocente = user?.role === "Docente";
@@ -101,6 +130,8 @@ export default function CalendarPage() {
   const [today, setToday] = useState({ classes: [], loaded: false });
   const [missingTerms, setMissingTerms] = useState([]);
   const [error, setError] = useState("");
+  const [todayError, setTodayError] = useState("");
+  const [attendance, setAttendance] = useState(null); // { total, present, percentage } (solo Alumno)
   const [detail, setDetail] = useState(null); // { title, lines } de la clase tocada
 
   const classesRef = useRef({}); // clases del rango visible por id de evento, para resolver el clic
@@ -191,10 +222,21 @@ export default function CalendarPage() {
     const date = todayIso();
     getCalendar(date, date)
       .then((data) => setToday({ classes: data.events, loaded: true }))
-      .catch(() => setToday({ classes: [], loaded: true }));
+      .catch((err) => {
+        setTodayError(getErrorMessage(err, "No se pudieron cargar las clases de hoy."));
+        setToday({ classes: [], loaded: true });
+      });
   }, []);
 
-  const todayClasses = today.classes.filter((c) => c.status === "SCHEDULED");
+  useEffect(() => {
+    if (!isAlumno) return;
+    loadAttendanceSummary()
+      .then(setAttendance)
+      .catch(() => setAttendance(null)); // dato accesorio: si falla, simplemente no se muestra
+  }, [isAlumno]);
+
+  // Se listan las clases de hoy aunque haya un feriado cargado: el feriado se avisa aparte.
+  const todayClasses = today.classes.filter((c) => c.status === "SCHEDULED" || c.status === "CANCELLED");
   const todayHoliday = today.classes.find((c) => c.status === "HOLIDAY");
 
   return (
@@ -208,7 +250,17 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error || todayError} onRetry={onRetry} />
+
+      {isAlumno && attendance && attendance.total > 0 && (
+        <p className="calendar-attendance" aria-label="Resumen de tu asistencia">
+          <strong>Tu asistencia: {attendance.percentage}%</strong>
+          <span>
+            {attendance.present} presente{attendance.present === 1 ? "" : "s"} de {attendance.total}{" "}
+            {attendance.total === 1 ? "clase con asistencia cargada" : "clases con asistencia cargada"} (últimos 200 días)
+          </span>
+        </p>
+      )}
 
       {missingTerms.length > 0 && (
         <p className="users-form-error">
@@ -221,28 +273,33 @@ export default function CalendarPage() {
       <section className="calendar-today">
         <h2 className="calendar-today-title">Hoy · {formatDate(todayIso())}</h2>
         {!today.loaded && <p className="users-empty">Cargando...</p>}
-        {today.loaded && todayHoliday && <p className="calendar-today-holiday">Feriado: {todayHoliday.reason}</p>}
-        {today.loaded && !todayHoliday && todayClasses.length === 0 && (
+        {today.loaded && todayHoliday && (
+          <p className="calendar-today-holiday">Feriado: {todayHoliday.reason}. No hay clases.</p>
+        )}
+        {today.loaded && !todayHoliday && !todayError && todayClasses.length === 0 && (
           <p className="users-empty">No tenés clases hoy.</p>
         )}
         <ul className="calendar-today-list">
           {todayClasses.map((c) => (
             <li key={`${c.sectionId}-${c.startTime}`} className="calendar-today-item">
               <div>
-                <p className="calendar-today-course">{c.courseName}</p>
+                <p className="calendar-today-course">
+                  {c.courseName}
+                  {c.status === "CANCELLED" && <span className="calendar-today-cancelled"> · Cancelada{c.reason ? `: ${c.reason}` : ""}</span>}
+                </p>
                 <p className="calendar-today-meta">
                   Comisión {c.sectionName} · {c.startTime}–{c.endTime}
                   {c.classroomName ? ` · ${c.classroomName}` : ""}
                 </p>
               </div>
-              {isAlumno && c.attendanceStatus && (
+              {isAlumno && c.status === "SCHEDULED" && c.attendanceStatus && (
                 <span
                   className={`cal-event-status ${c.attendanceStatus === "PRESENT" ? "cal-event-status--done" : "cal-event-status--absent"}`}
                 >
                   {c.attendanceStatus === "PRESENT" ? "Presente ✓" : "Ausente"}
                 </span>
               )}
-              {isDocente && (
+              {isDocente && c.status === "SCHEDULED" && (
                 <button
                   type="button"
                   className="users-btn users-btn--primary"

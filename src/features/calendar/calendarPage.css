@@ -114,3 +114,53 @@
   padding: 4px 0;
   text-align: left;
 }
+
+.calendar-attendance {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 16px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.calendar-attendance strong {
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.calendar-today-cancelled {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* Celular: la agenda del dia usa el scroll de la PAGINA, no uno interno propio (con alto fijo
+   la segunda clase quedaba cortada sin ninguna pista de que habia mas). */
+@media (max-width: 767px) {
+  .calendar-wrapper {
+    height: auto;
+    min-height: 0;
+  }
+
+  .calendar-wrapper .sx-react-calendar-wrapper,
+  .calendar-wrapper .sx__calendar-wrapper,
+  .calendar-wrapper .sx__calendar,
+  .calendar-wrapper .sx__view-container,
+  .calendar-wrapper .sx__month-agenda-wrapper {
+    height: auto;
+    max-height: none;
+  }
+
+  .calendar-wrapper .sx__view-container {
+    overflow: visible;
+  }
+
+  .calendar-wrapper .sx__month-agenda-events {
+    overflow: visible;
+    max-height: none;
+  }
+}

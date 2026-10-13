@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "../../context/ToastContext";
 import { useStudentExamBoards } from "./hooks/useStudentExamBoards";
 import { getResultStatus, getResultLabel } from "./services/examEnrollmentService";
 import { getErrorMessage } from "../../shared/api/api";
@@ -7,6 +8,7 @@ import EnrollmentPeriodBanner from "../enrollments/components/EnrollmentPeriodBa
 import { useOpenEnrollmentPeriods } from "../enrollments/hooks/useOpenEnrollmentPeriods";
 import ExamBoardCard from "./components/ExamBoardCard";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
+import LoadError from "../../shared/ui/LoadError";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
 import "../enrollments/portalCursadasPage.css";
@@ -19,7 +21,8 @@ function badgeForEnrollment(enrollment) {
 }
 
 export default function PortalFinalesPage() {
-  const { student, available, enrolled, loading, error, setError, enroll, unenroll } = useStudentExamBoards();
+  const { student, available, enrolled, loading, loadError, reload, enroll, unenroll } = useStudentExamBoards();
+  const { showToast } = useToast();
 
   const { periods, loading: loadingPeriods, isOpen: enrollmentOpen } = useOpenEnrollmentPeriods("FINAL");
   const [submitting, setSubmitting] = useState(false);
@@ -27,11 +30,11 @@ export default function PortalFinalesPage() {
 
   async function handleEnroll(examBoardId) {
     setSubmitting(true);
-    setError("");
     try {
       await enroll(examBoardId);
+      showToast("Inscripción a la mesa confirmada.");
     } catch (e) {
-      setError(getErrorMessage(e, "No pudimos inscribirte a la mesa."));
+      showToast(getErrorMessage(e, "No pudimos inscribirte a la mesa."), "error");
     } finally {
       setSubmitting(false);
     }
@@ -41,11 +44,11 @@ export default function PortalFinalesPage() {
     const enrollment = enrollmentToCancel;
     setEnrollmentToCancel(null);
     setSubmitting(true);
-    setError("");
     try {
       await unenroll(enrollment.id);
+      showToast("Baja de la mesa confirmada.");
     } catch (e) {
-      setError(getErrorMessage(e, "No pudimos dar de baja tu inscripción."));
+      showToast(getErrorMessage(e, "No pudimos dar de baja tu inscripción."), "error");
     } finally {
       setSubmitting(false);
     }
@@ -66,11 +69,11 @@ export default function PortalFinalesPage() {
 
       <EnrollmentPeriodBanner periods={periods} loading={loadingPeriods} label="mesas de examen" />
 
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={loadError} onRetry={reload} />
 
       {loading && <p className="users-empty">Cargando...</p>}
 
-      {!loading && (
+      {!loading && !loadError && (
         <>
           <section className="portal-section">
             <div className="plans-toolbar">

@@ -36,10 +36,11 @@ export function useStudentSections(studentIdOverride) {
   const [curriculumCourseIds, setCurriculumCourseIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   const reload = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setLoadError("");
     try {
       const currentStudent = studentIdOverride
         ? await getStudent(studentIdOverride)
@@ -64,7 +65,7 @@ export function useStudentSections(studentIdOverride) {
         setCurriculumCourseIds([]);
       }
     } catch (e) {
-      setError(getErrorMessage(e, "No pudimos cargar la oferta de cursadas."));
+      setLoadError(getErrorMessage(e, "No pudimos cargar la oferta de cursadas."));
     } finally {
       setLoading(false);
     }
@@ -139,5 +140,5 @@ export function useStudentSections(studentIdOverride) {
     await reload();
   }
 
-  return { student, available, enrolled, loading, error, setError, enroll, unenroll, reload };
+  return { student, available, enrolled, loading, error, setError, loadError, enroll, unenroll, reload };
 }

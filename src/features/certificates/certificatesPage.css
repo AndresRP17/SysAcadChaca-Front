@@ -21,3 +21,14 @@
   gap: 12px;
   margin: 12px 0 24px 0;
 }
+
+/* Celular: cada certificado es una tarjeta separada (las etiquetas salen de data-label). */
+@media (max-width: 700px) {
+  .certificates-table tbody tr {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    padding: 4px 0;
+    background: var(--surface);
+  }
+}

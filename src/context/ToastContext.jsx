@@ -14,7 +14,8 @@ export function ToastProvider({ children }) {
     (message, type = "success") => {
       const id = Date.now() + Math.random();
       setToasts((prev) => [...prev, { id, message, type }]);
-      setTimeout(() => dismissToast(id), 3500);
+      // Los errores quedan más tiempo en pantalla: hay que alcanzar a leerlos.
+      setTimeout(() => dismissToast(id), type === "error" ? 8000 : 4000);
     },
     [dismissToast],
   );
