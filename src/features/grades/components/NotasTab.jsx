@@ -178,8 +178,8 @@ export default function NotasTab({ sectionId, enrollments }) {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             className="users-form-input"
-                        aria-label={`Nota de ${row.studentName}`}
-                      />
+            aria-label="Nombre de la evaluación"
+          />
         </div>
         <div className="users-form-field">
           <label className="users-form-label">Fecha</label>
@@ -238,7 +238,7 @@ export default function NotasTab({ sectionId, enrollments }) {
                         value={row.gradeValue}
                         onChange={(e) => updateRow(row.enrollmentId, "gradeValue", e.target.value)}
                         className="users-form-input"
-                       
+                        aria-label={`Nota de ${row.studentName}`}
                       />
                     </td>
                     <td className="users-td users-td--center notas-cell" data-label="Condición">
