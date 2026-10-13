@@ -22,10 +22,27 @@
 
 .users-badge--active {
   background: #e7f3ea;
-  color: #2f7a41;
+  color: #1f6030;
 }
 
 .users-badge--inactive {
   background: #f5e7e3;
-  color: var(--error);
+  color: #8f3220;
+}
+
+[data-theme="dark"] .users-badge--active {
+  background: #1f3a2a;
+  color: #8be0ae;
+}
+
+[data-theme="dark"] .users-badge--inactive {
+  background: #4a2a22;
+  color: #ffb4a1;
+}
+
+/* Badge dentro de una linea de texto: separado del texto que lo precede. */
+:not(.users-badge, .dash-badge) + .users-badge,
+:not(.users-badge, .dash-badge) + .dash-badge,
+.users-badge + .users-badge {
+  margin-left: 6px;
 }

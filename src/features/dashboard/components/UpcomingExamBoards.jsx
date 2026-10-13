@@ -1,4 +1,4 @@
-import { formatDateTime } from "../../../shared/utils/formatters";
+import { classroomLabel, formatDateTime } from "../../../shared/utils/formatters";
 
 // Próximas mesas de final en las que el alumno está inscripto (ver
 // useStudentExamBoards().enrolled), ordenadas por fecha ascendente y ya
@@ -18,7 +18,7 @@ export default function UpcomingExamBoards({ boards }) {
               <div>
                 <p className="dash-list-item-title">{board.courseName}</p>
                 {board.classroomName && (
-                  <p className="dash-list-item-sub">Aula {board.classroomName}</p>
+                  <p className="dash-list-item-sub">{classroomLabel(board.classroomName)}</p>
                 )}
               </div>
               <span className="dash-event-date">{formatDateTime(board.scheduledAt)}</span>

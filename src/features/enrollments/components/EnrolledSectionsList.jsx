@@ -22,7 +22,7 @@ export default function EnrolledSectionsList({
                 Comisión {section.name} · {section.shift} · {section.academicYear}
               </p>
             </div>
-            <span className="users-badge users-badge--active">{enrollment.status}</span>
+            <span className="users-badge users-badge--active">{{ active: "Activa", ACTIVE: "Activa" }[enrollment.status] ?? enrollment.status}</span>
           </div>
 
           <ScheduleLines schedules={schedules} />

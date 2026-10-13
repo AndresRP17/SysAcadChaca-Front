@@ -30,7 +30,7 @@
 }
 
 .grilla-horaria-col--today {
-  border-color: var(--navy);
+  border-color: var(--accent);
   background: color-mix(in srgb, var(--bg) 92%, var(--navy) 8%);
 }
 
@@ -58,7 +58,7 @@
   background: var(--surface);
   background: color-mix(in srgb, var(--surface) 96%, var(--block-color, var(--navy)) 4%);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--block-color, var(--navy));
+  border-left: 3px solid var(--block-color, var(--accent));
   border-radius: 6px;
   padding: 8px;
   margin-bottom: 8px;
@@ -74,7 +74,7 @@
 
 .grilla-horaria-block-time {
   font-weight: 600;
-  color: var(--block-color, var(--navy));
+  color: var(--block-color, var(--accent));
   font-variant-numeric: tabular-nums;
 }
 

@@ -106,6 +106,7 @@ export default function PortalCursadasPage() {
               <h2 className="portal-section-title">Oferta disponible</h2>
               <input
                 type="search"
+                aria-label="Buscar materia, comisión o docente"
                 className="users-search-input"
                 placeholder="Buscar materia, comisión o docente"
                 value={search}
@@ -127,7 +128,7 @@ export default function PortalCursadasPage() {
             <div className="plans-toolbar">
               <h2 className="portal-section-title">Mis cursadas</h2>
               <p className="users-subtitle">
-                {enrolled.length} inscripción{enrolled.length !== 1 ? "es" : ""}
+                {enrolled.length} {enrolled.length !== 1 ? "inscripciones" : "inscripción"}
               </p>
             </div>
 

@@ -60,7 +60,10 @@ export default function CloseSectionModal({ open, section, onClose, onSubmit, on
               Regulariza con nota final ≥ {thresholds.minRegular}, promociona con ≥ {thresholds.minPromotion}.
             </p>
           )}
-          <p className="users-confirm-text">Esta acción no tiene vuelta atrás en la práctica. ¿Confirmás?</p>
+          <p className="users-confirm-text users-confirm-text--warning" role="alert">
+            Esta acción es irreversible: una vez cerrada, el resultado de cada alumno queda registrado y no se puede
+            deshacer. ¿Confirmás que querés cerrarla definitivamente?
+          </p>
 
           {error && <p className="users-form-error">{error}</p>}
 
@@ -70,11 +73,11 @@ export default function CloseSectionModal({ open, section, onClose, onSubmit, on
             </button>
             <button
               type="button"
-              className="users-btn users-btn--success"
+              className="users-btn users-btn--danger"
               onClick={handleConfirm}
               disabled={saving}
             >
-              {saving ? "Cerrando..." : "Cerrar comisión"}
+              {saving ? "Cerrando..." : "Sí, cerrar definitivamente"}
             </button>
           </div>
         </>

@@ -48,7 +48,7 @@ export default function Login() {
         <div className="sysacad-panel">
           <div className="sysacad-panel-texture" />
           <div className="sysacad-panel-top">
-            <img src={utnLogo} alt="UTN San Nicolás - Aula Chacabuco" className="sysacad-panel-logo" />
+            <img src={utnLogo} alt="UTN Facultad Regional Chacabuco" className="sysacad-panel-logo" />
             <h1 className="sysacad-wordmark">SysAcad</h1>
             <p className="sysacad-panel-text">
               Tu gestión académica, en un solo lugar: notas, inscripciones y
@@ -59,7 +59,7 @@ export default function Login() {
           <div className="sysacad-panel-bottom">
             <p className="sysacad-panel-note">
               Acceso exclusivo para alumnos y personal del Aula Chacabuco —
-              UTN Facultad Regional San Nicolás.
+              UTN Facultad Regional Chacabuco.
             </p>
           </div>
         </div>
@@ -72,12 +72,13 @@ export default function Login() {
               onClick={toggleDarkMode}
               aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
               className="sysacad-theme-toggle"
+              title={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
             >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
             <div className="sysacad-mobile-header">
-              <img src={utnLogo} alt="UTN San Nicolás - Aula Chacabuco" className="sysacad-mobile-logo" />
+              <img src={utnLogo} alt="UTN Facultad Regional Chacabuco" className="sysacad-mobile-logo" />
               <div>
                 <h1 className="sysacad-wordmark-sm">SysAcad</h1>
                 <p className="sysacad-eyebrow-sm">Aula Chacabuco</p>
@@ -85,7 +86,7 @@ export default function Login() {
             </div>
 
             <h2 className="sysacad-title">Bienvenido de nuevo</h2>
-            <p className="sysacad-subtitle">Ingresá con tu legajo para continuar.</p>
+            <p className="sysacad-subtitle">Ingresá con tu email para continuar.</p>
 
             <form onSubmit={handleSubmit} noValidate className="sysacad-form">
               {/* Email (el login real todavía no soporta legajo, solo email) */}
@@ -102,7 +103,7 @@ export default function Login() {
                   <input
                     id="legajo"
                     type="email"
-                    autoComplete="username"
+                    autoComplete="username" inputMode="email"
                     value={legajo}
                     onChange={(e) => setLegajo(e.target.value)}
                     onFocus={() => setFocused("legajo")}
@@ -177,7 +178,7 @@ export default function Login() {
       {/* Footer con redes sociales */}
       <footer className="sysacad-footer">
         <p className="sysacad-footer-copy">
-          © {new Date().getFullYear()} UTN Facultad Regional San Nicolás — Aula Chacabuco
+          © {new Date().getFullYear()} UTN Facultad Regional Chacabuco — Aula Chacabuco
         </p>
         <div className="sysacad-social-row">
           <a href="#" aria-label="Instagram" className="sysacad-social-link">

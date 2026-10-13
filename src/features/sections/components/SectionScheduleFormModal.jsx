@@ -17,7 +17,7 @@ export function formatTime(time) {
   return time?.slice(0, 5) ?? "";
 }
 
-export default function SectionScheduleFormModal({ open, mode = "create", initialData, classroomOptions, teacherId, onClose, onSubmit }) {
+export default function SectionScheduleFormModal({ open, mode = "create", initialData, classroomOptions, teacherId, sectionCapacity, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -77,7 +77,14 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
+    // Un error de un intento anterior (p. ej. capacidad del aula) ya no vale si se cambia algo.
+    setError("");
+    setFieldErrors({});
   }
+
+  const selectedClassroom = classroomOptions.find((c) => String(c.id) === String(form.classroom_id));
+  const capacityShort =
+    selectedClassroom && sectionCapacity && selectedClassroom.capacity < sectionCapacity ? selectedClassroom : null;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -104,8 +111,8 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
     <Modal open={open} title={title} onClose={onClose}>
       <form onSubmit={handleSubmit} className="users-form" noValidate>
         <div className="users-form-field">
-          <label className="users-form-label">Aula</label>
-          <select
+          <label className="users-form-label" htmlFor="sectionScheduleFormModal-1">Aula</label>
+          <select id="sectionScheduleFormModal-1"
             value={form.classroom_id}
             onChange={(e) => handleChange("classroom_id", e.target.value)}
             className="users-form-input"
@@ -114,15 +121,23 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
               ? <option value="">No hay aulas cargadas</option>
               : <option value="">Seleccioná un aula...</option>}
             {classroomOptions.map((c) => (
-              <option key={c.id} value={c.id}>{c.name} ({c.location})</option>
+              <option key={c.id} value={c.id}>{c.name} ({c.location}) · capacidad {c.capacity}</option>
             ))}
           </select>
           <FieldError errors={fieldErrors} field="classroom_id" />
+          {sectionCapacity ? (
+            <p className="users-subtitle">
+              Cupo de la comisión: {sectionCapacity} alumnos.
+              {capacityShort && (
+                <span className="users-form-error"> El aula elegida tiene capacidad para {capacityShort.capacity}: no alcanza.</span>
+              )}
+            </p>
+          ) : null}
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Día</label>
-          <select
+          <label className="users-form-label" htmlFor="sectionScheduleFormModal-2">Día</label>
+          <select id="sectionScheduleFormModal-2"
             value={form.weekday}
             onChange={(e) => handleChange("weekday", e.target.value)}
             className="users-form-input"
@@ -134,8 +149,8 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
 
         <div className="users-form-row">
           <div className="users-form-field">
-            <label className="users-form-label">Hora inicio</label>
-            <input
+            <label className="users-form-label" htmlFor="sectionScheduleFormModal-3">Hora inicio</label>
+            <input id="sectionScheduleFormModal-3"
               type="time"
               value={form.start_time}
               onChange={(e) => handleChange("start_time", e.target.value)}
@@ -144,8 +159,8 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
             <FieldError errors={fieldErrors} field="start_time" />
           </div>
           <div className="users-form-field">
-            <label className="users-form-label">Hora fin</label>
-            <input
+            <label className="users-form-label" htmlFor="sectionScheduleFormModal-4">Hora fin</label>
+            <input id="sectionScheduleFormModal-4"
               type="time"
               value={form.end_time}
               onChange={(e) => handleChange("end_time", e.target.value)}
@@ -163,7 +178,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
           </div>
         )}
 
-        {!checkingAvailability && availability?.available && (
+        {!checkingAvailability && availability?.available && !error && (
           <p className="users-subtitle">Sin conflictos para ese horario.</p>
         )}
 

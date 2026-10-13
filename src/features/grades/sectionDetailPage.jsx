@@ -126,7 +126,7 @@ export default function SectionDetailPage() {
             </p>
             <button
               type="button"
-              className="users-btn users-btn--success section-detail-close"
+              className="users-btn users-btn--danger section-detail-close"
               onClick={() => setCloseModalOpen(true)}
             >
               Cerrar comisión

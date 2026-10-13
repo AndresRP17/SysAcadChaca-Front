@@ -1,4 +1,4 @@
-import { formatDateTime } from "../../../shared/utils/formatters";
+import { classroomLabel, formatDateTime } from "../../../shared/utils/formatters";
 
 // Tarjeta de una mesa de examen. Sirve tanto para la oferta como para las
 // inscripciones del alumno; lo único que cambia es el botón de acción.
@@ -9,7 +9,7 @@ export default function ExamBoardCard({ board, badge, badgeVariant = "navy", act
         <div>
           <h3 className="portal-card-title">{board.courseName}</h3>
           <p className="portal-card-sub">{formatDateTime(board.scheduledAt)}</p>
-          {board.classroomName && <p className="portal-card-sub">Aula {board.classroomName}</p>}
+          {board.classroomName && <p className="portal-card-sub">{classroomLabel(board.classroomName)}</p>}
           {(board.chairTeacherLastName || board.memberTeacherLastName) && (
             <p className="portal-card-sub">
               Presidente: {board.chairTeacherFirstName} {board.chairTeacherLastName}

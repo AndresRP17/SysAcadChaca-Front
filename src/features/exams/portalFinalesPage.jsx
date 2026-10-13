@@ -103,7 +103,7 @@ export default function PortalFinalesPage() {
             <div className="plans-toolbar">
               <h2 className="portal-section-title">Mis finales</h2>
               <p className="users-subtitle">
-                {enrolled.length} inscripción{enrolled.length !== 1 ? "es" : ""}
+                {enrolled.length} {enrolled.length !== 1 ? "inscripciones" : "inscripción"}
               </p>
             </div>
 

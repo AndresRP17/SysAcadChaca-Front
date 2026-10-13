@@ -137,8 +137,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background-color: var(--surface);
@@ -149,7 +149,7 @@
 
 .sysacad-theme-toggle:hover {
   color: var(--text-primary);
-  border-color: var(--navy);
+  border-color: var(--accent);
 }
 
 .sysacad-mobile-header {
@@ -157,6 +157,8 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 40px;
+  /* deja lugar al boton de tema, que va arriba a la derecha de la tarjeta */
+  padding-right: 52px;
 }
 
 .sysacad-mobile-logo {
@@ -225,7 +227,10 @@
 }
 
 .sysacad-link {
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 13px;
   color: var(--text-secondary);
   text-decoration: none;
   transition: color 0.15s ease;
@@ -243,7 +248,7 @@
 }
 
 .sysacad-input-row--focused {
-  border-color: var(--navy);
+  border-color: var(--accent);
 }
 
 .sysacad-prefix {
@@ -258,7 +263,8 @@
   background: transparent;
   border: none;
   outline: none;
-  padding: 10px 0;
+  padding: 12px 0;
+  min-height: 44px;
   font-size: 18px;
   color: var(--text-primary);
 }
@@ -283,7 +289,10 @@
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  padding-left: 8px;
+  justify-content: center;
+  padding: 0 0 0 8px;
+  min-width: 44px;
+  min-height: 44px;
   transition: color 0.15s ease;
 }
 
@@ -301,7 +310,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-top: 4px;
+  padding: 4px 0;
+  min-height: 44px;
   cursor: pointer;
   user-select: none;
   font-size: 14px;
@@ -309,14 +319,15 @@
 }
 
 .sysacad-checkbox {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--navy);
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
 }
 
 .sysacad-submit {
   margin-top: 8px;
-  padding: 13px 0;
+  padding: 14px 0;
+  min-height: 48px;
   border-radius: 2px;
   border: none;
   background-color: var(--navy);
@@ -329,7 +340,7 @@
 }
 
 .sysacad-submit:hover {
-  background-color: var(--navy-dark);
+  background-color: var(--navy-hover);
 }
 
 .sysacad-footer-note {
@@ -368,6 +379,9 @@
   color: var(--text-secondary);
   display: flex;
   align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
   transition: color 0.15s ease;
 }
 

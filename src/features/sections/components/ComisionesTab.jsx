@@ -231,8 +231,8 @@ export default function ComisionesTab({ deepLink = null }) {
 
       <div className="plans-selectors">
         <div className="users-form-field">
-          <label className="users-form-label">Carrera</label>
-          <select value={programId} onChange={(e) => {
+          <label className="users-form-label" htmlFor="comisionesTab-1">Carrera</label>
+          <select id="comisionesTab-1" value={programId} onChange={(e) => {
               setProgramId(e.target.value);
               setStudyPlanId("");
             }} className="users-form-input">
@@ -243,8 +243,8 @@ export default function ComisionesTab({ deepLink = null }) {
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Plan de estudio</label>
-          <select
+          <label className="users-form-label" htmlFor="comisionesTab-2">Plan de estudio</label>
+          <select id="comisionesTab-2"
             value={studyPlanId}
             onChange={(e) => setStudyPlanId(e.target.value)}
             className="users-form-input"
@@ -267,7 +267,7 @@ export default function ComisionesTab({ deepLink = null }) {
       {studyPlanId && !loadingSections && (
         <>
           <div className="plans-toolbar">
-            <p className="users-subtitle">{visibleSections.length} comisión{visibleSections.length !== 1 ? "es" : ""}</p>
+            <p className="users-subtitle">{visibleSections.length} {visibleSections.length !== 1 ? "comisiones" : "comisión"}</p>
             <button
               type="button"
               className="users-btn users-btn--primary"
@@ -281,8 +281,8 @@ export default function ComisionesTab({ deepLink = null }) {
 
           {periodOptions.length > 0 && (
             <div className="users-form-field" style={{ maxWidth: 260 }}>
-              <label className="users-form-label">Período</label>
-              <select
+              <label className="users-form-label" htmlFor="comisionesTab-3">Período</label>
+              <select id="comisionesTab-3"
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
                 className="users-form-input"
@@ -323,8 +323,8 @@ export default function ComisionesTab({ deepLink = null }) {
                     <span>{s.courseName}</span>
                     <span className="correlatives-course-year">
                       {s.academicYear} - {s.shift}
-                      {!s.active && <span className="users-badge users-badge--inactive"> Inactiva</span>}
-                      {s.closed && <span className="users-badge users-badge--inactive"> Cerrada</span>}
+                      {!s.active && <span className="users-badge users-badge--inactive">Inactiva</span>}
+                      {s.closed && <span className="users-badge users-badge--inactive">Cerrada</span>}
                     </span>
                   </button>
                 ))}
@@ -457,6 +457,7 @@ export default function ComisionesTab({ deepLink = null }) {
         initialData={editingSchedule}
         classroomOptions={classrooms}
         teacherId={selectedSection?.teacherId}
+        sectionCapacity={selectedSection?.maxCapacity}
         onClose={() => setScheduleFormOpen(false)}
         onSubmit={handleScheduleFormSubmit}
       />
