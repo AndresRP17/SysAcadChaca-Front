@@ -1,10 +1,11 @@
+import LoadError from "../../../shared/ui/LoadError";
 import { useState } from "react";
 import { useBuildings } from "../hooks/useBuildings";
 import BuildingFormModal from "./BuildingFormModal";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 
 export default function EdificiosTab() {
-  const { buildings, loading, error, addBuilding, editBuilding, removeBuilding } = useBuildings();
+  const { buildings, loading, error, reload, addBuilding, editBuilding, removeBuilding } = useBuildings();
 
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
@@ -46,7 +47,7 @@ export default function EdificiosTab() {
         </button>
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={reload} />
 
       <div className="users-table-wrapper">
         <table className="users-table">

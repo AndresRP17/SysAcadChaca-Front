@@ -1,4 +1,6 @@
+import LoadError from "../../../shared/ui/LoadError";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useToast } from "../../../context/ToastContext";
 import { usePrograms } from "../../plans/hooks/usePrograms";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
@@ -21,6 +23,7 @@ function periodLabel(key) {
 }
 
 export default function ComisionesTab({ deepLink = null }) {
+  const { showToast } = useToast();
   const { programs } = usePrograms();
   const { classrooms } = useClassrooms();
 
@@ -163,8 +166,10 @@ export default function ComisionesTab({ deepLink = null }) {
   async function handleSectionFormSubmit(data) {
     if (sectionFormMode === "edit" && editingSection) {
       await updateSection(editingSection.id, data);
+      showToast("Comisión actualizada.");
     } else {
       await createSection(data);
+      showToast("Comisión creada.");
     }
     setSectionFormOpen(false);
     await reloadSections();
@@ -172,6 +177,7 @@ export default function ComisionesTab({ deepLink = null }) {
 
   async function handleConfirmDeleteSection() {
     await deleteSection(sectionToDelete.id);
+    showToast("Comisión eliminada.");
     if (sectionToDelete.id === selectedSectionId) setSelectedSectionId(null);
     setSectionToDelete(null);
     await reloadSections();
@@ -189,6 +195,7 @@ export default function ComisionesTab({ deepLink = null }) {
         shift: section.shift,
         active: !section.active,
       });
+      showToast(section.active ? "Comisión desactivada." : "Comisión activada.");
       await reloadSections();
     } catch (e) {
       setError(e.message);
@@ -210,8 +217,10 @@ export default function ComisionesTab({ deepLink = null }) {
   async function handleScheduleFormSubmit(data) {
     if (scheduleFormMode === "edit" && editingSchedule) {
       await updateSectionSchedule(editingSchedule.id, { ...data, section_id: editingSchedule.sectionId });
+      showToast("Horario actualizado.");
     } else {
       await createSectionSchedule({ ...data, section_id: selectedSectionId });
+      showToast("Horario agregado.");
     }
     setScheduleFormOpen(false);
     await reloadSchedules(selectedSectionId);
@@ -219,6 +228,7 @@ export default function ComisionesTab({ deepLink = null }) {
 
   async function handleConfirmDeleteSchedule() {
     await deleteSectionSchedule(scheduleToDelete.id);
+    showToast("Horario eliminado.");
     setScheduleToDelete(null);
     await reloadSchedules(selectedSectionId);
   }
@@ -227,7 +237,7 @@ export default function ComisionesTab({ deepLink = null }) {
 
   return (
     <div>
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={reloadSections} />
 
       <div className="plans-selectors">
         <div className="users-form-field">
