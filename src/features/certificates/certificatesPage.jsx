@@ -218,7 +218,7 @@ export default function CertificatesPage() {
         <p className="users-empty">No hay certificados para mostrar.</p>
       ) : (
         <div className="users-table-wrapper">
-          <table className="users-table">
+          <table className="users-table certificates-table">
             <thead>
               <tr>
                 {canManage && <th className="users-th">Alumno</th>}
