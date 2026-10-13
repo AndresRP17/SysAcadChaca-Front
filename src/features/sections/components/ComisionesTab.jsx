@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePrograms } from "../../plans/hooks/usePrograms";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
@@ -20,20 +20,22 @@ function periodLabel(key) {
   return `${year} · ${term}º cuatrimestre`;
 }
 
-export default function ComisionesTab() {
+export default function ComisionesTab({ deepLink = null }) {
   const { programs } = usePrograms();
   const { classrooms } = useClassrooms();
 
-  const [programId, setProgramId] = useState("");
+  // Si llegamos desde el Calendario, se preselecciona carrera, plan y comision una sola vez.
+  const pendingDeepLink = useRef(deepLink);
+  const [programId, setProgramId] = useState(deepLink?.programId ?? "");
   const [studyPlans, setStudyPlans] = useState([]);
-  const [studyPlanId, setStudyPlanId] = useState("");
+  const [studyPlanId, setStudyPlanId] = useState(deepLink?.studyPlanId ?? "");
   const [curriculumCourses, setCurriculumCourses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [allSections, setAllSections] = useState([]);
   const [loadingSections, setLoadingSections] = useState(false);
   const [error, setError] = useState("");
 
-  const [selectedSectionId, setSelectedSectionId] = useState(null);
+  const [selectedSectionId, setSelectedSectionId] = useState(deepLink?.sectionId ?? null);
   const [schedules, setSchedules] = useState([]);
 
   const [sectionFormOpen, setSectionFormOpen] = useState(false);
@@ -55,7 +57,6 @@ export default function ComisionesTab() {
   }, []);
 
   useEffect(() => {
-    setStudyPlanId("");
     setStudyPlans([]);
     if (!programId) return;
     getStudyPlans(Number(programId)).then(setStudyPlans).catch((e) => setError(e.message));
@@ -98,6 +99,15 @@ export default function ComisionesTab() {
     if (periodOptions.length === 0) return;
     if (!periodOptions.includes(selectedPeriod)) setSelectedPeriod(periodOptions[0]);
   }, [periodOptions, selectedPeriod]);
+
+  // Con enlace directo, el periodo es el de la comision pedida (no el mas reciente).
+  useEffect(() => {
+    const pending = pendingDeepLink.current;
+    if (!pending || periodOptions.length === 0) return;
+    const target = allSections.find((s) => s.id === pending.sectionId);
+    if (target) setSelectedPeriod(periodKey(target));
+    pendingDeepLink.current = null;
+  }, [periodOptions, allSections]);
 
   const visibleSections = sections.filter((s) => periodKey(s) === selectedPeriod);
 
@@ -222,7 +232,10 @@ export default function ComisionesTab() {
       <div className="plans-selectors">
         <div className="users-form-field">
           <label className="users-form-label">Carrera</label>
-          <select value={programId} onChange={(e) => setProgramId(e.target.value)} className="users-form-input">
+          <select value={programId} onChange={(e) => {
+              setProgramId(e.target.value);
+              setStudyPlanId("");
+            }} className="users-form-input">
             {programs.length === 0 && <option value="">No hay carreras cargadas</option>}
             {programs.length > 0 && <option value="">Seleccioná una carrera...</option>}
             {programs.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}

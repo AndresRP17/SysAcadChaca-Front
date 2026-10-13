@@ -16,7 +16,9 @@ import PortalCursadasPage from "../../features/enrollments/portalCursadasPage";
 import BedelEnrollPage from "../../features/enrollments/bedelEnrollPage";
 import PortalFinalesPage from "../../features/exams/portalFinalesPage";
 import ActasPage from "../../features/exams/actasPage";
-import PlanillaDocentePage from "../../features/grades/planillaDocentePage";
+import SectionDetailPage from "../../features/grades/sectionDetailPage";
+import CalendarRoutePage from "../../features/calendar/calendarRoutePage";
+import TakeAttendancePage from "../../features/attendance/takeAttendancePage";
 import MisComisionesPage from "../../features/grades/misComisionesPage";
 
 
@@ -130,13 +132,30 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/planilla",
+        path: "/calendario",
         element: (
-          <RequireRole allow={getRolesAllowedForLink("planilla")}>
-            <PlanillaDocentePage />
+          <RequireRole allow={getRolesAllowedForLink("calendario")}>
+            <CalendarRoutePage />
           </RequireRole>
         ),
       },
+      {
+        path: "/asistencia",
+        element: (
+          <RequireRole allow={["Docente"]}>
+            <TakeAttendancePage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/comision/:sectionId",
+        element: (
+          <RequireRole allow={["Docente"]}>
+            <SectionDetailPage />
+          </RequireRole>
+        ),
+      },
+      { path: "/planilla", element: <Navigate to="/mis-comisiones" replace /> },
       { path: "/sin-acceso", element: <NoAccessPage /> },
     ],
   },

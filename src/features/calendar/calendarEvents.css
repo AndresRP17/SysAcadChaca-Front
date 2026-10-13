@@ -1,0 +1,128 @@
+/* Clases del calendario dibujadas como botones. Mobile first. */
+.cal-event {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 2px 0;
+}
+
+.cal-event-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.cal-event-meta {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.cal-event-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.cal-event-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.cal-event-status--pending {
+  background: #fef3c7;
+  color: #78350f;
+}
+
+.cal-event-status--done {
+  background: #dcfce7;
+  color: #14532d;
+}
+
+.cal-event-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cal-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border-left: 3px solid transparent;
+  font-size: 13px;
+}
+
+.cal-chip--scheduled {
+  background: #dbeafe;
+  color: #1e3a8a;
+  border-left-color: #1d4ed8;
+}
+
+.cal-chip--cancelled {
+  background: #f3f4f6;
+  color: #374151;
+  border-left-color: #6b7280;
+  text-decoration: line-through;
+}
+
+.cal-chip--holiday {
+  background: #fef3c7;
+  color: #78350f;
+  border-left-color: #b45309;
+}
+
+.cal-chip--action {
+  cursor: pointer;
+}
+
+.cal-chip--action:hover {
+  background: #bfdbfe;
+}
+
+.cal-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-chip-arrow {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.cal-event-status--absent {
+  background: #fee2e2;
+  color: #7f1d1d;
+}
+
+.cal-chip-mark {
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cal-chip-mark--present {
+  color: #15803d;
+}
+
+.cal-chip-mark--absent {
+  color: #b91c1c;
+}

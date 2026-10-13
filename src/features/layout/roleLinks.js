@@ -3,13 +3,13 @@
 // el backend); Bedel gestiona comisiones/aulas/horarios/mesas de examen
 // (IsAdministradorValidatorService/assertHasAnyRole en Classroom/Section/
 // SectionSchedule ya lo permite en el backend) pero no administra
-// carreras/materias/planes/usuarios (sí alumnos: alta/edición/baja); Docente ahora tiene la Planilla
-// (asistencia/notas) — ver planillaDocentePage.
+// carreras/materias/planes/usuarios (sí alumnos: alta/edición/baja); Docente toma asistencia desde
+// el Calendario y gestiona notas/cierre desde la pantalla de cada comisión.
 export const LINKS_BY_ROLE = {
-  Administrador: ["usuarios", "alumnos", "planes", "cursadas", "inscribir-alumno", "actas", "certificados"],
-  Alumno: ["alumno", "historial", "mis-cursadas", "finales", "certificados"],
-  Docente: ["mis-comisiones", "planilla", "actas"],
-  Bedel: ["cursadas", "alumnos", "inscribir-alumno", "actas", "certificados"],
+  Administrador: ["usuarios", "alumnos", "planes", "cursadas", "calendario", "inscribir-alumno", "actas", "certificados"],
+  Alumno: ["alumno", "calendario", "historial", "mis-cursadas", "finales", "certificados"],
+  Docente: ["calendario", "mis-comisiones", "actas"],
+  Bedel: ["cursadas", "calendario", "alumnos", "inscribir-alumno", "actas", "certificados"],
 };
 
 export function getDefaultRouteForRole(role) {
@@ -20,8 +20,8 @@ export function getDefaultRouteForRole(role) {
   if (keys.includes("actas")) return "/actas";
   if (keys.includes("alumno")) return "/alumno";
   if (keys.includes("mis-cursadas")) return "/mis-cursadas";
+  if (keys.includes("calendario")) return "/calendario";
   if (keys.includes("mis-comisiones")) return "/mis-comisiones";
-  if (keys.includes("planilla")) return "/planilla";
   return "/sin-acceso";
 }
 

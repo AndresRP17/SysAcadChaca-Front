@@ -124,7 +124,7 @@ export default function NotasTab({ sectionId, enrollments }) {
 
   return (
     <div>
-      <form onSubmit={handleCreateEvaluation} className="users-form-row" style={{ alignItems: "flex-end" }}>
+      <form onSubmit={handleCreateEvaluation} className="users-form-row notas-new-form">
         <div className="users-form-field">
           <label className="users-form-label">Nueva evaluacion</label>
           <input
@@ -149,7 +149,7 @@ export default function NotasTab({ sectionId, enrollments }) {
         </button>
       </form>
 
-      <div className="users-form-field" style={{ maxWidth: 400 }}>
+      <div className="users-form-field notas-select">
         <label className="users-form-label">Evaluacion</label>
         <select
           value={evaluationId}
@@ -171,7 +171,7 @@ export default function NotasTab({ sectionId, enrollments }) {
       {evaluationId && rows.length > 0 && (
         <>
           <div className="users-table-wrapper">
-            <table className="users-table">
+            <table className="users-table notas-table">
               <thead>
                 <tr>
                   <th className="users-th">Alumno</th>
@@ -182,8 +182,8 @@ export default function NotasTab({ sectionId, enrollments }) {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.enrollmentId}>
-                    <td className="users-td">{row.studentName}</td>
-                    <td className="users-td users-td--center">
+                    <td className="users-td notas-name">{row.studentName}</td>
+                    <td className="users-td users-td--center notas-cell" data-label="Nota">
                       <input
                         type="number"
                         min="0"
@@ -192,10 +192,10 @@ export default function NotasTab({ sectionId, enrollments }) {
                         value={row.gradeValue}
                         onChange={(e) => updateRow(row.enrollmentId, "gradeValue", e.target.value)}
                         className="users-form-input"
-                        style={{ width: 80, margin: "0 auto" }}
+                       
                       />
                     </td>
-                    <td className="users-td users-td--center">
+                    <td className="users-td users-td--center notas-cell" data-label="Condición">
                       <select
                         value={row.condition}
                         onChange={(e) => updateRow(row.enrollmentId, "condition", e.target.value)}
