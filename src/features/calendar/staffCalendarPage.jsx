@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { getErrorMessage } from "../../shared/api/api";
 import { todayIso } from "../../shared/utils/formatters";
 import Combobox from "../../shared/ui/Combobox";
+import LoadError from "../../shared/ui/LoadError";
 import AcademicCalendarManager from "./AcademicCalendarManager";
 import ClassSheet, { formatDate } from "./ClassSheet";
 import { useCalendarCatalog } from "./useCalendarCatalog";
@@ -204,7 +205,7 @@ export default function StaffCalendarPage() {
         </button>
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={refresh} />
 
       {summary.missingTerms.length > 0 && (
         <div className="cal-warning" role="alert">

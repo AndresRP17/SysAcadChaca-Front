@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getErrorMessage } from "../../shared/api/api";
 import { getStudentHistory } from "./services/studentHistoryService";
 import ProfileCard from "./components/ProfileCard";
 import HistoryProgress from "./components/HistoryProgress";
 import HistoryCourseList from "./components/HistoryCourseList";
 import HistoryExamList from "./components/HistoryExamList";
+import LoadError from "../../shared/ui/LoadError";
 import "../users/usersPage.css";
 import "./studentDashboardPage.css";
 
@@ -13,8 +14,13 @@ export default function HistorialAlumnoPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [reloadKey, setReloadKey] = useState(0);
+  const retry = useCallback(() => setReloadKey((k) => k + 1), []);
+
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setError("");
     getStudentHistory()
       .then((data) => {
         if (!cancelled) setHistory(data);
@@ -33,12 +39,12 @@ export default function HistorialAlumnoPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadKey]);
 
   return (
     <div className="dash-page">
       {loading && <p className="users-empty">Cargando...</p>}
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={retry} />
 
       {history && (
         <>

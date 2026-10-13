@@ -1,0 +1,36 @@
+/* Mobile-first: apilado y botón a todo el ancho; en escritorio, texto y botón en fila. */
+.load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--error);
+  border-left-width: 4px;
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.load-error-text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--error);
+  overflow-wrap: anywhere;
+}
+
+.load-error-retry {
+  min-height: 44px;
+}
+
+@media (min-width: 701px) {
+  .load-error {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .load-error-retry {
+    min-height: 0;
+    flex-shrink: 0;
+  }
+}

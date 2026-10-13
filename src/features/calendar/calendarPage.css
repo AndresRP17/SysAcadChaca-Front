@@ -114,3 +114,26 @@
   padding: 4px 0;
   text-align: left;
 }
+
+.calendar-attendance {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 16px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.calendar-attendance strong {
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.calendar-today-cancelled {
+  font-weight: 400;
+  color: var(--text-secondary);
+}

@@ -7,6 +7,7 @@ import { getMySections, closeSection } from "../sections/services/sectionService
 import { getEnrollmentsBySection } from "./services/enrollmentService";
 import NotasTab from "./components/NotasTab";
 import CloseSectionModal from "./components/CloseSectionModal";
+import LoadError from "../../shared/ui/LoadError";
 import "../users/usersPage.css";
 import "./sectionDetailPage.css";
 
@@ -61,7 +62,7 @@ export default function SectionDetailPage() {
   if (notFound || !section) {
     return (
       <div className="users-page">
-        {error && <p className="users-form-error">{error}</p>}
+        <LoadError message={error} onRetry={() => load()} />
         {notFound && <p className="users-empty">No encontramos esa comisión entre las tuyas.</p>}
         <Link to="/mis-comisiones" className="users-btn users-btn--ghost">Volver a mis comisiones</Link>
       </div>
@@ -84,7 +85,7 @@ export default function SectionDetailPage() {
         </span>
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={() => load({ silent: true })} />
 
       <Link to="/calendario" className="users-btn users-btn--ghost section-detail-calendar">
         Ver calendario / tomar asistencia
