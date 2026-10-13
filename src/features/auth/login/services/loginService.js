@@ -11,7 +11,13 @@ export const loginService = {
   },
 
   logout: () => {
+    const token = authStorage.getToken();
     authStorage.clear();
+
+    // El servidor invalida el token (POST /logout). La salida local no espera ni depende de eso.
+    if (token) {
+      api.post("/logout", null, { headers: { Authorization: token } }).catch(() => {});
+    }
   },
 
   getToken: () => authStorage.getToken(),

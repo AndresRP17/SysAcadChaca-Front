@@ -1,72 +1,45 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getPrograms } from "../plans/services/programService";
 import { getStudyPlans } from "../plans/services/studyPlanService";
-import { getCurriculumCourses } from "../plans/services/curriculumCourseService";
 import { getClassrooms } from "../sections/services/classroomService";
 import { getTeachers } from "../users/services/teacherService";
-import { getSections } from "../sections/services/sectionService";
 
-// Listas para los filtros del calendario de Bedel/Administrador y un indice
-// comision -> carrera/plan/docente para agrupar las clases del dia. El evento del
-// calendario solo trae sectionId, asi que el resto se resuelve aca (una sola carga).
+// Listas para los filtros del calendario de Bedel/Administrador. Antes tambien armaba un
+// indice comision -> carrera/plan/docente con un pedido por plan de estudio (72 pedidos y
+// ~11 s con 253 comisiones): ahora cada evento del calendario ya trae esos datos
+// (programId, programName, studyPlanId, resolutionYear, teacherName), ver `eventInfo`.
 export function useCalendarCatalog() {
-  const [data, setData] = useState({
-    programs: [],
-    studyPlans: [],
-    classrooms: [],
-    teachers: [],
-    sections: [],
-    curriculumToPlan: {},
-  });
+  const [data, setData] = useState({ programs: [], studyPlans: [], classrooms: [], teachers: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
-    async function load() {
-      const [programs, studyPlans, classrooms, teachers, sections] = await Promise.all([
-        getPrograms(),
-        getStudyPlans(),
-        getClassrooms(),
-        getTeachers(),
-        getSections(),
-      ]);
-
-      const curricula = await Promise.all(
-        studyPlans.map((plan) => getCurriculumCourses(plan.id).then((list) => [plan.id, list])),
-      );
-      const curriculumToPlan = {};
-      for (const [planId, list] of curricula) {
-        for (const cc of list) curriculumToPlan[cc.id] = planId;
-      }
-
-      if (!cancelled) {
-        setData({ programs, studyPlans, classrooms, teachers, sections, curriculumToPlan });
-        setLoading(false);
-      }
-    }
-
-    load().catch(() => {
-      if (!cancelled) setLoading(false);
-    });
+    Promise.all([getPrograms(), getStudyPlans(), getClassrooms(), getTeachers()])
+      .then(([programs, studyPlans, classrooms, teachers]) => {
+        if (!cancelled) setData({ programs, studyPlans, classrooms, teachers });
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  // sectionId -> { section, plan, program } (plan/program pueden faltar si el dato no se pudo resolver).
-  const bySectionId = useMemo(() => {
-    const plans = new Map(data.studyPlans.map((p) => [p.id, p]));
-    const programs = new Map(data.programs.map((p) => [p.id, p]));
-    const index = new Map();
+  return { ...data, loading };
+}
 
-    for (const section of data.sections) {
-      const plan = plans.get(data.curriculumToPlan[section.curriculumCourseId]);
-      index.set(section.id, { section, plan, program: plan ? programs.get(plan.programId) : undefined });
-    }
-    return index;
-  }, [data]);
+// Carrera, plan y docente de una clase, a partir del evento del calendario (sin pedidos extra).
+// Misma forma que usaban ClassSheet y el agrupado por carrera: { program, plan, teacherName }.
+export function eventInfo(event) {
+  if (!event) return undefined;
 
-  return { ...data, bySectionId, loading };
+  return {
+    program: event.programId ? { id: event.programId, name: event.programName } : undefined,
+    plan: event.studyPlanId ? { id: event.studyPlanId, resolutionYear: event.resolutionYear, programName: event.programName } : undefined,
+    teacherName: event.teacherName ?? null,
+  };
 }
