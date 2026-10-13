@@ -3,6 +3,7 @@ import { getErrorMessage } from "../../shared/api/api";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import FormError from "../../shared/ui/FormError";
 import { useToast } from "../../context/ToastContext";
+import { getSection } from "../sections/services/sectionService";
 import { createCancelledClass, deleteCancelledClass, getCancelledClasses } from "./services/staffCalendarService";
 import "./staffCalendar.css";
 
@@ -32,7 +33,20 @@ export default function ClassSheet({ item, info, onClose, onChanged, onOpenSecti
   }, [onClose, confirmRemove]);
 
   const cancelled = item.status === "CANCELLED";
-  const section = info?.section;
+  // Cupo de la comision: un solo pedido al abrir la hoja (el evento no lo trae).
+  const [section, setSection] = useState(null);
+
+  useEffect(() => {
+    let cancelledRequest = false;
+    getSection(item.sectionId)
+      .then((s) => {
+        if (!cancelledRequest) setSection(s);
+      })
+      .catch(() => {});
+    return () => {
+      cancelledRequest = true;
+    };
+  }, [item.sectionId]);
 
   async function handleCancel() {
     const text = reason.trim();
@@ -98,12 +112,14 @@ export default function ClassSheet({ item, info, onClose, onChanged, onOpenSecti
                 </dd>
               </>
             )}
-            {section && (
+            {info?.teacherName && (
               <>
                 <dt>Docente</dt>
-                <dd>
-                  {section.teacherFirstName} {section.teacherLastName}
-                </dd>
+                <dd>{info.teacherName}</dd>
+              </>
+            )}
+            {section && (
+              <>
                 <dt>Inscriptos</dt>
                 <dd>
                   {section.enrolledCount} de {section.maxCapacity}

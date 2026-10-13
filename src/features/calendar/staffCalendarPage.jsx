@@ -6,7 +6,7 @@ import Combobox from "../../shared/ui/Combobox";
 import LoadError from "../../shared/ui/LoadError";
 import AcademicCalendarManager from "./AcademicCalendarManager";
 import ClassSheet, { formatDate } from "./ClassSheet";
-import { useCalendarCatalog } from "./useCalendarCatalog";
+import { eventInfo, useCalendarCatalog } from "./useCalendarCatalog";
 import { getCalendarSummary, getFilteredCalendar } from "./services/staffCalendarService";
 import "../users/usersPage.css";
 import "./staffCalendar.css";
@@ -154,7 +154,7 @@ export default function StaffCalendarPage() {
   }
 
   function openSection(sectionId) {
-    const info = catalog.bySectionId.get(sectionId);
+    const info = eventInfo(sheetItem);
     const params = new URLSearchParams({ section: String(sectionId) });
     if (info?.program) params.set("program", String(info.program.id));
     if (info?.plan) params.set("plan", String(info.plan.id));
@@ -167,7 +167,7 @@ export default function StaffCalendarPage() {
     const map = new Map();
     for (const e of dayData.events) {
       if (e.status === "HOLIDAY") continue;
-      const info = catalog.bySectionId.get(e.sectionId);
+      const info = eventInfo(e);
       const key = info?.plan ? `plan-${info.plan.id}` : "other";
       const label = info?.plan ? `${info.program?.name ?? info.plan.programName} · Plan Res. ${info.plan.resolutionYear}` : "Sin carrera asignada";
       if (!map.has(key)) map.set(key, { key, label, items: [] });
@@ -176,7 +176,7 @@ export default function StaffCalendarPage() {
     const list = [...map.values()].sort((a, b) => a.label.localeCompare(b.label, "es"));
     list.forEach((g) => g.items.sort((a, b) => a.startTime.localeCompare(b.startTime) || a.courseName.localeCompare(b.courseName, "es")));
     return list;
-  }, [dayData.events, catalog.bySectionId]);
+  }, [dayData.events]);
 
   // Al refrescar el mismo dia se sigue mostrando la lista anterior (sin parpadeo) hasta que llegue la nueva.
   const showingDay = dayData.date === selectedDate;
@@ -362,8 +362,7 @@ export default function StaffCalendarPage() {
                 </summary>
                 <ul className="cal-class-list">
                   {group.items.map((e) => {
-                    const info = catalog.bySectionId.get(e.sectionId);
-                    const teacher = info?.section ? `${info.section.teacherFirstName} ${info.section.teacherLastName}` : null;
+                    const teacher = e.teacherName ?? null;
                     const isCancelled = e.status === "CANCELLED";
                     return (
                       <li key={`${e.sectionId}-${e.startTime}`}>
@@ -399,7 +398,7 @@ export default function StaffCalendarPage() {
       {sheetItem && (
         <ClassSheet
           item={sheetItem}
-          info={catalog.bySectionId.get(sheetItem.sectionId)}
+          info={eventInfo(sheetItem)}
           onClose={() => setSheetItem(null)}
           onChanged={handleChanged}
           onOpenSection={openSection}
