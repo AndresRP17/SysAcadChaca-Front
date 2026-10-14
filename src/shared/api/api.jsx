@@ -1,5 +1,6 @@
 import axios from "axios";
 import { authStorage } from "../utils/authStorage";
+import { installRequestCache } from "./requestCache";
 
 export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8087";
 
@@ -11,6 +12,9 @@ export const api = axios.create({
   baseURL: API_URL,
   timeout: REQUEST_TIMEOUT_MS,
 });
+
+// Los GET se cachean un momento y las escrituras vacían el cache (ver requestCache.js).
+export const { clear: clearApiCache } = installRequestCache(api, { getToken: () => authStorage.getToken() });
 
 // Clave de sessionStorage con la que el interceptor avisa al login que la sesión venció.
 export const SESSION_EXPIRED_KEY = "sga_session_expired";
