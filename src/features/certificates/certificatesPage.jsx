@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getErrorMessage } from "../../shared/api/api";
 import {
-  getCertificates,
+  getCertificatesPage,
   requestCertificate,
   issueCertificate,
   rejectCertificate,
@@ -12,6 +12,10 @@ import CertificateReportView from "./components/CertificateReportView";
 import { useToast } from "../../context/ToastContext";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import LoadError from "../../shared/ui/LoadError";
+import ListFilters from "../../shared/ui/ListFilters";
+import Pagination from "../../shared/ui/Pagination";
+import { useDebouncedValue } from "../../shared/hooks/useDebouncedValue";
+import { usePagedList } from "../../shared/hooks/usePagedList";
 import Combobox from "../../shared/ui/Combobox";
 import { getStudents } from "../users/services/studentService";
 import "../users/usersPage.css";
@@ -48,6 +52,11 @@ const CONFIRM_COPY = {
   }),
 };
 
+const SEARCH_DELAY_MS = 300;
+const EMPTY_FILTERS = { search: "", type: "", status: "" };
+const TYPE_OPTIONS = TYPES.map((t) => ({ value: t.key, label: t.label }));
+const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label }));
+
 function formatDate(isoDate) {
   if (!isoDate) return "—";
   const [y, m, d] = String(isoDate).slice(0, 10).split("-");
@@ -60,9 +69,24 @@ export default function CertificatesPage() {
   const isAlumno = user?.role === "Alumno";
   const canManage = user?.role === "Administrador" || user?.role === "Bedel";
 
-  const [certificates, setCertificates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const debouncedSearch = useDebouncedValue(filters.search.trim(), SEARCH_DELAY_MS);
+  const params = useMemo(
+    () => ({ q: canManage ? debouncedSearch : "", type: filters.type, status: filters.status }),
+    [canManage, debouncedSearch, filters.type, filters.status],
+  );
+  const {
+    items: certificates,
+    total,
+    page,
+    setPage,
+    pageSize,
+    changePageSize,
+    loading,
+    error,
+    reload,
+  } = usePagedList({ params, fetchPage: getCertificatesPage, errorMessage: "No se pudieron cargar los certificados." });
+  const hasFilters = Boolean(filters.search || filters.type || filters.status);
   const [studentsError, setStudentsError] = useState("");
   const [viewError, setViewError] = useState("");
   const [busyId, setBusyId] = useState(null);
@@ -70,22 +94,6 @@ export default function CertificatesPage() {
   const [confirmAction, setConfirmAction] = useState(null); // { type: 'request'|'issue'|'reject', payload, label }
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState("");
-
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      setCertificates(await getCertificates());
-    } catch (e) {
-      setError(getErrorMessage(e, "No se pudieron cargar los certificados."));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // Bedel/Administrador piden el certificado en nombre de un alumno: hace falta la lista para elegirlo.
   const loadStudents = useCallback(() => {
@@ -123,7 +131,7 @@ export default function CertificatesPage() {
       showToast("Solicitud rechazada.");
     }
     setConfirmAction(null);
-    await reload();
+    reload();
   }
 
   async function handleView(id) {
@@ -212,11 +220,42 @@ export default function CertificatesPage() {
         </div>
       )}
 
-      {loading ? (
+      <ListFilters
+        idPrefix="certificates"
+        search={filters.search}
+        onSearchChange={canManage ? (value) => setFilters((f) => ({ ...f, search: value })) : undefined}
+        searchLabel="Buscar"
+        searchPlaceholder="Alumno, legajo o DNI"
+        selects={[
+          {
+            id: "type",
+            label: "Tipo",
+            value: filters.type,
+            onChange: (value) => setFilters((f) => ({ ...f, type: value })),
+            options: TYPE_OPTIONS,
+            allLabel: "Todos",
+          },
+          {
+            id: "status",
+            label: "Estado",
+            value: filters.status,
+            onChange: (value) => setFilters((f) => ({ ...f, status: value })),
+            options: STATUS_OPTIONS,
+            allLabel: "Todos",
+          },
+        ]}
+        hasFilters={hasFilters}
+        onClear={() => setFilters(EMPTY_FILTERS)}
+      />
+
+      {loading && certificates.length === 0 && !error ? (
         <p className="users-empty">Cargando...</p>
-      ) : certificates.length === 0 ? (
-        <p className="users-empty">No hay certificados para mostrar.</p>
+      ) : error ? null : certificates.length === 0 ? (
+        <p className="users-empty">
+          {hasFilters ? "No hay certificados con esos filtros" : "No hay certificados para mostrar."}
+        </p>
       ) : (
+        <div className={"users-list" + (loading ? " users-list--loading" : "")} aria-busy={loading}>
         <div className="users-table-wrapper">
           <table className="users-table certificates-table">
             <thead>
@@ -291,6 +330,15 @@ export default function CertificatesPage() {
               })}
             </tbody>
           </table>
+        </div>
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={changePageSize}
+          noun={["certificado", "certificados"]}
+        />
         </div>
       )}
 

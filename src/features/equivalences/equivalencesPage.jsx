@@ -1,13 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { getErrorMessage } from "../../shared/api/api";
 import { getCurrentStudent } from "../../shared/api/currentStudent";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
+import LoadError from "../../shared/ui/LoadError";
+import Pagination from "../../shared/ui/Pagination";
+import { useDebouncedValue } from "../../shared/hooks/useDebouncedValue";
+import { usePagedList } from "../../shared/hooks/usePagedList";
 import Combobox from "../../shared/ui/Combobox";
 import { getStudents } from "../users/services/studentService";
 import { getTeachers, getMyTeacherProfile } from "../users/services/teacherService";
-import { deleteEquivalence, getEquivalences, rejectEquivalence } from "./services/equivalenceService";
+import { deleteEquivalence, getEquivalences, getEquivalencesPage, rejectEquivalence } from "./services/equivalenceService";
 import EquivalenceList from "./components/EquivalenceList";
 import EquivalenceFormModal from "./components/EquivalenceFormModal";
 import WithoutSectionsPanel from "./components/WithoutSectionsPanel";
@@ -16,6 +20,7 @@ import { STATUS_LABELS, TYPE_HELP, TYPE_LABELS } from "./equivalenceLabels";
 import "../users/usersPage.css";
 import "./equivalences.css";
 
+const SEARCH_DELAY_MS = 300;
 const STATUS_FILTERS = [["", "Todas"], ...Object.entries(STATUS_LABELS)];
 
 export default function EquivalencesPage() {
@@ -27,10 +32,9 @@ export default function EquivalencesPage() {
   const isAdmin = role === "Administrador";
   const isStaff = role === "Administrador" || role === "Bedel";
 
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [setupError, setSetupError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [ownItems, setOwnItems] = useState([]);
 
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -41,7 +45,8 @@ export default function EquivalencesPage() {
   const [type, setType] = useState("");
   const [studentFilter, setStudentFilter] = useState("");
   const [evaluatorFilter, setEvaluatorFilter] = useState("");
-  const [courseText, setCourseText] = useState("");
+  const [searchText, setSearchText] = useState("");
+  const debouncedSearch = useDebouncedValue(searchText.trim(), SEARCH_DELAY_MS);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -52,45 +57,53 @@ export default function EquivalencesPage() {
   // Datos auxiliares segun el rol (listas para filtros / formularios).
   useEffect(() => {
     if (isAlumno) {
-      getCurrentStudent(user).then(setMyStudent).catch((e) => setError(getErrorMessage(e)));
+      getCurrentStudent(user).then(setMyStudent).catch((e) => setSetupError(getErrorMessage(e)));
     } else if (isStaff) {
-      getStudents().then(setStudents).catch((e) => setError(getErrorMessage(e, "No pudimos cargar los alumnos.")));
-      getTeachers().then(setTeachers).catch((e) => setError(getErrorMessage(e, "No pudimos cargar los docentes.")));
+      getStudents().then(setStudents).catch((e) => setSetupError(getErrorMessage(e, "No pudimos cargar los alumnos.")));
+      getTeachers().then(setTeachers).catch((e) => setSetupError(getErrorMessage(e, "No pudimos cargar los docentes.")));
     } else if (isDocente) {
-      getMyTeacherProfile().then(setMyTeacher).catch((e) => setError(getErrorMessage(e)));
+      getMyTeacherProfile().then(setMyTeacher).catch((e) => setSetupError(getErrorMessage(e)));
     }
   }, [isAlumno, isStaff, isDocente, user]);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      setItems(await getEquivalences({ status, type, student_id: studentFilter, evaluator_teacher_id: evaluatorFilter }));
-    } catch (e) {
-      setError(getErrorMessage(e, "No pudimos cargar las equivalencias."));
-    } finally {
-      setLoading(false);
-    }
-  }, [status, type, studentFilter, evaluatorFilter]);
+  // Bandeja del evaluador: las asignadas al docente o todavía sin evaluador (filtro en el servidor).
+  const params = useMemo(
+    () => ({
+      q: debouncedSearch,
+      status,
+      type,
+      studentId: studentFilter,
+      evaluatorTeacherId: isDocente ? (myTeacher?.id ?? "") : evaluatorFilter,
+      includeUnassigned: isDocente,
+    }),
+    [debouncedSearch, status, type, studentFilter, evaluatorFilter, isDocente, myTeacher],
+  );
+  const {
+    items: visible,
+    total,
+    page,
+    setPage,
+    pageSize,
+    changePageSize,
+    loading,
+    error,
+    reload,
+  } = usePagedList({
+    params,
+    fetchPage: getEquivalencesPage,
+    enabled: !isDocente || !!myTeacher,
+    errorMessage: "No pudimos cargar las equivalencias.",
+  });
 
+  // El Alumno necesita todas sus solicitudes (no solo la página) para saber qué materias ya no puede pedir.
   useEffect(() => {
-    reload();
-  }, [reload, reloadKey]);
-
-  const visible = useMemo(() => {
-    let list = items;
-    if (isDocente && myTeacher) {
-      // Bandeja del evaluador: las asignadas a el o todavia sin evaluador.
-      list = list.filter((e) => e.evaluatorTeacherId == null || e.evaluatorTeacherId === myTeacher.id);
-    }
-    const q = courseText.trim().toLowerCase();
-    if (q) list = list.filter((e) => `${e.courseName} ${e.courseCode}`.toLowerCase().includes(q));
-    return list;
-  }, [items, isDocente, myTeacher, courseText]);
+    if (!isAlumno) return;
+    getEquivalences().then(setOwnItems).catch(() => setOwnItems([]));
+  }, [isAlumno, reloadKey]);
 
   const blockedCourseIds = useMemo(
-    () => items.filter((e) => isAlumno && e.status !== "REJECTED").map((e) => e.curriculumCourseId),
-    [items, isAlumno],
+    () => ownItems.filter((e) => isAlumno && e.status !== "REJECTED").map((e) => e.curriculumCourseId),
+    [ownItems, isAlumno],
   );
 
   function openForm(item = null) {
@@ -106,6 +119,7 @@ export default function EquivalencesPage() {
     setAssigning(null);
     setConfirm(null);
     setReloadKey((k) => k + 1);
+    reload();
   }
 
   async function handleConfirm() {
@@ -216,7 +230,15 @@ export default function EquivalencesPage() {
             <option key={k} value={k}>{v}</option>
           ))}
         </select>
-        <input className="users-form-input equiv-select" aria-label="Buscar materia" placeholder="Buscar materia..." value={courseText} onChange={(e) => setCourseText(e.target.value)} />
+        <input
+          type="search"
+          autoComplete="off"
+          className="users-form-input equiv-select"
+          aria-label={isAlumno ? "Buscar materia" : "Buscar alumno o materia"}
+          placeholder={isAlumno ? "Buscar materia..." : "Buscar alumno o materia..."}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
         {isStaff && (
           <>
             <div className="equiv-combo">
@@ -232,23 +254,29 @@ export default function EquivalencesPage() {
         )}
       </div>
 
-      {error && (
-        <p className="users-form-error" role="alert">
-          {error}{" "}
-          <button type="button" className="users-btn users-btn--ghost equiv-btn" onClick={() => setReloadKey((k) => k + 1)}>Reintentar</button>
-        </p>
-      )}
+      <LoadError message={setupError} />
+      <LoadError message={error} onRetry={reload} />
 
-      {loading ? (
+      {loading && visible.length === 0 && !error ? (
         <p className="users-empty">Cargando...</p>
-      ) : visible.length === 0 ? (
+      ) : error ? null : visible.length === 0 ? (
         <p className="users-empty">
-          {isAlumno && !status && !type && !courseText
+          {isAlumno && !status && !type && !searchText
             ? "Todavía no pediste ninguna equivalencia. Usá \"Nueva solicitud\" para empezar."
-            : "No hay equivalencias que coincidan con los filtros."}
+            : "No hay equivalencias con esos filtros"}
         </p>
       ) : (
-        <EquivalenceList items={visible} showStudent={!isAlumno} renderActions={renderActions} />
+        <div className={"users-list" + (loading ? " users-list--loading" : "")} aria-busy={loading}>
+          <EquivalenceList items={visible} showStudent={!isAlumno} renderActions={renderActions} />
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={setPage}
+            onPageSizeChange={changePageSize}
+            noun={["equivalencia", "equivalencias"]}
+          />
+        </div>
       )}
 
       <EquivalenceFormModal

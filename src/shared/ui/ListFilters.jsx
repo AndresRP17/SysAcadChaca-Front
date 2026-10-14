@@ -2,6 +2,7 @@ import "./ListFilters.css";
 
 // Barra de filtros de una lista: buscador + selects + "Limpiar filtros".
 // selects: [{ id, label, value, onChange, options: [{ value, label }], allLabel }]
+// Sin onSearchChange no se muestra el buscador (listas que solo filtran con selects).
 // El estado (y la espera antes de pedir al servidor) lo maneja quien la usa.
 export default function ListFilters({
   idPrefix,
@@ -15,18 +16,20 @@ export default function ListFilters({
 }) {
   return (
     <div className="list-filters">
-      <div className="users-form-field list-filters-search">
-        <label className="users-form-label" htmlFor={`${idPrefix}-search`}>{searchLabel}</label>
-        <input
-          id={`${idPrefix}-search`}
-          type="search"
-          autoComplete="off"
-          className="users-form-input"
-          value={search}
-          placeholder={searchPlaceholder}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
-      </div>
+      {onSearchChange && (
+        <div className="users-form-field list-filters-search">
+          <label className="users-form-label" htmlFor={`${idPrefix}-search`}>{searchLabel}</label>
+          <input
+            id={`${idPrefix}-search`}
+            type="search"
+            autoComplete="off"
+            className="users-form-input"
+            value={search}
+            placeholder={searchPlaceholder}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+        </div>
+      )}
       {selects.map((s) => (
         <div className="users-form-field" key={s.id}>
           <label className="users-form-label" htmlFor={`${idPrefix}-${s.id}`}>{s.label}</label>
