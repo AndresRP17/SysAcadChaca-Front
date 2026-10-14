@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --open",
+    "test": "node --test \"src/**/*.test.js\"",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"

@@ -1,7 +1,16 @@
 import { api } from "../../../shared/api/api";
+import { buildParams } from "../../../shared/utils/formatters";
 
-export async function getSections() {
-  const { data } = await api.get("/sections?size=1000");
+// Sin filtros trae todas las comisiones (pantallas de Bedel/Admin). El portal del Alumno filtra en el
+// servidor por plan de estudio y por activas, y pide los horarios en el mismo pedido.
+export async function getSections({ studyPlanId, active, includeSchedules = false } = {}) {
+  const qs = buildParams({
+    study_plan_id: studyPlanId,
+    active: active === undefined ? undefined : active ? 1 : 0,
+    include_schedules: includeSchedules ? 1 : undefined,
+    size: 1000,
+  });
+  const { data } = await api.get(`/sections?${qs}`);
   return data;
 }
 

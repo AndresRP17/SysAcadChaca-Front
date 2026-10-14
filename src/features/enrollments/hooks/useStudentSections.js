@@ -3,9 +3,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { getCurrentStudent } from "../../../shared/api/currentStudent";
 import { getStudent } from "../../users/services/studentService";
 import { getErrorMessage } from "../../../shared/api/api";
-import { getSections } from "../../sections/services/sectionService";
-import { getAllSectionSchedules } from "../../sections/services/sectionScheduleService";
-import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
+import { getSection, getSections } from "../../sections/services/sectionService";
 import { getEnrollments, createEnrollment, deleteEnrollment } from "../services/enrollmentService";
 
 // TEMPORAL: el backend todavía no tiene GET /enrollments. Mientras tanto, si
@@ -31,9 +29,7 @@ export function useStudentSections(studentIdOverride) {
 
   const [student, setStudent] = useState(null);
   const [sections, setSections] = useState([]);
-  const [schedules, setSchedules] = useState([]);
   const [allEnrollments, setAllEnrollments] = useState([]);
-  const [curriculumCourseIds, setCurriculumCourseIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -47,23 +43,31 @@ export function useStudentSections(studentIdOverride) {
         : await getCurrentStudent(user);
       setStudent(currentStudent);
 
-      const [sectionsData, schedulesData, enrollmentsData] = await Promise.all([
-        getSections(),
-        getAllSectionSchedules(),
+      // El servidor devuelve solo las comisiones activas de las materias del plan del alumno,
+      // con sus horarios, en un único pedido.
+      const [sectionsData, enrollmentsData] = await Promise.all([
+        getSections({ studyPlanId: currentStudent?.studyPlanId, active: true, includeSchedules: true }),
         getEnrollmentsSafe(),
       ]);
 
-      setSections(sectionsData);
-      setSchedules(schedulesData);
-      setAllEnrollments(enrollmentsData);
+      // Una inscripción activa puede ser a una comisión que ya no entra en ese filtro (otro plan o
+      // comisión dada de baja): se pide aparte para que "Mis cursadas" la siga mostrando.
+      const knownSectionIds = new Set(sectionsData.map((s) => s.id));
+      const missingSectionIds = [
+        ...new Set(
+          enrollmentsData
+            .filter((e) => e.studentId === currentStudent?.id && e.status === "active")
+            .map((e) => e.sectionId)
+            .filter((id) => !knownSectionIds.has(id)),
+        ),
+      ];
+      // (GET /sections/{id} no trae los horarios: esa comisión se muestra sin ellos.)
+      const extraSections = await Promise.all(
+        missingSectionIds.map((id) => getSection(id).then((s) => ({ ...s, schedules: s.schedules ?? [] })).catch(() => null)),
+      );
 
-      // El alumno solo debería ver comisiones de las materias de su plan.
-      if (currentStudent?.studyPlanId) {
-        const curriculumCourses = await getCurriculumCourses(currentStudent.studyPlanId);
-        setCurriculumCourseIds(curriculumCourses.map((cc) => cc.id));
-      } else {
-        setCurriculumCourseIds([]);
-      }
+      setSections([...sectionsData, ...extraSections.filter(Boolean)]);
+      setAllEnrollments(enrollmentsData);
     } catch (e) {
       setLoadError(getErrorMessage(e, "No pudimos cargar la oferta de cursadas."));
     } finally {
@@ -75,14 +79,12 @@ export function useStudentSections(studentIdOverride) {
     reload();
   }, [reload]);
 
+  // Los horarios vienen dentro de cada comisión (include_schedules).
   const schedulesBySection = useMemo(() => {
     const map = new Map();
-    schedules.forEach((sch) => {
-      if (!map.has(sch.sectionId)) map.set(sch.sectionId, []);
-      map.get(sch.sectionId).push(sch);
-    });
+    sections.forEach((section) => map.set(section.id, section.schedules ?? []));
     return map;
-  }, [schedules]);
+  }, [sections]);
 
   const myEnrollments = useMemo(
     () => (student ? allEnrollments.filter((e) => e.studentId === student.id) : []),
@@ -111,7 +113,6 @@ export function useStudentSections(studentIdOverride) {
   }, [activeEnrollments, sections, schedulesBySection]);
 
   const available = useMemo(() => {
-    const planCourseIds = new Set(curriculumCourseIds);
     const enrolledSectionIds = new Set(activeEnrollments.map((e) => e.sectionId));
     // Ya inscripto en otra comisión de la misma materia: no debería poder
     // anotarse dos veces en la misma materia.
@@ -121,14 +122,13 @@ export function useStudentSections(studentIdOverride) {
 
     return sections
       .filter((s) => s.active)
-      .filter((s) => planCourseIds.size === 0 || planCourseIds.has(s.curriculumCourseId))
       .filter((s) => !enrolledSectionIds.has(s.id))
       .filter((s) => !enrolledCourseIds.has(s.curriculumCourseId))
       .map((section) => ({
         section,
         schedules: schedulesBySection.get(section.id) ?? [],
       }));
-  }, [sections, curriculumCourseIds, activeEnrollments, enrolled, schedulesBySection]);
+  }, [sections, activeEnrollments, enrolled, schedulesBySection]);
 
   async function enroll(sectionId) {
     await createEnrollment({ studentId: student.id, sectionId });
