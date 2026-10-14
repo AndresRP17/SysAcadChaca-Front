@@ -68,7 +68,7 @@ export const ResetPasswordModal = ({ onBack, onClose }) => {
                             <Mail size={19} />
                             <input
                                 id="reset-password-email"
-                                type="email"
+                                type="email" inputMode="email" autoComplete="email"
                                 placeholder="tu-correo@ejemplo.com"
                                 value={email}
                                 onChange={(event) => setEmail(event.target.value)}

@@ -38,10 +38,37 @@
 .modal-close-btn {
   background: none;
   border: none;
-  font-size: 22px;
+  font-size: 26px;
   line-height: 1;
   color: var(--text-secondary);
   cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  margin-right: -10px;
+}
+
+.modal-box:focus {
+  outline: none;
+}
+
+/* Confirmacion de descarte: se muestra arriba del formulario, sin perder lo escrito. */
+.modal-discard {
+  padding: 14px 20px;
+  background: color-mix(in srgb, var(--error) 14%, var(--surface));
+  border-bottom: 1px solid var(--error);
+}
+
+.modal-discard-text {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-discard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .modal-close-btn:hover {

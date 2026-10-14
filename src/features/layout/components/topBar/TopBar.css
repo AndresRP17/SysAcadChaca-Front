@@ -2,7 +2,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
+  gap: 8px;
+  padding: 8px 12px;
   background: var(--surface);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 15%, transparent);
 }
@@ -10,17 +11,28 @@
 .topbar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
 }
 
 .topbar-title {
   font-size: 1.1rem;
   margin: 0;
   color: var(--text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mobile-menu-btn {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -30,10 +42,19 @@
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 @media (min-width: 769px) {
+  .topbar {
+    padding: 12px 24px;
+  }
+
+  .topbar-right {
+    gap: 16px;
+  }
+
   .mobile-menu-btn {
     display: none;
   }

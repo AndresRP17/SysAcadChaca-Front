@@ -56,8 +56,8 @@
   flex-shrink: 0;
   margin-bottom: 16px;
   background: color-mix(in srgb, var(--navy) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--navy) 30%, transparent);
-  color: var(--navy);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
   transition: all 0.3s ease;
 }
 
@@ -171,15 +171,15 @@
 
 .forgot-pwd-input-wrapper input:focus,
 .reset-password-input-group input:focus {
-  border-color: var(--navy);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--navy) 20%, transparent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .forgot-pwd-input-wrapper input:focus + svg,
 .forgot-pwd-input-wrapper input:focus ~ svg,
 .reset-password-input-group input:focus + svg,
 .reset-password-input-group input:focus ~ svg {
-  color: var(--navy);
+  color: var(--accent);
 }
 
 .forgot-pwd-input-wrapper input:disabled,
@@ -217,13 +217,13 @@
 
 .forgot-pwd-primary-btn:hover:not(:disabled),
 .reset-password-submit:hover:not(:disabled) {
-  background-color: var(--navy-dark);
+  background-color: var(--navy-hover);
   transform: translateY(-1px);
 }
 
 .snp-error-page-button:hover {
-  border-color: var(--navy);
-  color: var(--navy);
+  border-color: var(--accent);
+  color: var(--accent);
   transform: translateY(-1px);
 }
 

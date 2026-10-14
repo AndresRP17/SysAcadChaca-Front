@@ -83,6 +83,7 @@ export const SetNewPasswordModal = ({ token, onSuccessRedirect }) => {
                             <input
                                 id="new-password"
                                 type="password"
+                                autoComplete="new-password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 autoFocus
@@ -99,6 +100,7 @@ export const SetNewPasswordModal = ({ token, onSuccessRedirect }) => {
                             <input
                                 id="confirm-password"
                                 type="password"
+                                autoComplete="new-password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 disabled={loading}

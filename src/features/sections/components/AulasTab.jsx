@@ -1,10 +1,11 @@
+import LoadError from "../../../shared/ui/LoadError";
 import { useState } from "react";
 import { useClassrooms } from "../hooks/useClassrooms";
 import ClassroomFormModal from "./ClassroomFormModal";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 
 export default function AulasTab() {
-  const { classrooms, loading, error, addClassroom, editClassroom, removeClassroom } = useClassrooms();
+  const { classrooms, loading, error, reload, addClassroom, editClassroom, removeClassroom } = useClassrooms();
 
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
@@ -46,7 +47,7 @@ export default function AulasTab() {
         </button>
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={reload} />
 
       <div className="users-table-wrapper">
         <table className="users-table">

@@ -2,30 +2,44 @@
    página o componente puede usar estas variables sin redefinirlas. */
 
 :root {
+  color-scheme: light;
   --navy: #24344a;
   --navy-dark: #eaeff6;
+  /* Hover de botones rellenos de --navy (texto blanco encima) */
+  --navy-hover: #172233;
+  /* Color de acento para TEXTO, bordes y focos sobre --surface/--bg (>= 4.5:1 en ambos temas);
+     --navy queda para fondos con texto blanco. */
+  --accent: #24344a;
+  /* Texto blanco sobre estos fondos de estado (>= 4.5:1) */
+  --on-error: #ffffff;
+  --on-success: #ffffff;
   --bg: #f6f6f5;
   --surface: #ffffff;
   --border: #0a0a09;
   --text-primary: #111111;
   --text-secondary: #141111;
-  --text-muted: #767674;
-  --error: #b5482f;
-  --success: #2e7d4f;
+  --text-muted: #5c5c5a;
+  --error: #a63f27;
+  --success: #25663f;
   --panel-logo-bg: #ffffff;
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --navy: #33465f;
   --navy-dark: #24344a;
+  --navy-hover: #42597a;
+  --accent: #9fc2f2;
+  --on-error: #14181d;
+  --on-success: #14181d;
   --bg: #14181d;
   --surface: #1b2027;
   --border: #e5e8ec;
   --text-primary: #f2f2f0;
   --text-secondary: #e7e9ed;
-  --text-muted: #8b9098;
-  --error: #e5735a;
-  --success: #4caf7d;
+  --text-muted: #a2a8b1;
+  --error: #ff9a82;
+  --success: #66c994;
   --panel-logo-bg: #ffffff;
 }
 

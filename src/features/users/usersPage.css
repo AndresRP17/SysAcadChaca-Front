@@ -62,7 +62,7 @@
 }
 
 .users-search-input:focus {
-  border-color: var(--navy);
+  border-color: var(--accent);
 }
 
 .users-filter-bar {
@@ -83,12 +83,12 @@
 }
 
 .users-filter-btn:hover {
-  border-color: var(--navy);
+  border-color: var(--accent);
 }
 
 .users-filter-btn--active {
   background: var(--navy);
-  border-color: var(--navy);
+  border-color: var(--accent);
   color: #ffffff;
 }
 
@@ -232,7 +232,7 @@
   border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 13px;
-  color: var(--navy);
+  color: var(--accent);
   cursor: pointer;
   padding: 7px 16px;
 }
@@ -269,7 +269,7 @@
 }
 
 .users-btn--primary:hover {
-  background: var(--navy-dark);
+  background: var(--navy-hover);
 }
 
 .users-btn--ghost {
@@ -284,7 +284,7 @@
 
 .users-btn--danger {
   background: var(--error);
-  color: #ffffff;
+  color: var(--on-error);
 }
 
 .users-btn--danger:hover {
@@ -293,7 +293,7 @@
 
 .users-btn--success {
   background: var(--success);
-  color: #ffffff;
+  color: var(--on-success);
 }
 
 .users-btn--success:hover {
@@ -339,7 +339,7 @@
 }
 
 .users-form-input:focus {
-  border-color: var(--navy);
+  border-color: var(--accent);
 }
 
 .users-form-error {
@@ -360,6 +360,11 @@
   color: var(--text-secondary);
   line-height: 1.6;
   margin: 0 0 4px 0;
+}
+
+.users-confirm-text--warning {
+  color: var(--error);
+  font-weight: 600;
 }
 
 /* Mobile-first: todo lo de arriba es la base (mobile). Acá se

@@ -24,10 +24,11 @@ export function useStudentExamBoards(studentIdOverride) {
   const [curriculumCourseIds, setCurriculumCourseIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   const reload = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setLoadError("");
     try {
       const currentStudent = studentIdOverride
         ? await getStudent(studentIdOverride)
@@ -49,7 +50,7 @@ export function useStudentExamBoards(studentIdOverride) {
         setCurriculumCourseIds([]);
       }
     } catch (e) {
-      setError(getErrorMessage(e, "No pudimos cargar las mesas de examen."));
+      setLoadError(getErrorMessage(e, "No pudimos cargar las mesas de examen."));
     } finally {
       setLoading(false);
     }
@@ -91,5 +92,5 @@ export function useStudentExamBoards(studentIdOverride) {
     await reload();
   }
 
-  return { student, available, enrolled, loading, error, setError, enroll, unenroll, reload };
+  return { student, available, enrolled, loading, error, setError, loadError, enroll, unenroll, reload };
 }

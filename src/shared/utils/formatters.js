@@ -36,3 +36,10 @@ export function isPast(value) {
   if (Number.isNaN(date.getTime())) return false;
   return date.getTime() < Date.now();
 }
+
+
+// "Aula 12" para mostrar un aula; si el nombre ya empieza con "Aula" no se repite el prefijo.
+export function classroomLabel(name) {
+  if (!name) return "";
+  return /^aula\b/i.test(String(name).trim()) ? String(name).trim() : `Aula ${name}`;
+}

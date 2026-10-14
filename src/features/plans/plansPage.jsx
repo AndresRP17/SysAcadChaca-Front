@@ -25,11 +25,13 @@ export default function PlansPage() {
         </div>
       </div>
 
-      <div className="plans-tabs">
+      <div className="plans-tabs" role="tablist">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             type="button"
+            role="tab"
+            aria-selected={activeTab === tab.key}
             className={`plans-tab ${activeTab === tab.key ? "plans-tab--active" : ""}`}
             onClick={() => setActiveTab(tab.key)}
           >

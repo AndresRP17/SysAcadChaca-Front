@@ -5,8 +5,13 @@ export async function getSections() {
   return data;
 }
 
-export async function getMySections(teacherId) {
-  const { data } = await api.get(`/sections?teacher_id=${teacherId}&size=1000`);
+export async function getSection(id) {
+  const { data } = await api.get(`/sections/${id}`);
+  return data;
+}
+
+export async function getMySections(teacherId, { includeSchedules = false } = {}) {
+  const { data } = await api.get(`/sections?teacher_id=${teacherId}&size=1000${includeSchedules ? "&include_schedules=1" : ""}`);
   return data;
 }
 

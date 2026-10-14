@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react";
 import { getErrorMessage } from "../../../shared/api/api";
+import { useToast } from "../../../context/ToastContext";
+import LoadError from "../../../shared/ui/LoadError";
+import FormError from "../../../shared/ui/FormError";
 import { getEvaluationsBySection, createEvaluation } from "../services/evaluationService";
 import { getGradesByEvaluation, createGrade, updateGrade } from "../services/evaluationGradeService";
 
-const CONDITIONS = ["APROBADO", "DESAPROBADO", "AUSENTE"];
+// "" = Sin cargar: nadie arranca aprobado, la condición la elige el docente al cargar la nota.
+const CONDITIONS = [
+  { value: "APROBADO", label: "Aprobado" },
+  { value: "DESAPROBADO", label: "Desaprobado" },
+  { value: "AUSENTE", label: "Ausente" },
+];
+const NEEDS_GRADE = new Set(["APROBADO", "DESAPROBADO"]);
 
 export default function NotasTab({ sectionId, enrollments }) {
   const [evaluations, setEvaluations] = useState([]);
@@ -11,9 +20,12 @@ export default function NotasTab({ sectionId, enrollments }) {
   const [newName, setNewName] = useState("");
   const [newDate, setNewDate] = useState("");
   const [rows, setRows] = useState([]); // { enrollmentId, studentName, gradeId, gradeValue, condition }
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const { showToast } = useToast();
+  const [loadError, setLoadError] = useState("");
+  const [createError, setCreateError] = useState("");
+  const [saveError, setSaveError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     // Si no se resetea acá, al cambiar de comisión queda seleccionada la
@@ -23,6 +35,7 @@ export default function NotasTab({ sectionId, enrollments }) {
     setEvaluationId("");
     setEvaluations([]);
     setRows([]);
+    setLoadError("");
 
     if (!sectionId) return;
 
@@ -31,8 +44,8 @@ export default function NotasTab({ sectionId, enrollments }) {
         setEvaluations(data);
         if (data.length > 0) setEvaluationId(String(data[0].id));
       })
-      .catch((err) => setError(getErrorMessage(err, "No se pudieron cargar las evaluaciones.")));
-  }, [sectionId]);
+      .catch((err) => setLoadError(getErrorMessage(err, "No se pudieron cargar las evaluaciones.")));
+  }, [sectionId, reloadKey]);
 
   useEffect(() => {
     async function load() {
@@ -41,8 +54,8 @@ export default function NotasTab({ sectionId, enrollments }) {
         return;
       }
 
-      setError("");
-      setMessage("");
+      setLoadError("");
+      setSaveError("");
       try {
         const existing = await getGradesByEvaluation(evaluationId);
         const byEnrollment = new Map(existing.map((g) => [g.enrollmentId, g]));
@@ -55,24 +68,25 @@ export default function NotasTab({ sectionId, enrollments }) {
               studentName: `${e.studentFirstName} ${e.studentLastName}`,
               gradeId: found?.id ?? null,
               gradeValue: found?.gradeValue ?? "",
-              condition: found?.condition ?? "APROBADO",
+              condition: found?.condition ?? "",
+              dirty: false,
             };
           }),
         );
       } catch (err) {
-        setError(getErrorMessage(err, "No se pudieron cargar las notas."));
+        setLoadError(getErrorMessage(err, "No se pudieron cargar las notas."));
       }
     }
 
     load();
-  }, [evaluationId, enrollments]);
+  }, [evaluationId, enrollments, reloadKey]);
 
   async function handleCreateEvaluation(e) {
     e.preventDefault();
-    setError("");
+    setCreateError("");
 
     if (!newName.trim() || !newDate) {
-      setError("Completá nombre y fecha de la evaluacion.");
+      setCreateError("Completá nombre y fecha de la evaluación.");
       return;
     }
 
@@ -82,23 +96,45 @@ export default function NotasTab({ sectionId, enrollments }) {
       setEvaluationId(String(created.id));
       setNewName("");
       setNewDate("");
+      showToast("Evaluación creada.");
     } catch (err) {
-      setError(getErrorMessage(err, "No se pudo crear la evaluacion."));
+      setCreateError(getErrorMessage(err, "No se pudo crear la evaluación."));
     }
   }
 
   function updateRow(enrollmentId, field, value) {
     setRows((prev) =>
-      prev.map((r) => (r.enrollmentId === enrollmentId ? { ...r, [field]: value } : r)),
+      prev.map((r) => (r.enrollmentId === enrollmentId ? { ...r, [field]: value, dirty: true } : r)),
     );
   }
 
+  // Solo cuentan las filas con condición elegida ("Sin cargar" no se envía).
+  const loadedCount = rows.filter((r) => r.condition !== "").length;
+  const missingCount = rows.length - loadedCount;
+  const pendingRows = rows.filter((r) => r.dirty && r.condition !== "");
+
   async function handleSave() {
+    setSaveError("");
+
+    const incomplete = pendingRows.find((r) => NEEDS_GRADE.has(r.condition) && r.gradeValue === "");
+    if (incomplete) {
+      setSaveError(`Cargá la nota de ${incomplete.studentName} o cambiá su condición a Ausente.`);
+      return;
+    }
+    const stray = rows.find((r) => r.dirty && r.condition === "" && r.gradeValue !== "");
+    if (stray) {
+      setSaveError(`Elegí la condición de ${stray.studentName} (cargaste una nota pero falta la condición).`);
+      return;
+    }
+    if (pendingRows.length === 0) {
+      setSaveError("No hay notas nuevas para guardar. Cargá la nota y la condición de al menos un alumno.");
+      return;
+    }
+
     setSaving(true);
-    setError("");
-    setMessage("");
+    let saved = 0;
     try {
-      for (const row of rows) {
+      for (const row of pendingRows) {
         const payload = {
           evaluation_id: evaluationId,
           enrollment_id: row.enrollmentId,
@@ -106,17 +142,26 @@ export default function NotasTab({ sectionId, enrollments }) {
           condition: row.condition,
         };
 
+        let result;
         if (row.gradeId) {
-          await updateGrade(row.gradeId, payload);
+          result = await updateGrade(row.gradeId, payload);
         } else {
-          await createGrade(payload);
+          result = await createGrade(payload);
         }
+        saved += 1;
+        // Lo guardado queda marcado: si un alumno posterior falla, reintentar no duplica.
+        setRows((prev) =>
+          prev.map((r) =>
+            r.enrollmentId === row.enrollmentId ? { ...r, dirty: false, gradeId: result?.id ?? r.gradeId } : r,
+          ),
+        );
       }
-      setMessage("Notas guardadas.");
+      showToast(`Notas guardadas (${saved} ${saved === 1 ? "alumno" : "alumnos"}).`);
       // Cierra la planilla de notas y vuelve al selector de evaluacion.
       setEvaluationId("");
     } catch (err) {
-      setError(getErrorMessage(err, "No se pudieron guardar las notas."));
+      const prefix = saved > 0 ? `Se guardaron ${saved} notas, pero hubo un problema: ` : "";
+      setSaveError(prefix + getErrorMessage(err, "No se pudieron guardar las notas."));
     } finally {
       setSaving(false);
     }
@@ -124,15 +169,16 @@ export default function NotasTab({ sectionId, enrollments }) {
 
   return (
     <div>
-      <form onSubmit={handleCreateEvaluation} className="users-form-row" style={{ alignItems: "flex-end" }}>
+      <form onSubmit={handleCreateEvaluation} className="users-form-row notas-new-form">
         <div className="users-form-field">
-          <label className="users-form-label">Nueva evaluacion</label>
+          <label className="users-form-label">Nueva evaluación</label>
           <input
             type="text"
             placeholder="Ej: Primer Parcial"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             className="users-form-input"
+            aria-label="Nombre de la evaluación"
           />
         </div>
         <div className="users-form-field">
@@ -145,18 +191,19 @@ export default function NotasTab({ sectionId, enrollments }) {
           />
         </div>
         <button type="submit" className="users-btn users-btn--primary">
-          Crear evaluacion
+          Crear evaluación
         </button>
       </form>
+      <FormError message={createError} />
 
-      <div className="users-form-field" style={{ maxWidth: 400 }}>
-        <label className="users-form-label">Evaluacion</label>
+      <div className="users-form-field notas-select">
+        <label className="users-form-label">Evaluación</label>
         <select
           value={evaluationId}
           onChange={(e) => setEvaluationId(e.target.value)}
           className="users-form-input"
         >
-          <option value="">Seleccioná una evaluacion...</option>
+          <option value="">Seleccioná una evaluación...</option>
           {evaluations.map((ev) => (
             <option key={ev.id} value={ev.id}>
               {ev.name} ({ev.date})
@@ -165,25 +212,24 @@ export default function NotasTab({ sectionId, enrollments }) {
         </select>
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
-      {message && <p className="users-subtitle">{message}</p>}
+      <LoadError message={loadError} onRetry={() => setReloadKey((k) => k + 1)} />
 
       {evaluationId && rows.length > 0 && (
         <>
           <div className="users-table-wrapper">
-            <table className="users-table">
+            <table className="users-table notas-table">
               <thead>
                 <tr>
                   <th className="users-th">Alumno</th>
                   <th className="users-th users-th--center">Nota</th>
-                  <th className="users-th users-th--center">Condicion</th>
+                  <th className="users-th users-th--center">Condición</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.enrollmentId}>
-                    <td className="users-td">{row.studentName}</td>
-                    <td className="users-td users-td--center">
+                    <td className="users-td notas-name">{row.studentName}</td>
+                    <td className="users-td users-td--center notas-cell" data-label="Nota">
                       <input
                         type="number"
                         min="0"
@@ -192,18 +238,22 @@ export default function NotasTab({ sectionId, enrollments }) {
                         value={row.gradeValue}
                         onChange={(e) => updateRow(row.enrollmentId, "gradeValue", e.target.value)}
                         className="users-form-input"
-                        style={{ width: 80, margin: "0 auto" }}
+                        aria-label={`Nota de ${row.studentName}`}
                       />
                     </td>
-                    <td className="users-td users-td--center">
+                    <td className="users-td users-td--center notas-cell" data-label="Condición">
                       <select
                         value={row.condition}
                         onChange={(e) => updateRow(row.enrollmentId, "condition", e.target.value)}
                         className="users-form-input"
+                        aria-label={`Condición de ${row.studentName}`}
                       >
+                        <option value="" disabled={Boolean(row.gradeId)}>
+                          Sin cargar
+                        </option>
                         {CONDITIONS.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
+                          <option key={c.value} value={c.value}>
+                            {c.label}
                           </option>
                         ))}
                       </select>
@@ -214,7 +264,13 @@ export default function NotasTab({ sectionId, enrollments }) {
             </table>
           </div>
 
-          <div className="users-form-actions">
+          <p className="users-subtitle notas-missing" aria-live="polite">
+            {missingCount === 0
+              ? "Todos los alumnos tienen nota cargada."
+              : `Falta cargar ${missingCount} de ${rows.length} ${rows.length === 1 ? "alumno" : "alumnos"}. Solo se guardan los que tengan condición elegida.`}
+          </p>
+
+          <div className="users-form-actions notas-actions">
             <button
               type="button"
               className="users-btn users-btn--primary"
@@ -224,6 +280,7 @@ export default function NotasTab({ sectionId, enrollments }) {
               {saving ? "Guardando..." : "Guardar notas"}
             </button>
           </div>
+          <FormError message={saveError} />
         </>
       )}
     </div>

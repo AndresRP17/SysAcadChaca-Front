@@ -1,0 +1,159 @@
+/* Mobile first: base para 390 px; se amplia con min-width. */
+.equiv-sub {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.equiv-help {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0 0 8px 0;
+}
+
+.equiv-panel {
+  margin-bottom: 16px;
+}
+
+.equiv-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.equiv-select {
+  width: 100%;
+  min-height: 44px;
+}
+
+.equiv-combo .users-form-input {
+  min-height: 44px;
+}
+
+.equiv-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.equiv-actions {
+  gap: 8px;
+}
+
+.equiv-toggle {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.equiv-report {
+  list-style: none;
+  margin: 12px 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.equiv-report-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.equiv-type {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.equiv-type-option {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.equiv-type-option--active {
+  border-color: var(--navy);
+  background: var(--bg);
+}
+
+.equiv-type-option input {
+  margin-top: 4px;
+  width: 20px;
+  height: 20px;
+}
+
+.equiv-detail {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.equiv-detail dt {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.equiv-detail dd {
+  margin: 0;
+}
+
+@media (min-width: 701px) {
+  .equiv-filters {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .equiv-select {
+    width: auto;
+    min-width: 180px;
+  }
+
+  .equiv-combo {
+    min-width: 260px;
+  }
+
+  .equiv-toggle {
+    width: auto;
+  }
+
+  .equiv-report-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .users-table .users-td.equiv-actions {
+    white-space: normal;
+    min-width: 340px;
+  }
+
+  .equiv-actions .equiv-btn {
+    margin: 2px 4px 2px 0;
+  }
+}
+
+.users-form-input {
+  font-family: inherit;
+}

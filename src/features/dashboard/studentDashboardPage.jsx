@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getErrorMessage } from "../../shared/api/api";
 import { getStudentSummary } from "./services/studentSummaryService";
 import { useStudentSections } from "../enrollments/hooks/useStudentSections";
@@ -9,6 +9,7 @@ import StatsRow from "./components/StatsRow";
 import CourseList from "./components/CourseList";
 import WeeklyAgenda from "./components/WeeklyAgenda";
 import UpcomingExamBoards from "./components/UpcomingExamBoards";
+import LoadError from "../../shared/ui/LoadError";
 import "../users/usersPage.css";
 import "./studentDashboardPage.css";
 
@@ -33,8 +34,13 @@ export default function StudentDashboard() {
     [enrolledBoards],
   );
 
+  const [reloadKey, setReloadKey] = useState(0);
+  const retry = useCallback(() => setReloadKey((k) => k + 1), []);
+
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setError("");
     getStudentSummary()
       .then((data) => {
         if (!cancelled) setSummary(data);
@@ -53,12 +59,12 @@ export default function StudentDashboard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadKey]);
 
   return (
     <div className="dash-page">
       {loading && <p className="users-empty">Cargando...</p>}
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={retry} />
 
       {summary && (
         <>

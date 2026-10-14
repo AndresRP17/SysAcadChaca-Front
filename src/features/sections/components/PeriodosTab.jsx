@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { useToast } from "../../../context/ToastContext";
+import LoadError from "../../../shared/ui/LoadError";
 import { getErrorMessage } from "../../../shared/api/api";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 import { todayIso } from "../../../shared/utils/formatters";
@@ -25,6 +27,7 @@ function periodState(period) {
 }
 
 export default function PeriodosTab() {
+  const { showToast } = useToast();
   const [periods, setPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -65,8 +68,10 @@ export default function PeriodosTab() {
   async function handleFormSubmit(payload) {
     if (formMode === "edit" && editingPeriod) {
       await updateEnrollmentPeriod(editingPeriod.id, payload);
+      showToast("Período actualizado.");
     } else {
       await createEnrollmentPeriod(payload);
+      showToast("Período creado.");
     }
     setFormOpen(false);
     await reload();
@@ -75,6 +80,7 @@ export default function PeriodosTab() {
   async function handleConfirmDelete() {
     // Si falla, el error se propaga al ConfirmModal, que queda abierto y lo muestra.
     await deleteEnrollmentPeriod(periodToDelete.id);
+    showToast("Período eliminado.");
     setPeriodToDelete(null);
     await reload();
   }
@@ -90,7 +96,7 @@ export default function PeriodosTab() {
         </button>
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={reload} />
 
       <div className="users-table-wrapper">
         <table className="users-table">

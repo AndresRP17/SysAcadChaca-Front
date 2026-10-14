@@ -3,6 +3,7 @@ import { useToast } from "../../context/ToastContext";
 import { getErrorMessage } from "../../shared/api/api";
 import Combobox from "../../shared/ui/Combobox";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
+import LoadError from "../../shared/ui/LoadError";
 import { getStudents } from "../users/services/studentService";
 import { useStudentSections } from "./hooks/useStudentSections";
 import { useStudentExamBoards } from "../exams/hooks/useStudentExamBoards";
@@ -38,13 +39,13 @@ function StudentEnrollments({ studentId }) {
   const [sectionToCancel, setSectionToCancel] = useState(null);
   const [examToCancel, setExamToCancel] = useState(null);
 
-  const { available, enrolled, loading, error, setError, enroll, unenroll } = sectionsHook;
+  const { available, enrolled, loading, loadError, reload, enroll, unenroll } = sectionsHook;
   const {
     available: availableBoards,
     enrolled: enrolledBoards,
     loading: loadingBoards,
-    error: examError,
-    setError: setExamError,
+    loadError: examLoadError,
+    reload: reloadExams,
     enroll: enrollExam,
     unenroll: unenrollExam,
   } = examBoardsHook;
@@ -60,12 +61,11 @@ function StudentEnrollments({ studentId }) {
 
   async function doEnrollSection(sectionId) {
     setSubmitting(true);
-    setError("");
     try {
       await enroll(sectionId);
       showToast("Inscripción a la cursada confirmada");
     } catch (e) {
-      setError(getErrorMessage(e, "No pudimos completar la inscripción."));
+      showToast(getErrorMessage(e, "No pudimos completar la inscripción."), "error");
     } finally {
       setSubmitting(false);
     }
@@ -84,12 +84,11 @@ function StudentEnrollments({ studentId }) {
     const enrollment = sectionToCancel;
     setSectionToCancel(null);
     setSubmitting(true);
-    setError("");
     try {
       await unenroll(enrollment.id);
       showToast("Baja de la cursada confirmada");
     } catch (e) {
-      setError(getErrorMessage(e, "No pudimos dar de baja la inscripción."));
+      showToast(getErrorMessage(e, "No pudimos dar de baja la inscripción."), "error");
     } finally {
       setSubmitting(false);
     }
@@ -97,12 +96,11 @@ function StudentEnrollments({ studentId }) {
 
   async function handleEnrollExam(examBoardId) {
     setSubmitting(true);
-    setExamError("");
     try {
       await enrollExam(examBoardId);
       showToast("Inscripción a la mesa confirmada");
     } catch (e) {
-      setExamError(getErrorMessage(e, "No pudimos inscribir al alumno a la mesa."));
+      showToast(getErrorMessage(e, "No pudimos inscribir al alumno a la mesa."), "error");
     } finally {
       setSubmitting(false);
     }
@@ -112,12 +110,11 @@ function StudentEnrollments({ studentId }) {
     const enrollment = examToCancel;
     setExamToCancel(null);
     setSubmitting(true);
-    setExamError("");
     try {
       await unenrollExam(enrollment.id);
       showToast("Baja de la mesa confirmada");
     } catch (e) {
-      setExamError(getErrorMessage(e, "No pudimos dar de baja la inscripción."));
+      showToast(getErrorMessage(e, "No pudimos dar de baja la inscripción."), "error");
     } finally {
       setSubmitting(false);
     }
@@ -127,10 +124,10 @@ function StudentEnrollments({ studentId }) {
     <>
       <section className="portal-section">
         <h2 className="portal-section-title">Cursadas</h2>
-        {error && <p className="users-form-error">{error}</p>}
+        <LoadError message={loadError} onRetry={reload} />
         {loading && <p className="users-empty">Cargando...</p>}
 
-        {!loading && (
+        {!loading && !loadError && (
           <>
             <p className="users-subtitle">Oferta disponible</p>
             <AvailableSectionsList
@@ -160,10 +157,10 @@ function StudentEnrollments({ studentId }) {
 
       <section className="portal-section">
         <h2 className="portal-section-title">Finales</h2>
-        {examError && <p className="users-form-error">{examError}</p>}
+        <LoadError message={examLoadError} onRetry={reloadExams} />
         {loadingBoards && <p className="users-empty">Cargando...</p>}
 
-        {!loadingBoards && (
+        {!loadingBoards && !examLoadError && (
           <>
             <p className="users-subtitle">Mesas disponibles</p>
             {availableBoards.length === 0 && (
@@ -243,14 +240,17 @@ export default function BedelEnrollPage() {
   const [students, setStudents] = useState([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
   const [selectedStudentId, setSelectedStudentId] = useState("");
 
   useEffect(() => {
+    setError("");
+    setLoadingStudents(true);
     getStudents()
       .then(setStudents)
       .catch((e) => setError(getErrorMessage(e, "No pudimos cargar la lista de alumnos.")))
       .finally(() => setLoadingStudents(false));
-  }, []);
+  }, [reloadKey]);
 
   const studentOptions = students.map((s) => ({
     value: s.id,
@@ -269,14 +269,14 @@ export default function BedelEnrollPage() {
         </div>
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={() => setReloadKey((k) => k + 1)} />
 
       {loadingStudents && <p className="users-empty">Cargando...</p>}
 
       {!loadingStudents && (
         <div className="users-form-field" style={{ maxWidth: 480 }}>
-          <label className="users-form-label">Alumno</label>
-          <Combobox
+          <label className="users-form-label" htmlFor="bedelEnrollPage-1">Alumno</label>
+          <Combobox id="bedelEnrollPage-1"
             options={studentOptions}
             value={selectedStudentId}
             onChange={setSelectedStudentId}

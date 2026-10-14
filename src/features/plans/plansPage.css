@@ -1,12 +1,14 @@
 .plans-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 24px;
 }
 
 .plans-tab {
-  padding: 10px 18px;
+  padding: 10px 14px;
+  min-height: 44px;
   border: none;
   background: none;
   font-size: 14px;
@@ -22,8 +24,8 @@
 }
 
 .plans-tab--active {
-  color: var(--navy);
-  border-bottom-color: var(--navy);
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 .plans-toolbar {
@@ -83,7 +85,7 @@
 }
 
 .plans-chip-edit:hover {
-  color: var(--navy);
+  color: var(--accent);
 }
 
 .plans-chip-delete:hover {

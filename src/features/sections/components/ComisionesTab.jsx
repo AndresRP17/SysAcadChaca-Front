@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import LoadError from "../../../shared/ui/LoadError";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useToast } from "../../../context/ToastContext";
 import { usePrograms } from "../../plans/hooks/usePrograms";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
@@ -20,20 +22,23 @@ function periodLabel(key) {
   return `${year} · ${term}º cuatrimestre`;
 }
 
-export default function ComisionesTab() {
+export default function ComisionesTab({ deepLink = null }) {
+  const { showToast } = useToast();
   const { programs } = usePrograms();
   const { classrooms } = useClassrooms();
 
-  const [programId, setProgramId] = useState("");
+  // Si llegamos desde el Calendario, se preselecciona carrera, plan y comision una sola vez.
+  const pendingDeepLink = useRef(deepLink);
+  const [programId, setProgramId] = useState(deepLink?.programId ?? "");
   const [studyPlans, setStudyPlans] = useState([]);
-  const [studyPlanId, setStudyPlanId] = useState("");
+  const [studyPlanId, setStudyPlanId] = useState(deepLink?.studyPlanId ?? "");
   const [curriculumCourses, setCurriculumCourses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [allSections, setAllSections] = useState([]);
   const [loadingSections, setLoadingSections] = useState(false);
   const [error, setError] = useState("");
 
-  const [selectedSectionId, setSelectedSectionId] = useState(null);
+  const [selectedSectionId, setSelectedSectionId] = useState(deepLink?.sectionId ?? null);
   const [schedules, setSchedules] = useState([]);
 
   const [sectionFormOpen, setSectionFormOpen] = useState(false);
@@ -55,7 +60,6 @@ export default function ComisionesTab() {
   }, []);
 
   useEffect(() => {
-    setStudyPlanId("");
     setStudyPlans([]);
     if (!programId) return;
     getStudyPlans(Number(programId)).then(setStudyPlans).catch((e) => setError(e.message));
@@ -98,6 +102,15 @@ export default function ComisionesTab() {
     if (periodOptions.length === 0) return;
     if (!periodOptions.includes(selectedPeriod)) setSelectedPeriod(periodOptions[0]);
   }, [periodOptions, selectedPeriod]);
+
+  // Con enlace directo, el periodo es el de la comision pedida (no el mas reciente).
+  useEffect(() => {
+    const pending = pendingDeepLink.current;
+    if (!pending || periodOptions.length === 0) return;
+    const target = allSections.find((s) => s.id === pending.sectionId);
+    if (target) setSelectedPeriod(periodKey(target));
+    pendingDeepLink.current = null;
+  }, [periodOptions, allSections]);
 
   const visibleSections = sections.filter((s) => periodKey(s) === selectedPeriod);
 
@@ -153,8 +166,10 @@ export default function ComisionesTab() {
   async function handleSectionFormSubmit(data) {
     if (sectionFormMode === "edit" && editingSection) {
       await updateSection(editingSection.id, data);
+      showToast("Comisión actualizada.");
     } else {
       await createSection(data);
+      showToast("Comisión creada.");
     }
     setSectionFormOpen(false);
     await reloadSections();
@@ -162,6 +177,7 @@ export default function ComisionesTab() {
 
   async function handleConfirmDeleteSection() {
     await deleteSection(sectionToDelete.id);
+    showToast("Comisión eliminada.");
     if (sectionToDelete.id === selectedSectionId) setSelectedSectionId(null);
     setSectionToDelete(null);
     await reloadSections();
@@ -179,6 +195,7 @@ export default function ComisionesTab() {
         shift: section.shift,
         active: !section.active,
       });
+      showToast(section.active ? "Comisión desactivada." : "Comisión activada.");
       await reloadSections();
     } catch (e) {
       setError(e.message);
@@ -200,8 +217,10 @@ export default function ComisionesTab() {
   async function handleScheduleFormSubmit(data) {
     if (scheduleFormMode === "edit" && editingSchedule) {
       await updateSectionSchedule(editingSchedule.id, { ...data, section_id: editingSchedule.sectionId });
+      showToast("Horario actualizado.");
     } else {
       await createSectionSchedule({ ...data, section_id: selectedSectionId });
+      showToast("Horario agregado.");
     }
     setScheduleFormOpen(false);
     await reloadSchedules(selectedSectionId);
@@ -209,6 +228,7 @@ export default function ComisionesTab() {
 
   async function handleConfirmDeleteSchedule() {
     await deleteSectionSchedule(scheduleToDelete.id);
+    showToast("Horario eliminado.");
     setScheduleToDelete(null);
     await reloadSchedules(selectedSectionId);
   }
@@ -217,12 +237,15 @@ export default function ComisionesTab() {
 
   return (
     <div>
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={reloadSections} />
 
       <div className="plans-selectors">
         <div className="users-form-field">
-          <label className="users-form-label">Carrera</label>
-          <select value={programId} onChange={(e) => setProgramId(e.target.value)} className="users-form-input">
+          <label className="users-form-label" htmlFor="comisionesTab-1">Carrera</label>
+          <select id="comisionesTab-1" value={programId} onChange={(e) => {
+              setProgramId(e.target.value);
+              setStudyPlanId("");
+            }} className="users-form-input">
             {programs.length === 0 && <option value="">No hay carreras cargadas</option>}
             {programs.length > 0 && <option value="">Seleccioná una carrera...</option>}
             {programs.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -230,8 +253,8 @@ export default function ComisionesTab() {
         </div>
 
         <div className="users-form-field">
-          <label className="users-form-label">Plan de estudio</label>
-          <select
+          <label className="users-form-label" htmlFor="comisionesTab-2">Plan de estudio</label>
+          <select id="comisionesTab-2"
             value={studyPlanId}
             onChange={(e) => setStudyPlanId(e.target.value)}
             className="users-form-input"
@@ -254,7 +277,7 @@ export default function ComisionesTab() {
       {studyPlanId && !loadingSections && (
         <>
           <div className="plans-toolbar">
-            <p className="users-subtitle">{visibleSections.length} comisión{visibleSections.length !== 1 ? "es" : ""}</p>
+            <p className="users-subtitle">{visibleSections.length} {visibleSections.length !== 1 ? "comisiones" : "comisión"}</p>
             <button
               type="button"
               className="users-btn users-btn--primary"
@@ -268,8 +291,8 @@ export default function ComisionesTab() {
 
           {periodOptions.length > 0 && (
             <div className="users-form-field" style={{ maxWidth: 260 }}>
-              <label className="users-form-label">Período</label>
-              <select
+              <label className="users-form-label" htmlFor="comisionesTab-3">Período</label>
+              <select id="comisionesTab-3"
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
                 className="users-form-input"
@@ -310,8 +333,8 @@ export default function ComisionesTab() {
                     <span>{s.courseName}</span>
                     <span className="correlatives-course-year">
                       {s.academicYear} - {s.shift}
-                      {!s.active && <span className="users-badge users-badge--inactive"> Inactiva</span>}
-                      {s.closed && <span className="users-badge users-badge--inactive"> Cerrada</span>}
+                      {!s.active && <span className="users-badge users-badge--inactive">Inactiva</span>}
+                      {s.closed && <span className="users-badge users-badge--inactive">Cerrada</span>}
                     </span>
                   </button>
                 ))}
@@ -444,6 +467,7 @@ export default function ComisionesTab() {
         initialData={editingSchedule}
         classroomOptions={classrooms}
         teacherId={selectedSection?.teacherId}
+        sectionCapacity={selectedSection?.maxCapacity}
         onClose={() => setScheduleFormOpen(false)}
         onSubmit={handleScheduleFormSubmit}
       />

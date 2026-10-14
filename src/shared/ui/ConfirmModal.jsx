@@ -9,7 +9,7 @@ export const DELETE_NOTE = "Solo se puede eliminar si no tiene datos asociados."
 // onConfirm puede ser async: si rechaza, el modal queda abierto y muestra el
 // mensaje de la API (p. ej. el 409 "tiene N planes de estudio asociados"). Si
 // resuelve, es responsabilidad del padre cerrarlo (poniendo open en false).
-export default function ConfirmModal({ open, title, message, note, confirmLabel = "Eliminar", onCancel, onConfirm }) {
+export default function ConfirmModal({ open, title, message, note, confirmLabel = "Eliminar", confirmVariant = "danger", onCancel, onConfirm }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,7 +41,7 @@ export default function ConfirmModal({ open, title, message, note, confirmLabel 
         <button type="button" className="users-btn users-btn--ghost" onClick={onCancel}>
           Cancelar
         </button>
-        <button type="button" className="users-btn users-btn--danger" onClick={handleConfirm} disabled={busy}>
+        <button type="button" className={`users-btn users-btn--${confirmVariant}`} onClick={handleConfirm} disabled={busy}>
           {confirmLabel}
         </button>
       </div>

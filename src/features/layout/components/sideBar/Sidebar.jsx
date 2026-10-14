@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Users, Contact, GraduationCap, UserCircle, CalendarClock, ClipboardList, FileText, NotebookPen, LayoutList, ChevronLeft, ChevronRight, History, Award, UserPlus } from "lucide-react";
+import { Users, Contact, GraduationCap, UserCircle, CalendarClock, ClipboardList, FileText, NotebookPen, LayoutList, ChevronLeft, ChevronRight, History, Award, UserPlus, CalendarDays, Repeat } from "lucide-react";
 import { useAuth } from "../../../../context/AuthContext";
 import { LINKS_BY_ROLE } from "../../roleLinks";
 import "./Sidebar.css";
@@ -16,7 +16,8 @@ const ALL_LINKS = {
   finales: { to: "/finales", icon: <FileText size={18} />, label: "Inscripción a finales" },
   actas: { to: "/actas", icon: <NotebookPen size={18} />, label: "Actas de examen" },
   "mis-comisiones": { to: "/mis-comisiones", icon: <LayoutList size={18} />, label: "Mis comisiones" },
-  planilla: { to: "/planilla", icon: <ClipboardList size={18} />, label: "Planilla" },
+  calendario: { to: "/calendario", icon: <CalendarDays size={18} />, label: "Calendario" },
+  equivalencias: { to: "/equivalencias", icon: <Repeat size={18} />, label: "Equivalencias" },
   certificados: { to: "/certificados", icon: <Award size={18} />, label: "Certificados" },
 };
 
@@ -28,11 +29,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   return (
     <>
-      <div className={`sidebar-overlay ${!collapsed ? "active" : ""}`} onClick={onToggle} />
+      <div className={`sidebar-overlay ${!collapsed ? "active" : ""}`} onClick={onToggle} aria-hidden="true" />
 
       <aside className={`sidebar ${collapsed ? "collapsed" : "open"}`}>
         <div className="sidebar-content">
-          <button className="toggle-btn" onClick={onToggle} aria-label="Alternar navegación">
+          <button type="button" className="toggle-btn" onClick={onToggle} aria-label="Alternar navegación" aria-expanded={!collapsed}>
             {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
 
@@ -42,17 +43,20 @@ const Sidebar = ({ collapsed, onToggle }) => {
             </div>
           )}
 
-          <nav className="sidebar-nav">
+          <nav className="sidebar-nav" aria-label="Navegación principal">
             {links.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 className={`nav-link ${location.pathname === link.to ? "active" : ""}`}
+                aria-label={link.label}
+                title={link.label}
+                aria-current={location.pathname === link.to ? "page" : undefined}
                 onClick={() => {
                   if (window.innerWidth < 768 && !collapsed) onToggle();
                 }}
               >
-                <span className="nav-icon">{link.icon}</span>
+                <span className="nav-icon" aria-hidden="true">{link.icon}</span>
                 {!collapsed && <span className="nav-label">{link.label}</span>}
               </Link>
             ))}

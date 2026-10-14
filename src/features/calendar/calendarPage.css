@@ -1,0 +1,166 @@
+/* Mobile first: una columna, el calendario ocupa todo el ancho. */
+.calendar-today {
+  /* Alto minimo para que la tarjeta no cambie de tamano al terminar de cargar y no empuje el calendario. */
+  min-height: 96px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.calendar-today-title {
+  font-size: 15px;
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+}
+
+.calendar-today-holiday {
+  margin: 0;
+  color: #b45309;
+  font-size: 14px;
+}
+
+.calendar-today-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calendar-today-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.calendar-today-item:first-child {
+  border-top: 0;
+}
+
+.calendar-today-course {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.calendar-today-meta {
+  margin: 2px 0 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.calendar-today-item .users-btn {
+  width: 100%;
+  min-height: 44px;
+}
+
+.calendar-notice {
+  margin: 0 0 12px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.calendar-wrapper {
+  width: 100%;
+  height: 75vh;
+  min-height: 460px;
+}
+
+.calendar-wrapper .sx-react-calendar-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+@media (min-width: 768px) {
+  .calendar-today-item {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .calendar-today-item .users-btn {
+    width: auto;
+  }
+}
+
+.calendar-detail-lines {
+  list-style: none;
+  margin: 0 0 16px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+/* Sin la animacion de deslizamiento con desenfoque al cambiar de mes o dia: parece que
+   la pagina se recarga cada vez. */
+.calendar-wrapper .sx__slide-left,
+.calendar-wrapper .sx__slide-right {
+  animation: none;
+}
+
+/* Mismo alto en "Cargando...", "No tenes clases" y con clases, para que no haya saltos. */
+.calendar-today .users-empty {
+  padding: 4px 0;
+  text-align: left;
+}
+
+.calendar-attendance {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 16px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.calendar-attendance strong {
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.calendar-today-cancelled {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* Celular: la agenda del dia usa el scroll de la PAGINA, no uno interno propio (con alto fijo
+   la segunda clase quedaba cortada sin ninguna pista de que habia mas). */
+@media (max-width: 767px) {
+  .calendar-wrapper {
+    height: auto;
+    min-height: 0;
+  }
+
+  .calendar-wrapper .sx-react-calendar-wrapper,
+  .calendar-wrapper .sx__calendar-wrapper,
+  .calendar-wrapper .sx__calendar,
+  .calendar-wrapper .sx__view-container,
+  .calendar-wrapper .sx__month-agenda-wrapper {
+    height: auto;
+    max-height: none;
+  }
+
+  .calendar-wrapper .sx__view-container {
+    overflow: visible;
+  }
+
+  .calendar-wrapper .sx__month-agenda-events {
+    overflow: visible;
+    max-height: none;
+  }
+}

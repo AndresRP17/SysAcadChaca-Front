@@ -9,12 +9,13 @@ import ConflictModal from "./components/ConflictModal";
 import EnrollmentPeriodBanner from "./components/EnrollmentPeriodBanner";
 import { useOpenEnrollmentPeriods } from "./hooks/useOpenEnrollmentPeriods";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
+import LoadError from "../../shared/ui/LoadError";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
 import "./portalCursadasPage.css";
 
 export default function PortalCursadasPage() {
-  const { student, available, enrolled, loading, error, setError, enroll, unenroll } = useStudentSections();
+  const { student, available, enrolled, loading, loadError, reload, enroll, unenroll } = useStudentSections();
   const { showToast } = useToast();
 
   const { periods, loading: loadingPeriods, isOpen: enrollmentOpen } = useOpenEnrollmentPeriods("CURSADA");
@@ -45,12 +46,11 @@ export default function PortalCursadasPage() {
 
   async function doEnroll(sectionId) {
     setSubmitting(true);
-    setError("");
     try {
       await enroll(sectionId);
       showToast("Inscripción confirmada");
     } catch (e) {
-      setError(getErrorMessage(e, "No pudimos completar la inscripción."));
+      showToast(getErrorMessage(e, "No pudimos completar la inscripción."), "error");
     } finally {
       setSubmitting(false);
     }
@@ -69,12 +69,11 @@ export default function PortalCursadasPage() {
     const enrollment = enrollmentToCancel;
     setEnrollmentToCancel(null);
     setSubmitting(true);
-    setError("");
     try {
       await unenroll(enrollment.id);
       showToast("Baja de la cursada confirmada");
     } catch (e) {
-      setError(getErrorMessage(e, "No pudimos dar de baja la inscripción."));
+      showToast(getErrorMessage(e, "No pudimos dar de baja la inscripción."), "error");
     } finally {
       setSubmitting(false);
     }
@@ -95,17 +94,18 @@ export default function PortalCursadasPage() {
 
       <EnrollmentPeriodBanner periods={periods} loading={loadingPeriods} label="cursadas" />
 
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={loadError} onRetry={reload} />
 
       {loading && <p className="users-empty">Cargando...</p>}
 
-      {!loading && (
+      {!loading && !loadError && (
         <>
           <section className="portal-section">
             <div className="plans-toolbar">
               <h2 className="portal-section-title">Oferta disponible</h2>
               <input
                 type="search"
+                aria-label="Buscar materia, comisión o docente"
                 className="users-search-input"
                 placeholder="Buscar materia, comisión o docente"
                 value={search}
@@ -127,7 +127,7 @@ export default function PortalCursadasPage() {
             <div className="plans-toolbar">
               <h2 className="portal-section-title">Mis cursadas</h2>
               <p className="users-subtitle">
-                {enrolled.length} inscripción{enrolled.length !== 1 ? "es" : ""}
+                {enrolled.length} {enrolled.length !== 1 ? "inscripciones" : "inscripción"}
               </p>
             </div>
 

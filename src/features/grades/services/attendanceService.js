@@ -21,3 +21,10 @@ export async function updateAttendance(id, payload) {
   const { data } = await api.put(`/attendances/${id}`, payload);
   return data;
 }
+
+// Guarda la asistencia de toda la clase en un solo pedido (transaccional e idempotente en el
+// backend: sirve para crear y para editar, y reintentar es seguro). records: [{ enrollment_id, present }].
+export async function saveAttendanceBatch({ sectionId, date, records }) {
+  const { data } = await api.post("/attendances/batch", { section_id: sectionId, date, records });
+  return data;
+}

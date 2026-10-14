@@ -1,12 +1,28 @@
 .toast-container {
+  /* Mobile-first: abajo y a lo ancho, al alcance del pulgar. */
   position: fixed;
-  top: 16px;
+  left: 16px;
   right: 16px;
+  bottom: 16px;
   z-index: 100;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: 360px;
+  pointer-events: none;
+}
+
+.toast-container > * {
+  pointer-events: auto;
+}
+
+@media (min-width: 701px) {
+  .toast-container {
+    left: auto;
+    bottom: auto;
+    top: 16px;
+    right: 16px;
+    max-width: 360px;
+  }
 }
 
 .toast {
@@ -28,7 +44,14 @@
   border-left-color: var(--error);
 }
 
+.toast-message {
+  overflow-wrap: anywhere;
+}
+
 .toast-close-btn {
+  flex-shrink: 0;
+  min-width: 32px;
+  min-height: 32px;
   background: none;
   border: none;
   font-size: 18px;
