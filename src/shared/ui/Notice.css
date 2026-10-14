@@ -1,0 +1,22 @@
+/* Misma forma que .load-error (tarjeta con borde izquierdo), pero con el color de acento:
+   informa, no es un error. La paleta vive en src/styles/theme.css. */
+.notice {
+  margin: 0 0 12px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.notice-text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.notice-text a {
+  color: var(--accent);
+  font-weight: 600;
+}

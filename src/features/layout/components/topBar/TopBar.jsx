@@ -1,4 +1,4 @@
-import { LogOut, Menu } from "lucide-react";
+import { LogOut, Menu, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
 import { UserProfile } from "../../../../shared/ui/userProfile/UserProfile";
@@ -32,6 +32,10 @@ const Topbar = ({ onToggle }) => {
         <ThemeToggle />
 
         <UserProfile variant="topbar">
+          <button type="button" className="dropdown-item" onClick={() => navigate("/perfil")}>
+            <User size={15} />
+            Mi perfil
+          </button>
           <button type="button" className="dropdown-item danger" onClick={handleLogout}>
             <LogOut size={15} />
             Cerrar sesión

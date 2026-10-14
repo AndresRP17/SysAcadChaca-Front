@@ -1,0 +1,57 @@
+/* Los botones y campos de formulario son los compartidos (users-btn, users-form-*);
+   acá solo va el layout propio de la pantalla. La paleta vive en src/styles/theme.css. */
+.profile-page {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 16px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--text-primary);
+}
+
+.profile-header {
+  margin-bottom: 4px;
+}
+
+.profile-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 20px;
+}
+
+.profile-card-title {
+  font-size: 16px;
+  margin: 0 0 16px 0;
+}
+
+.profile-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: -8px 0 14px 0;
+}
+
+.profile-data {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px 20px;
+  margin: 0;
+}
+
+.profile-data-item {
+  min-width: 0;
+}
+
+.profile-data-value {
+  margin: 2px 0 0 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+/* En pantallas anchas los campos de una misma fila van lado a lado. */
+@media (min-width: 640px) {
+  .profile-row {
+    flex-direction: row;
+  }
+}

@@ -16,6 +16,7 @@ export const PAGE_TITLES = {
   calendario: "Calendario",
   asistencia: "Asistencia",
   comision: "Comisión",
+  perfil: "Mi perfil",
   "sin-acceso": "Sin acceso",
 };
 
