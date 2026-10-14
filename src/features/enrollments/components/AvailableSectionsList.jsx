@@ -33,7 +33,7 @@ export default function AvailableSectionsList({
         return (
           <article key={section.id} className="portal-card">
             <div className="portal-card-head">
-              <div>
+              <div className="portal-card-head-text">
                 <h3 className="portal-card-title">{section.courseName}</h3>
                 <p className="portal-card-sub">
                   Comisión {section.name} · {section.shift} · {section.academicYear}
@@ -44,10 +44,12 @@ export default function AvailableSectionsList({
                   </p>
                 )}
               </div>
-              {outOfPeriod && <span className="users-badge users-badge--inactive">Fuera de período</span>}
-              <span className={`users-badge ${full || noSchedule ? "users-badge--inactive" : "users-badge--navy"}`}>
-                {noSchedule ? "Sin horario asignado" : full ? "Sin cupo" : `${seats} ${seats === 1 ? "lugar disponible" : "lugares disponibles"}`}
-              </span>
+              <div className="portal-card-badges">
+                {outOfPeriod && <span className="users-badge users-badge--inactive">Fuera de período</span>}
+                <span className={`users-badge ${full || noSchedule ? "users-badge--inactive" : "users-badge--navy"}`}>
+                  {noSchedule ? "Sin horario asignado" : full ? "Sin cupo" : `${seats} ${seats === 1 ? "lugar disponible" : "lugares disponibles"}`}
+                </span>
+              </div>
             </div>
 
             <ScheduleLines schedules={schedules} highlightIds={conflictIds} />

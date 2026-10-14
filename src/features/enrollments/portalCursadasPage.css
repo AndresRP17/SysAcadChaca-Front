@@ -42,6 +42,21 @@
   gap: 12px;
 }
 
+/* El título ocupa lo que queda; las etiquetas (fuera de período, cupo...) se apilan a la derecha
+   y no le sacan ancho: antes, con dos etiquetas, el nombre de la materia se partía letra por letra. */
+.portal-card-head-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.portal-card-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
 .portal-card-title {
   margin: 0;
   font-size: 15px;
