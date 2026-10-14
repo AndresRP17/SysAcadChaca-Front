@@ -44,7 +44,7 @@ export default function CoursesTab() {
   return (
     <div>
       <div className="plans-toolbar">
-        <p className="users-subtitle">{list.total} materia{list.total !== 1 ? "s" : ""}</p>
+        <p className="users-subtitle">{loading && courses.length === 0 ? "Cargando..." : `${list.total} materia${list.total !== 1 ? "s" : ""}`}</p>
         <button type="button" className="users-btn users-btn--primary" onClick={openCreateModal}>
           + Nueva materia
         </button>
@@ -105,14 +105,16 @@ export default function CoursesTab() {
           </tbody>
         </table>
       </div>
-      <Pagination
-        page={list.page}
-        pageSize={list.pageSize}
-        total={list.total}
-        onPageChange={list.setPage}
-        onPageSizeChange={list.changePageSize}
-        noun={["materia", "materias"]}
-      />
+      {!(loading && courses.length === 0) && (
+        <Pagination
+          page={list.page}
+          pageSize={list.pageSize}
+          total={list.total}
+          onPageChange={list.setPage}
+          onPageSizeChange={list.changePageSize}
+          noun={["materia", "materias"]}
+        />
+      )}
       </div>
       )}
 
