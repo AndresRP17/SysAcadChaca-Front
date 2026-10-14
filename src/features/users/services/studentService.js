@@ -32,3 +32,9 @@ export async function updateStudent(id, data) {
 export async function deleteStudent(id) {
   await api.delete(`/students/${id}`);
 }
+
+// Busqueda en el servidor para los combos (pocos resultados): { items, total }.
+export async function searchStudents({ q, size = 20, signal } = {}) {
+  const response = await api.get("/students", { params: cleanParams({ q, page: 1, size }), signal });
+  return toPage(response);
+}

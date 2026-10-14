@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
 import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
+import SearchCombobox from "../../../shared/ui/SearchCombobox";
+import { teacherOption } from "../../../shared/ui/searchOptions";
+import { getTeacher, searchTeachers } from "../../users/services/teacherService";
 
 const SHIFTS = ["Mañana", "Tarde", "Noche"];
 const EMPTY_FORM = { curriculum_course_id: "", teacher_id: "", name: "", academic_year: "", term: "", max_capacity: "", shift: SHIFTS[0] };
 
-export default function SectionFormModal({ open, mode, initialData, curriculumCourseOptions, teacherOptions, onClose, onSubmit }) {
+export default function SectionFormModal({ open, mode, initialData, curriculumCourseOptions, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -29,7 +32,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
       setError("");
       setFieldErrors({});
     }
-  }, [open, initialData, curriculumCourseOptions, teacherOptions]);
+  }, [open, initialData, curriculumCourseOptions]);
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -81,18 +84,18 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
 
         <div className="users-form-field">
           <label className="users-form-label" htmlFor="sectionFormModal-2">Docente</label>
-          <select id="sectionFormModal-2"
+          <SearchCombobox id="sectionFormModal-2"
             value={form.teacher_id}
-            onChange={(e) => handleChange("teacher_id", e.target.value)}
-            className="users-form-input"
-          >
-            {teacherOptions.length === 0
-              ? <option value="">No hay docentes cargados</option>
-              : <option value="">Seleccioná un docente...</option>}
-            {teacherOptions.map((t) => (
-              <option key={t.id} value={t.id}>{t.firstName} {t.lastName}</option>
-            ))}
-          </select>
+            onChange={(v) => handleChange("teacher_id", String(v))}
+            loadOptions={async (q) => {
+              const page = await searchTeachers({ q });
+              return { items: page.items.map(teacherOption), total: page.total };
+            }}
+            loadSelected={async (id) => teacherOption(await getTeacher(id))}
+            browse
+            placeholder="Buscar docente..."
+            emptyLabel="No se encontraron docentes"
+          />
           <FieldError errors={fieldErrors} field="teacher_id" />
         </div>
 

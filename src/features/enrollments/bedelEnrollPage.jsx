@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { ENROLLMENT_PERIOD_CLOSED, getErrorCode, getErrorMessage } from "../../shared/api/api";
-import Combobox from "../../shared/ui/Combobox";
+import SearchCombobox from "../../shared/ui/SearchCombobox";
+import { studentOption } from "../../shared/ui/searchOptions";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import LoadError from "../../shared/ui/LoadError";
-import { getStudents } from "../users/services/studentService";
+import { getStudent, searchStudents } from "../users/services/studentService";
 import { useStudentSections } from "./hooks/useStudentSections";
 import { useStudentExamBoards } from "../exams/hooks/useStudentExamBoards";
 import { getResultLabel, getResultStatus } from "../exams/services/examEnrollmentService";
@@ -249,26 +250,7 @@ function StudentEnrollments({ studentId }) {
 }
 
 export default function BedelEnrollPage() {
-  const [students, setStudents] = useState([]);
-  const [loadingStudents, setLoadingStudents] = useState(true);
-  const [error, setError] = useState("");
-  const [reloadKey, setReloadKey] = useState(0);
   const [selectedStudentId, setSelectedStudentId] = useState("");
-
-  useEffect(() => {
-    setError("");
-    setLoadingStudents(true);
-    getStudents()
-      .then(setStudents)
-      .catch((e) => setError(getErrorMessage(e, "No pudimos cargar la lista de alumnos.")))
-      .finally(() => setLoadingStudents(false));
-  }, [reloadKey]);
-
-  const studentOptions = students.map((s) => ({
-    value: s.id,
-    label: `${s.lastName}, ${s.firstName} — legajo ${s.enrollmentNumber} (DNI ${s.nationalId}) · ${s.programName}`,
-    searchText: `${s.lastName} ${s.firstName} ${s.enrollmentNumber} ${s.nationalId} ${s.programName}`,
-  }));
 
   return (
     <div className="users-page">
@@ -281,22 +263,20 @@ export default function BedelEnrollPage() {
         </div>
       </div>
 
-      <LoadError message={error} onRetry={() => setReloadKey((k) => k + 1)} />
-
-      {loadingStudents && <p className="users-empty">Cargando...</p>}
-
-      {!loadingStudents && (
-        <div className="users-form-field" style={{ maxWidth: 480 }}>
-          <label className="users-form-label" htmlFor="bedelEnrollPage-1">Alumno</label>
-          <Combobox id="bedelEnrollPage-1"
-            options={studentOptions}
-            value={selectedStudentId}
-            onChange={setSelectedStudentId}
-            placeholder="Buscar por apellido, nombre, legajo o DNI..."
-            emptyLabel="No se encontraron alumnos"
-          />
-        </div>
-      )}
+      <div className="users-form-field" style={{ maxWidth: 480 }}>
+        <label className="users-form-label" htmlFor="bedelEnrollPage-1">Alumno</label>
+        <SearchCombobox id="bedelEnrollPage-1"
+          value={selectedStudentId}
+          onChange={setSelectedStudentId}
+          loadOptions={async (q) => {
+            const page = await searchStudents({ q });
+            return { items: page.items.map(studentOption), total: page.total };
+          }}
+          loadSelected={async (id) => studentOption(await getStudent(id))}
+          placeholder="Buscar por apellido, nombre, legajo o DNI..."
+          emptyLabel="No se encontraron alumnos"
+        />
+      </div>
 
       {selectedStudentId && <StudentEnrollments key={selectedStudentId} studentId={Number(selectedStudentId)} />}
     </div>

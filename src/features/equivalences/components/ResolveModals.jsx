@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
-import Combobox from "../../../shared/ui/Combobox";
+import SearchCombobox from "../../../shared/ui/SearchCombobox";
+import { teacherOption } from "../../../shared/ui/searchOptions";
+import { getTeacher, searchTeachers } from "../../users/services/teacherService";
 import { getErrorMessage } from "../../../shared/api/api";
 import { approveEquivalence, assignEvaluator } from "../services/equivalenceService";
 import { TYPE_LABELS } from "../equivalenceLabels";
@@ -73,7 +75,7 @@ export function ApproveModal({ item, onClose, onDone }) {
   );
 }
 
-export function EvaluatorModal({ item, teachers, onClose, onDone }) {
+export function EvaluatorModal({ item, onClose, onDone }) {
   const [teacherId, setTeacherId] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -84,12 +86,6 @@ export function EvaluatorModal({ item, teachers, onClose, onDone }) {
   }, [item]);
 
   if (!item) return null;
-
-  const options = teachers.map((t) => ({
-    value: t.id,
-    label: `${t.lastName}, ${t.firstName} — legajo ${t.employeeNumber}`,
-    searchText: `${t.lastName} ${t.firstName} ${t.employeeNumber}`,
-  }));
 
   async function submit(e) {
     e.preventDefault();
@@ -114,7 +110,18 @@ export function EvaluatorModal({ item, teachers, onClose, onDone }) {
         </p>
         <div className="users-form-field">
           <label className="users-form-label">Docente</label>
-          <Combobox options={options} value={teacherId} onChange={setTeacherId} placeholder="Buscar docente..." emptyLabel="No se encontraron docentes" />
+          <SearchCombobox
+            value={teacherId}
+            onChange={setTeacherId}
+            loadOptions={async (q) => {
+              const page = await searchTeachers({ q });
+              return { items: page.items.map(teacherOption), total: page.total };
+            }}
+            loadSelected={async (id) => teacherOption(await getTeacher(id))}
+            browse
+            placeholder="Buscar docente..."
+            emptyLabel="No se encontraron docentes"
+          />
         </div>
         {error && <p className="users-form-error" role="alert">{error}</p>}
         <div className="users-form-actions">

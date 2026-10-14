@@ -8,9 +8,10 @@ import LoadError from "../../shared/ui/LoadError";
 import Pagination from "../../shared/ui/Pagination";
 import { useDebouncedValue } from "../../shared/hooks/useDebouncedValue";
 import { usePagedList } from "../../shared/hooks/usePagedList";
-import Combobox from "../../shared/ui/Combobox";
-import { getStudents } from "../users/services/studentService";
-import { getTeachers, getMyTeacherProfile } from "../users/services/teacherService";
+import SearchCombobox from "../../shared/ui/SearchCombobox";
+import { studentOption, teacherOption } from "../../shared/ui/searchOptions";
+import { searchStudents } from "../users/services/studentService";
+import { getMyTeacherProfile, getTeacher, searchTeachers } from "../users/services/teacherService";
 import { deleteEquivalence, getEquivalences, getEquivalencesPage, rejectEquivalence } from "./services/equivalenceService";
 import EquivalenceList from "./components/EquivalenceList";
 import EquivalenceFormModal from "./components/EquivalenceFormModal";
@@ -36,8 +37,6 @@ export default function EquivalencesPage() {
   const [reloadKey, setReloadKey] = useState(0);
   const [ownItems, setOwnItems] = useState([]);
 
-  const [students, setStudents] = useState([]);
-  const [teachers, setTeachers] = useState([]);
   const [myStudent, setMyStudent] = useState(null);
   const [myTeacher, setMyTeacher] = useState(null);
 
@@ -58,9 +57,6 @@ export default function EquivalencesPage() {
   useEffect(() => {
     if (isAlumno) {
       getCurrentStudent(user).then(setMyStudent).catch((e) => setSetupError(getErrorMessage(e)));
-    } else if (isStaff) {
-      getStudents().then(setStudents).catch((e) => setSetupError(getErrorMessage(e, "No pudimos cargar los alumnos.")));
-      getTeachers().then(setTeachers).catch((e) => setSetupError(getErrorMessage(e, "No pudimos cargar los docentes.")));
     } else if (isDocente) {
       getMyTeacherProfile().then(setMyTeacher).catch((e) => setSetupError(getErrorMessage(e)));
     }
@@ -132,11 +128,14 @@ export default function EquivalencesPage() {
     }
   }
 
-  const studentOptions = students.map((s) => ({
-    value: s.id,
-    label: `${s.lastName}, ${s.firstName} — legajo ${s.enrollmentNumber}`,
-    searchText: `${s.lastName} ${s.firstName} ${s.enrollmentNumber} ${s.nationalId}`,
-  }));
+  const loadStudentOptions = async (q) => {
+    const page = await searchStudents({ q });
+    return { items: page.items.map(studentOption), total: page.total };
+  };
+  const loadTeacherOptions = async (q) => {
+    const page = await searchTeachers({ q });
+    return { items: page.items.map(teacherOption), total: page.total };
+  };
 
   function renderActions(e) {
     const pending = e.status === "PENDING";
@@ -242,14 +241,20 @@ export default function EquivalencesPage() {
         {isStaff && (
           <>
             <div className="equiv-combo">
-              <Combobox options={studentOptions} value={studentFilter} onChange={setStudentFilter} placeholder="Filtrar por alumno..." emptyLabel="No se encontraron alumnos" />
+              <SearchCombobox value={studentFilter} onChange={setStudentFilter} loadOptions={loadStudentOptions} placeholder="Filtrar por alumno..." emptyLabel="No se encontraron alumnos" />
             </div>
-            <select className="users-form-input equiv-select" aria-label="Filtrar por evaluador" value={evaluatorFilter} onChange={(e) => setEvaluatorFilter(e.target.value)}>
-              <option value="">Todos los evaluadores</option>
-              {teachers.map((t) => (
-                <option key={t.id} value={t.id}>{t.lastName}, {t.firstName}</option>
-              ))}
-            </select>
+            <div className="equiv-combo">
+              <SearchCombobox
+                value={evaluatorFilter}
+                onChange={setEvaluatorFilter}
+                loadOptions={loadTeacherOptions}
+                loadSelected={async (id) => teacherOption(await getTeacher(id))}
+                browse
+                ariaLabel="Filtrar por evaluador"
+                placeholder="Filtrar por evaluador..."
+                emptyLabel="No se encontraron docentes"
+              />
+            </div>
           </>
         )}
       </div>
@@ -282,14 +287,14 @@ export default function EquivalencesPage() {
       <EquivalenceFormModal
         open={formOpen}
         editing={editing}
-        students={isStaff ? students : null}
+        isStaff={isStaff}
         studentPlanId={myStudent?.studyPlanId}
         blockedCourseIds={blockedCourseIds}
         onClose={() => setFormOpen(false)}
         onSaved={done}
       />
       <ApproveModal item={approving} onClose={() => setApproving(null)} onDone={done} />
-      <EvaluatorModal item={assigning} teachers={teachers} onClose={() => setAssigning(null)} onDone={done} />
+      <EvaluatorModal item={assigning} onClose={() => setAssigning(null)} onDone={done} />
       <ConfirmModal
         open={!!confirm}
         title={confirmCopy.title ?? ""}
