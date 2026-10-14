@@ -1,17 +1,28 @@
-import { useCallback, useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useToast } from "../../../context/ToastContext";
 import LoadError from "../../../shared/ui/LoadError";
-import { getErrorMessage } from "../../../shared/api/api";
+import ListFilters from "../../../shared/ui/ListFilters";
+import Pagination from "../../../shared/ui/Pagination";
+import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
+import { usePagedList } from "../../../shared/hooks/usePagedList";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 import { todayIso } from "../../../shared/utils/formatters";
 import EnrollmentPeriodFormModal from "./EnrollmentPeriodFormModal";
 import {
   PERIOD_TYPES,
-  getEnrollmentPeriods,
+  getEnrollmentPeriodsPage,
   createEnrollmentPeriod,
   updateEnrollmentPeriod,
   deleteEnrollmentPeriod,
 } from "../services/enrollmentPeriodService";
+
+const SEARCH_DELAY_MS = 300;
+const EMPTY_FILTERS = { year: "", type: "", active: "" };
+const TYPE_OPTIONS = Object.entries(PERIOD_TYPES).map(([value, label]) => ({ value, label }));
+const ACTIVE_OPTIONS = [
+  { value: "1", label: "Activo" },
+  { value: "0", label: "Inactivo" },
+];
 
 function formatDate(isoDate) {
   const [y, m, d] = isoDate.split("-");
@@ -28,30 +39,34 @@ function periodState(period) {
 
 export default function PeriodosTab() {
   const { showToast } = useToast();
-  const [periods, setPeriods] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  // El año se escribe: se pide recién con 4 cifras y después de una espera, no en cada tecla.
+  const debouncedYear = useDebouncedValue(filters.year.trim(), SEARCH_DELAY_MS);
+  const params = useMemo(
+    () => ({
+      type: filters.type,
+      active: filters.active,
+      academicYear: /^[1-9][0-9]{3}$/.test(debouncedYear) ? debouncedYear : "",
+    }),
+    [filters.type, filters.active, debouncedYear],
+  );
+  const {
+    items: periods,
+    total,
+    page,
+    setPage,
+    pageSize,
+    changePageSize,
+    loading,
+    error,
+    reload,
+  } = usePagedList({ params, fetchPage: getEnrollmentPeriodsPage, errorMessage: "No pudimos cargar los períodos." });
+  const hasFilters = Boolean(filters.year || filters.type || filters.active);
 
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
   const [editingPeriod, setEditingPeriod] = useState(null);
   const [periodToDelete, setPeriodToDelete] = useState(null);
-
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      setPeriods(await getEnrollmentPeriods());
-    } catch (e) {
-      setError(getErrorMessage(e, "No pudimos cargar los períodos."));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   function openCreateModal() {
     setFormMode("create");
@@ -74,7 +89,7 @@ export default function PeriodosTab() {
       showToast("Período creado.");
     }
     setFormOpen(false);
-    await reload();
+    reload();
   }
 
   async function handleConfirmDelete() {
@@ -82,7 +97,7 @@ export default function PeriodosTab() {
     await deleteEnrollmentPeriod(periodToDelete.id);
     showToast("Período eliminado.");
     setPeriodToDelete(null);
-    await reload();
+    reload();
   }
 
   return (
@@ -96,9 +111,37 @@ export default function PeriodosTab() {
         </button>
       </div>
 
+      <ListFilters
+        idPrefix="periods"
+        search={filters.year}
+        onSearchChange={(value) => setFilters((f) => ({ ...f, year: value }))}
+        searchLabel="Año"
+        searchPlaceholder="Ej: 2026"
+        selects={[
+          {
+            id: "type",
+            label: "Tipo",
+            value: filters.type,
+            onChange: (value) => setFilters((f) => ({ ...f, type: value })),
+            options: TYPE_OPTIONS,
+            allLabel: "Todos",
+          },
+          {
+            id: "active",
+            label: "Estado",
+            value: filters.active,
+            onChange: (value) => setFilters((f) => ({ ...f, active: value })),
+            options: ACTIVE_OPTIONS,
+            allLabel: "Todos",
+          },
+        ]}
+        hasFilters={hasFilters}
+        onClear={() => setFilters(EMPTY_FILTERS)}
+      />
+
       <LoadError message={error} onRetry={reload} />
 
-      <div className="users-table-wrapper">
+      <div className={"users-table-wrapper" + (loading && periods.length > 0 ? " users-list--loading" : "")} aria-busy={loading}>
         <table className="users-table">
           <thead>
             <tr>
@@ -112,11 +155,17 @@ export default function PeriodosTab() {
             </tr>
           </thead>
           <tbody>
-            {loading && (
+            {loading && periods.length === 0 && !error && (
               <tr><td className="users-empty" colSpan={7}>Cargando...</td></tr>
             )}
-            {!loading && periods.length === 0 && (
-              <tr><td className="users-empty" colSpan={7}>No hay períodos cargados: ningún alumno puede inscribirse hasta que abras uno.</td></tr>
+            {!loading && !error && periods.length === 0 && (
+              <tr>
+                <td className="users-empty" colSpan={7}>
+                  {hasFilters
+                    ? "No hay períodos con esos filtros"
+                    : "No hay períodos cargados: ningún alumno puede inscribirse hasta que abras uno."}
+                </td>
+              </tr>
             )}
             {periods.map((period) => {
               const state = periodState(period);
@@ -148,6 +197,17 @@ export default function PeriodosTab() {
           </tbody>
         </table>
       </div>
+
+      {periods.length > 0 && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={changePageSize}
+          noun={["período", "períodos"]}
+        />
+      )}
 
       <EnrollmentPeriodFormModal
         open={formOpen}

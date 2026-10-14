@@ -1,25 +1,39 @@
 import LoadError from "../../../shared/ui/LoadError";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "../../../context/ToastContext";
 import { usePrograms } from "../../plans/hooks/usePrograms";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
-import { getTeachers } from "../../users/services/teacherService";
 import { useClassrooms } from "../hooks/useClassrooms";
-import { getSections, createSection, updateSection, deleteSection } from "../services/sectionService";
+import { getSection, createSection, updateSection, deleteSection } from "../services/sectionService";
 import { getSectionSchedules, createSectionSchedule, updateSectionSchedule, deleteSectionSchedule } from "../services/sectionScheduleService";
-import { getEnrollments } from "../../enrollments/services/enrollmentService";
+import { useSectionsPage } from "../hooks/useSectionsPage";
 import SectionFormModal from "./SectionFormModal";
+import SectionRoster from "./SectionRoster";
 import SectionScheduleFormModal, { weekdayLabel, formatTime } from "./SectionScheduleFormModal";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
+import ListFilters from "../../../shared/ui/ListFilters";
+import Pagination from "../../../shared/ui/Pagination";
 
-function periodKey(section) {
-  return `${section.academicYear}-${section.term}`;
-}
+const TERM_OPTIONS = [
+  { value: "1", label: "1º cuatrimestre" },
+  { value: "2", label: "2º cuatrimestre" },
+  { value: "0", label: "Anual" },
+];
 
-function periodLabel(key) {
-  const [year, term] = key.split("-");
-  return `${year} · ${term}º cuatrimestre`;
+const STATE_OPTIONS = [
+  { value: "active", label: "Activa" },
+  { value: "inactive", label: "Inactiva" },
+  { value: "closed", label: "Cerrada" },
+];
+
+// Años ofrecidos en el filtro: del próximo al de hace 5, más el que venga de un enlace directo.
+function yearOptions(extraYear) {
+  const current = new Date().getFullYear();
+  const years = new Set();
+  for (let y = current + 1; y >= current - 5; y--) years.add(y);
+  if (extraYear) years.add(Number(extraYear));
+  return [...years].sort((x, y) => y - x).map((y) => ({ value: String(y), label: String(y) }));
 }
 
 export default function ComisionesTab({ deepLink = null }) {
@@ -33,12 +47,13 @@ export default function ComisionesTab({ deepLink = null }) {
   const [studyPlans, setStudyPlans] = useState([]);
   const [studyPlanId, setStudyPlanId] = useState(deepLink?.studyPlanId ?? "");
   const [curriculumCourses, setCurriculumCourses] = useState([]);
-  const [teachers, setTeachers] = useState([]);
-  const [allSections, setAllSections] = useState([]);
-  const [loadingSections, setLoadingSections] = useState(false);
   const [error, setError] = useState("");
 
   const [selectedSectionId, setSelectedSectionId] = useState(deepLink?.sectionId ?? null);
+  const [selectedSection, setSelectedSection] = useState(null);
+  // Con enlace directo se espera a conocer el período de la comisión pedida antes de listar.
+  const [selectedKey, setSelectedKey] = useState(0);
+  const [deepLinkReady, setDeepLinkReady] = useState(!deepLink?.sectionId);
   const [schedules, setSchedules] = useState([]);
 
   const [sectionFormOpen, setSectionFormOpen] = useState(false);
@@ -51,13 +66,22 @@ export default function ComisionesTab({ deepLink = null }) {
   const [scheduleToDelete, setScheduleToDelete] = useState(null);
 
   const [rosterOpen, setRosterOpen] = useState(false);
-  const [roster, setRoster] = useState(null);
 
-  const [selectedPeriod, setSelectedPeriod] = useState("");
-
-  useEffect(() => {
-    getTeachers().then(setTeachers).catch((e) => setError(e.message));
-  }, []);
+  const {
+    sections: visibleSections,
+    total,
+    page,
+    setPage,
+    pageSize,
+    changePageSize,
+    loading: loadingSections,
+    error: listError,
+    reload,
+    filters,
+    changeFilter,
+    clearFilters,
+    hasFilters,
+  } = useSectionsPage({ studyPlanId, enabled: deepLinkReady });
 
   useEffect(() => {
     setStudyPlans([]);
@@ -71,48 +95,34 @@ export default function ComisionesTab({ deepLink = null }) {
     getCurriculumCourses(Number(studyPlanId)).then(setCurriculumCourses).catch((e) => setError(e.message));
   }, [studyPlanId]);
 
-  async function reloadSections() {
-    setLoadingSections(true);
-    try {
-      setAllSections(await getSections());
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoadingSections(false);
-    }
+  // Recarga la misma página con los mismos filtros y refresca la comisión elegida.
+  function refreshSections() {
+    reload();
+    setSelectedKey((k) => k + 1);
   }
 
-  useEffect(() => {
-    reloadSections();
-  }, []);
-
-  const curriculumCourseIds = new Set(curriculumCourses.map((cc) => cc.id));
-  const sections = allSections.filter((s) => curriculumCourseIds.has(s.curriculumCourseId));
-
-  const periodOptions = useMemo(() => {
-    const keys = new Set(sections.map(periodKey));
-    return [...keys].sort().reverse();
-  }, [sections]);
-
-  // Mismo criterio que "Mis comisiones" del docente: por defecto se ve solo
-  // el período más reciente -- las comisiones (cerradas incluidas) no se
-  // borran nunca, así que con varios años cargados la lista sin agrupar se
-  // vuelve ilegible.
-  useEffect(() => {
-    if (periodOptions.length === 0) return;
-    if (!periodOptions.includes(selectedPeriod)) setSelectedPeriod(periodOptions[0]);
-  }, [periodOptions, selectedPeriod]);
-
-  // Con enlace directo, el periodo es el de la comision pedida (no el mas reciente).
+  // Con enlace directo, el filtro de período arranca en el de la comisión pedida.
   useEffect(() => {
     const pending = pendingDeepLink.current;
-    if (!pending || periodOptions.length === 0) return;
-    const target = allSections.find((s) => s.id === pending.sectionId);
-    if (target) setSelectedPeriod(periodKey(target));
     pendingDeepLink.current = null;
-  }, [periodOptions, allSections]);
+    if (!pending?.sectionId) return;
+    getSection(pending.sectionId)
+      .then((target) => {
+        changeFilter("year", String(target.academicYear));
+        changeFilter("term", String(target.term));
+      })
+      .catch(() => {})
+      .finally(() => setDeepLinkReady(true));
+  }, []);
 
-  const visibleSections = sections.filter((s) => periodKey(s) === selectedPeriod);
+  // La comisión elegida se pide por id: puede no estar en la página que se ve (enlace directo, otro filtro).
+  useEffect(() => {
+    if (!selectedSectionId) {
+      setSelectedSection(null);
+      return;
+    }
+    getSection(selectedSectionId).then(setSelectedSection).catch(() => setSelectedSection(null));
+  }, [selectedSectionId, selectedKey]);
 
   async function reloadSchedules(sectionId) {
     if (!sectionId) {
@@ -128,27 +138,13 @@ export default function ComisionesTab({ deepLink = null }) {
 
   useEffect(() => {
     reloadSchedules(selectedSectionId);
-    // Cambió la comisión seleccionada: el roster que se ve, si había uno
-    // abierto, es de otra comisión. Se vuelve a pedir si lo abren de nuevo.
+    // Cambió la comisión seleccionada: la lista de alumnos que se ve, si había una
+    // abierta, es de otra comisión. Se vuelve a pedir si la abren de nuevo.
     setRosterOpen(false);
-    setRoster(null);
   }, [selectedSectionId]);
 
-  async function toggleRoster() {
-    if (rosterOpen) {
-      setRosterOpen(false);
-      return;
-    }
-
-    setRosterOpen(true);
-    if (roster !== null) return;
-
-    try {
-      const enrollments = await getEnrollments({ sectionId: selectedSectionId });
-      setRoster(enrollments.filter((e) => e.status === "active"));
-    } catch (e) {
-      setError(e.message);
-    }
+  function toggleRoster() {
+    setRosterOpen((open) => !open);
   }
 
   function openCreateSection() {
@@ -172,7 +168,7 @@ export default function ComisionesTab({ deepLink = null }) {
       showToast("Comisión creada.");
     }
     setSectionFormOpen(false);
-    await reloadSections();
+    refreshSections();
   }
 
   async function handleConfirmDeleteSection() {
@@ -180,7 +176,7 @@ export default function ComisionesTab({ deepLink = null }) {
     showToast("Comisión eliminada.");
     if (sectionToDelete.id === selectedSectionId) setSelectedSectionId(null);
     setSectionToDelete(null);
-    await reloadSections();
+    refreshSections();
   }
 
   async function handleToggleSectionActive(section) {
@@ -196,7 +192,7 @@ export default function ComisionesTab({ deepLink = null }) {
         active: !section.active,
       });
       showToast(section.active ? "Comisión desactivada." : "Comisión activada.");
-      await reloadSections();
+      refreshSections();
     } catch (e) {
       setError(e.message);
     }
@@ -233,11 +229,10 @@ export default function ComisionesTab({ deepLink = null }) {
     await reloadSchedules(selectedSectionId);
   }
 
-  const selectedSection = visibleSections.find((s) => s.id === selectedSectionId);
-
   return (
     <div>
-      <LoadError message={error} onRetry={reloadSections} />
+      <LoadError message={error} onRetry={() => setError("")} />
+      <LoadError message={listError} onRetry={reload} />
 
       <div className="plans-selectors">
         <div className="users-form-field">
@@ -272,12 +267,10 @@ export default function ComisionesTab({ deepLink = null }) {
 
       {!studyPlanId && <p className="users-empty">Seleccioná un plan de estudio para ver sus comisiones.</p>}
 
-      {studyPlanId && loadingSections && <p className="users-empty">Cargando...</p>}
-
-      {studyPlanId && !loadingSections && (
+      {studyPlanId && (
         <>
           <div className="plans-toolbar">
-            <p className="users-subtitle">{visibleSections.length} {visibleSections.length !== 1 ? "comisiones" : "comisión"}</p>
+            <p className="users-subtitle">{total} {total !== 1 ? "comisiones" : "comisión"}</p>
             <button
               type="button"
               className="users-btn users-btn--primary"
@@ -289,20 +282,22 @@ export default function ComisionesTab({ deepLink = null }) {
             </button>
           </div>
 
-          {periodOptions.length > 0 && (
-            <div className="users-form-field" style={{ maxWidth: 260 }}>
-              <label className="users-form-label" htmlFor="comisionesTab-3">Período</label>
-              <select id="comisionesTab-3"
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="users-form-input"
-              >
-                {periodOptions.map((key) => (
-                  <option key={key} value={key}>{periodLabel(key)}</option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div className="comisiones-filters">
+            <ListFilters
+              idPrefix="comisiones"
+              search={filters.search}
+              onSearchChange={(value) => changeFilter("search", value)}
+              searchLabel="Buscar"
+              searchPlaceholder="Materia, comisión o docente"
+              selects={[
+                { id: "year", label: "Año", value: filters.year, onChange: (value) => changeFilter("year", value), options: yearOptions(filters.year), allLabel: "Todos" },
+                { id: "term", label: "Cuatrimestre", value: filters.term, onChange: (value) => changeFilter("term", value), options: TERM_OPTIONS, allLabel: "Todos" },
+                { id: "state", label: "Estado", value: filters.state, onChange: (value) => changeFilter("state", value), options: STATE_OPTIONS, allLabel: "Todos" },
+              ]}
+              hasFilters={hasFilters}
+              onClear={clearFilters}
+            />
+          </div>
 
           {curriculumCourses.length === 0 && (
             <p className="users-empty">
@@ -311,33 +306,43 @@ export default function ComisionesTab({ deepLink = null }) {
             </p>
           )}
 
-          {curriculumCourses.length > 0 && sections.length === 0 && (
-            <p className="users-empty">Este plan todavía no tiene comisiones abiertas.</p>
-          )}
+          {loadingSections && visibleSections.length === 0 && !listError && <p className="users-empty">Cargando...</p>}
 
-          {sections.length > 0 && visibleSections.length === 0 && (
-            <p className="users-empty">No hay comisiones en este período.</p>
+          {curriculumCourses.length > 0 && !loadingSections && !listError && visibleSections.length === 0 && (
+            <p className="users-empty">
+              {hasFilters ? "No hay comisiones con esos filtros." : "Este plan todavía no tiene comisiones abiertas."}
+            </p>
           )}
 
           {visibleSections.length > 0 && (
             <div className="correlatives-layout">
-              <div className="correlatives-list">
-                {visibleSections.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className={`correlatives-course-btn ${s.id === selectedSectionId ? "correlatives-course-btn--active" : ""}`}
-                    onClick={() => setSelectedSectionId(s.id)}
-                  >
-                    <span className="correlatives-course-code">{s.name}</span>
-                    <span>{s.courseName}</span>
-                    <span className="correlatives-course-year">
-                      {s.academicYear} - {s.shift}
-                      {!s.active && <span className="users-badge users-badge--inactive">Inactiva</span>}
-                      {s.closed && <span className="users-badge users-badge--inactive">Cerrada</span>}
-                    </span>
-                  </button>
-                ))}
+              <div className={loadingSections ? "users-list--loading" : undefined} aria-busy={loadingSections}>
+                <div className="correlatives-list">
+                  {visibleSections.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className={`correlatives-course-btn ${s.id === selectedSectionId ? "correlatives-course-btn--active" : ""}`}
+                      onClick={() => setSelectedSectionId(s.id)}
+                    >
+                      <span className="correlatives-course-code">{s.name}</span>
+                      <span>{s.courseName}</span>
+                      <span className="correlatives-course-year">
+                        {s.academicYear} · {s.term === 0 ? "Anual" : `${s.term}º cuat.`} - {s.shift}
+                        {!s.active && <span className="users-badge users-badge--inactive">Inactiva</span>}
+                        {s.closed && <span className="users-badge users-badge--inactive">Cerrada</span>}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <Pagination
+                  page={page}
+                  pageSize={pageSize}
+                  total={total}
+                  onPageChange={setPage}
+                  onPageSizeChange={changePageSize}
+                  noun={["comisión", "comisiones"]}
+                />
               </div>
 
               <div className="correlatives-detail">
@@ -379,26 +384,7 @@ export default function ComisionesTab({ deepLink = null }) {
                       </div>
                     </div>
 
-                    {rosterOpen && (
-                      <div className="plans-toolbar" style={{ flexDirection: "column", alignItems: "stretch" }}>
-                        <p className="users-subtitle">
-                          Alumnos inscriptos {roster !== null ? `(${roster.length})` : ""}
-                        </p>
-                        {roster === null && <p className="users-empty">Cargando...</p>}
-                        {roster !== null && roster.length === 0 && (
-                          <p className="users-empty">No hay alumnos inscriptos en esta comisión.</p>
-                        )}
-                        {roster !== null && roster.length > 0 && (
-                          <ul className="correlatives-prereq-list">
-                            {roster.map((e) => (
-                              <li key={e.id} className="correlatives-prereq-item">
-                                <span>{e.studentFirstName} {e.studentLastName}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    )}
+                    {rosterOpen && <SectionRoster sectionId={selectedSection.id} />}
 
                     <div className="plans-toolbar">
                       <p className="users-subtitle">Horarios</p>
@@ -456,7 +442,6 @@ export default function ComisionesTab({ deepLink = null }) {
         mode={sectionFormMode}
         initialData={editingSection}
         curriculumCourseOptions={curriculumCourses.map((cc) => ({ id: cc.id, code: cc.courseCode, name: cc.courseName }))}
-        teacherOptions={teachers}
         onClose={() => setSectionFormOpen(false)}
         onSubmit={handleSectionFormSubmit}
       />

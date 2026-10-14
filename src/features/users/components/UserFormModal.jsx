@@ -49,12 +49,13 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
         manual_employee_number: false,
       });
     } else {
-      setForm(EMPTY_FORM);
+      // En Usuarios no se crean alumnos (eso se hace desde la vista Alumnos).
+      setForm({ ...EMPTY_FORM, rol: studentsOnly ? "Alumno" : "Docente" });
     }
 
     setFieldErrors({});
     setGeneralError("");
-  }, [open, mode, initialData]);
+  }, [open, mode, initialData, studentsOnly]);
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -122,9 +123,9 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
             className="users-form-input"
             disabled={mode === "edit"}
           >
-            <option value="Alumno">Alumno</option>
             <option value="Docente">Docente</option>
             <option value="Bedel">Bedel</option>
+            {form.rol === "Administrador" && <option value="Administrador">Administrador</option>}
           </select>
         </div>
         )}

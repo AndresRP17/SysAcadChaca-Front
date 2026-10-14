@@ -1,17 +1,22 @@
 import { api } from "../../../shared/api/api";
-import { buildParams } from "../../../shared/utils/formatters";
+import { cleanParams, toPage } from "../../users/services/pagedList";
 
-// Sin filtros trae todas las comisiones (pantallas de Bedel/Admin). El portal del Alumno filtra en el
-// servidor por plan de estudio y por activas, y pide los horarios en el mismo pedido.
-export async function getSections({ studyPlanId, active, includeSchedules = false } = {}) {
-  const qs = buildParams({
-    study_plan_id: studyPlanId,
-    active: active === undefined ? undefined : active ? 1 : 0,
-    include_schedules: includeSchedules ? 1 : undefined,
-    size: 1000,
+// Una página de comisiones filtrada en el servidor: { items, total }.
+// state: "active" | "inactive" | "closed" (vacío = todas).
+export async function getSectionsPage({ studyPlanId, q, academicYear, term, state, page = 1, size = 10 } = {}) {
+  const response = await api.get("/sections", {
+    params: cleanParams({
+      study_plan_id: studyPlanId,
+      q,
+      academic_year: academicYear,
+      term,
+      active: state === "active" ? 1 : state === "inactive" ? 0 : undefined,
+      closed: state === "closed" ? 1 : undefined,
+      page,
+      size,
+    }),
   });
-  const { data } = await api.get(`/sections?${qs}`);
-  return data;
+  return toPage(response);
 }
 
 export async function getSection(id) {

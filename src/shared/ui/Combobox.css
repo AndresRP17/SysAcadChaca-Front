@@ -46,3 +46,12 @@
   font-size: 13px;
   color: var(--text-muted);
 }
+
+/* SearchCombobox: las opciones son <li role="option"> y la activa por teclado se resalta. */
+.combobox-option {
+  overflow-wrap: anywhere;
+}
+
+.combobox-option--highlight {
+  background: color-mix(in srgb, var(--surface) 90%, var(--navy) 10%);
+}

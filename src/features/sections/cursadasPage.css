@@ -108,3 +108,10 @@
     gap: 10px;
   }
 }
+
+/* Filtros de Comisiones: buscador + tres selects + "Limpiar filtros" en una sola fila. */
+@media (min-width: 701px) {
+  .comisiones-filters .list-filters {
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)) auto;
+  }
+}

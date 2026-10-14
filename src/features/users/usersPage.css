@@ -38,58 +38,11 @@
   margin: 4px 0 0 0;
 }
 
-/* Barra de herramientas: búsqueda + filtros */
-.users-toolbar {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 16px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.users-search-input {
-  flex: 1;
-  min-width: 220px;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 14px;
-  outline: none;
-  background: var(--surface);
-  color: var(--text-primary);
-  transition: border-color 0.15s ease;
-}
-
-.users-search-input:focus {
-  border-color: var(--accent);
-}
-
-.users-filter-bar {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.users-filter-btn {
-  padding: 8px 14px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-secondary);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.users-filter-btn:hover {
-  border-color: var(--accent);
-}
-
-.users-filter-btn--active {
-  background: var(--navy);
-  border-color: var(--accent);
-  color: #ffffff;
+/* Lista que se está recargando (cambio de filtro o de página): se atenúa sin saltar el layout */
+.users-list--loading {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
 }
 
 /* Tabla (escritorio) */
@@ -373,11 +326,6 @@
 @media (min-width: 701px) {
   .users-page {
     padding: 40px 24px 80px;
-  }
-
-  .users-toolbar {
-    flex-direction: row;
-    align-items: center;
   }
 
   .users-table-wrapper {

@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
 import Combobox from "../../../shared/ui/Combobox";
+import SearchCombobox from "../../../shared/ui/SearchCombobox";
+import { studentOption } from "../../../shared/ui/searchOptions";
+import { searchStudents } from "../../users/services/studentService";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
 import { createEquivalence, updateEquivalence } from "../services/equivalenceService";
 import { TYPE_HELP, TYPE_LABELS } from "../equivalenceLabels";
 
 // Alta y edicion (solo PENDING). Alumno: pide para si mismo (planId = el de su legajo).
-// Bedel/Administrador: eligen alumno (students) y la materia sale del plan de ese alumno.
-export default function EquivalenceFormModal({ open, editing, students, studentPlanId, blockedCourseIds = [], onClose, onSaved }) {
-  const isStaff = !!students;
-  const [studentId, setStudentId] = useState("");
+// Bedel/Administrador: eligen alumno (busqueda en el servidor) y la materia sale del plan de ese alumno.
+export default function EquivalenceFormModal({ open, editing, isStaff = false, studentPlanId, blockedCourseIds = [], onClose, onSaved }) {
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const studentId = selectedStudent ? selectedStudent.id : editing ? editing.studentId : "";
   const [type, setType] = useState("EXTERNAL");
   const [courseId, setCourseId] = useState("");
   const [institution, setInstitution] = useState("");
@@ -28,8 +31,8 @@ export default function EquivalenceFormModal({ open, editing, students, studentP
     setError("");
     setFieldErrors({});
     setBusy(false);
+    setSelectedStudent(null);
     if (editing) {
-      setStudentId(editing.studentId);
       setType(editing.type);
       setCourseId(editing.curriculumCourseId);
       setInstitution(editing.originInstitution ?? "");
@@ -37,7 +40,6 @@ export default function EquivalenceFormModal({ open, editing, students, studentP
       setGrade(editing.originGrade != null ? String(editing.originGrade) : "");
       setReason(editing.type === "INTERNAL" ? editing.reason ?? "" : "");
     } else {
-      setStudentId("");
       setType("EXTERNAL");
       setCourseId("");
       setInstitution("");
@@ -47,7 +49,6 @@ export default function EquivalenceFormModal({ open, editing, students, studentP
     }
   }, [open, editing]);
 
-  const selectedStudent = students?.find((s) => String(s.id) === String(studentId));
   const planId = editing ? editing.studyPlanId : isStaff ? selectedStudent?.studyPlanId : studentPlanId;
 
   useEffect(() => {
@@ -77,12 +78,6 @@ export default function EquivalenceFormModal({ open, editing, students, studentP
         })),
     [courses, courseId, blockedCourseIds],
   );
-
-  const studentOptions = (students ?? []).map((s) => ({
-    value: s.id,
-    label: `${s.lastName}, ${s.firstName} — legajo ${s.enrollmentNumber} (DNI ${s.nationalId})`,
-    searchText: `${s.lastName} ${s.firstName} ${s.enrollmentNumber} ${s.nationalId}`,
-  }));
 
   function validate() {
     const errs = {};
@@ -138,11 +133,14 @@ export default function EquivalenceFormModal({ open, editing, students, studentP
             {editing ? (
               <p className="users-confirm-text">{editing.studentLastName}, {editing.studentFirstName}</p>
             ) : (
-              <Combobox
-                options={studentOptions}
+              <SearchCombobox
                 value={studentId}
-                onChange={(v) => {
-                  setStudentId(v);
+                loadOptions={async (q) => {
+                  const page = await searchStudents({ q });
+                  return { items: page.items.map(studentOption), total: page.total };
+                }}
+                onChange={(_, option) => {
+                  setSelectedStudent(option ? option.data : null);
                   setCourseId("");
                 }}
                 placeholder="Buscar por apellido, nombre, legajo o DNI..."

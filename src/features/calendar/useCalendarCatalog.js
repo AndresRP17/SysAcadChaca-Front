@@ -2,22 +2,21 @@ import { useEffect, useState } from "react";
 import { getPrograms } from "../plans/services/programService";
 import { getStudyPlans } from "../plans/services/studyPlanService";
 import { getClassrooms } from "../sections/services/classroomService";
-import { getTeachers } from "../users/services/teacherService";
 
 // Listas para los filtros del calendario de Bedel/Administrador. Antes tambien armaba un
 // indice comision -> carrera/plan/docente con un pedido por plan de estudio (72 pedidos y
 // ~11 s con 253 comisiones): ahora cada evento del calendario ya trae esos datos
 // (programId, programName, studyPlanId, resolutionYear, teacherName), ver `eventInfo`.
 export function useCalendarCatalog() {
-  const [data, setData] = useState({ programs: [], studyPlans: [], classrooms: [], teachers: [] });
+  const [data, setData] = useState({ programs: [], studyPlans: [], classrooms: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([getPrograms(), getStudyPlans(), getClassrooms(), getTeachers()])
-      .then(([programs, studyPlans, classrooms, teachers]) => {
-        if (!cancelled) setData({ programs, studyPlans, classrooms, teachers });
+    Promise.all([getPrograms(), getStudyPlans(), getClassrooms()])
+      .then(([programs, studyPlans, classrooms]) => {
+        if (!cancelled) setData({ programs, studyPlans, classrooms });
       })
       .catch(() => {})
       .finally(() => {

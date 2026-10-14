@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getErrorMessage } from "../../shared/api/api";
 import {
-  getCertificates,
+  getCertificatesPage,
   requestCertificate,
   issueCertificate,
   rejectCertificate,
@@ -12,8 +12,13 @@ import CertificateReportView from "./components/CertificateReportView";
 import { useToast } from "../../context/ToastContext";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import LoadError from "../../shared/ui/LoadError";
-import Combobox from "../../shared/ui/Combobox";
-import { getStudents } from "../users/services/studentService";
+import ListFilters from "../../shared/ui/ListFilters";
+import Pagination from "../../shared/ui/Pagination";
+import { useDebouncedValue } from "../../shared/hooks/useDebouncedValue";
+import { usePagedList } from "../../shared/hooks/usePagedList";
+import SearchCombobox from "../../shared/ui/SearchCombobox";
+import { studentOption } from "../../shared/ui/searchOptions";
+import { searchStudents } from "../users/services/studentService";
 import "../users/usersPage.css";
 import "./certificatesPage.css";
 
@@ -48,6 +53,11 @@ const CONFIRM_COPY = {
   }),
 };
 
+const SEARCH_DELAY_MS = 300;
+const EMPTY_FILTERS = { search: "", type: "", status: "" };
+const TYPE_OPTIONS = TYPES.map((t) => ({ value: t.key, label: t.label }));
+const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label }));
+
 function formatDate(isoDate) {
   if (!isoDate) return "—";
   const [y, m, d] = String(isoDate).slice(0, 10).split("-");
@@ -60,51 +70,31 @@ export default function CertificatesPage() {
   const isAlumno = user?.role === "Alumno";
   const canManage = user?.role === "Administrador" || user?.role === "Bedel";
 
-  const [certificates, setCertificates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [studentsError, setStudentsError] = useState("");
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const debouncedSearch = useDebouncedValue(filters.search.trim(), SEARCH_DELAY_MS);
+  const params = useMemo(
+    () => ({ q: canManage ? debouncedSearch : "", type: filters.type, status: filters.status }),
+    [canManage, debouncedSearch, filters.type, filters.status],
+  );
+  const {
+    items: certificates,
+    total,
+    page,
+    setPage,
+    pageSize,
+    changePageSize,
+    loading,
+    error,
+    reload,
+  } = usePagedList({ params, fetchPage: getCertificatesPage, errorMessage: "No se pudieron cargar los certificados." });
+  const hasFilters = Boolean(filters.search || filters.type || filters.status);
   const [viewError, setViewError] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [reportView, setReportView] = useState(null); // { certificate, report }
   const [confirmAction, setConfirmAction] = useState(null); // { type: 'request'|'issue'|'reject', payload, label }
-  const [students, setStudents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const selectedStudentId = selectedStudent ? String(selectedStudent.id) : "";
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      setCertificates(await getCertificates());
-    } catch (e) {
-      setError(getErrorMessage(e, "No se pudieron cargar los certificados."));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
-
-  // Bedel/Administrador piden el certificado en nombre de un alumno: hace falta la lista para elegirlo.
-  const loadStudents = useCallback(() => {
-    setStudentsError("");
-    getStudents()
-      .then(setStudents)
-      .catch((e) => setStudentsError(getErrorMessage(e, "No pudimos cargar la lista de alumnos.")));
-  }, []);
-
-  useEffect(() => {
-    if (canManage) loadStudents();
-  }, [canManage, loadStudents]);
-
-  const studentOptions = students.map((s) => ({
-    value: s.id,
-    label: `${s.lastName}, ${s.firstName} — legajo ${s.enrollmentNumber} (DNI ${s.nationalId}) · ${s.programName}`,
-    searchText: `${s.lastName} ${s.firstName} ${s.enrollmentNumber} ${s.nationalId} ${s.programName}`,
-  }));
-  const selectedStudent = students.find((s) => String(s.id) === String(selectedStudentId));
 
   function openConfirm(type, payload, label) {
     setConfirmAction({ type, payload, label });
@@ -123,7 +113,7 @@ export default function CertificatesPage() {
       showToast("Solicitud rechazada.");
     }
     setConfirmAction(null);
-    await reload();
+    reload();
   }
 
   async function handleView(id) {
@@ -185,15 +175,17 @@ export default function CertificatesPage() {
           <h3 className="dash-panel-title">Nuevo certificado para un alumno</h3>
           <div className="users-form-field" style={{ maxWidth: 480 }}>
             <label className="users-form-label" htmlFor="certificatesPage-1">Alumno</label>
-            <Combobox id="certificatesPage-1"
-              options={studentOptions}
+            <SearchCombobox id="certificatesPage-1"
               value={selectedStudentId}
-              onChange={setSelectedStudentId}
+              onChange={(_, option) => setSelectedStudent(option ? option.data : null)}
+              loadOptions={async (q) => {
+                const page = await searchStudents({ q });
+                return { items: page.items.map(studentOption), total: page.total };
+              }}
               placeholder="Buscar por apellido, nombre, legajo o DNI..."
               emptyLabel="No se encontraron alumnos"
             />
           </div>
-          <LoadError message={studentsError} onRetry={loadStudents} />
           <div className="certificate-types">
             {TYPES.map((t) => (
               <button
@@ -212,11 +204,42 @@ export default function CertificatesPage() {
         </div>
       )}
 
-      {loading ? (
+      <ListFilters
+        idPrefix="certificates"
+        search={filters.search}
+        onSearchChange={canManage ? (value) => setFilters((f) => ({ ...f, search: value })) : undefined}
+        searchLabel="Buscar"
+        searchPlaceholder="Alumno, legajo o DNI"
+        selects={[
+          {
+            id: "type",
+            label: "Tipo",
+            value: filters.type,
+            onChange: (value) => setFilters((f) => ({ ...f, type: value })),
+            options: TYPE_OPTIONS,
+            allLabel: "Todos",
+          },
+          {
+            id: "status",
+            label: "Estado",
+            value: filters.status,
+            onChange: (value) => setFilters((f) => ({ ...f, status: value })),
+            options: STATUS_OPTIONS,
+            allLabel: "Todos",
+          },
+        ]}
+        hasFilters={hasFilters}
+        onClear={() => setFilters(EMPTY_FILTERS)}
+      />
+
+      {loading && certificates.length === 0 && !error ? (
         <p className="users-empty">Cargando...</p>
-      ) : certificates.length === 0 ? (
-        <p className="users-empty">No hay certificados para mostrar.</p>
+      ) : error ? null : certificates.length === 0 ? (
+        <p className="users-empty">
+          {hasFilters ? "No hay certificados con esos filtros" : "No hay certificados para mostrar."}
+        </p>
       ) : (
+        <div className={"users-list" + (loading ? " users-list--loading" : "")} aria-busy={loading}>
         <div className="users-table-wrapper">
           <table className="users-table certificates-table">
             <thead>
@@ -291,6 +314,15 @@ export default function CertificatesPage() {
               })}
             </tbody>
           </table>
+        </div>
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={changePageSize}
+          noun={["certificado", "certificados"]}
+        />
         </div>
       )}
 
