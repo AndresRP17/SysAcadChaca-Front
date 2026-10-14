@@ -1,4 +1,5 @@
 import { api } from "../../../shared/api/api";
+import { cleanParams, toPage } from "./pagedList";
 
 export async function getTeachers() {
   const { data } = await api.get("/teachers?size=1000");
@@ -30,4 +31,16 @@ export async function updateTeacher(id, data) {
 
 export async function deleteTeacher(id) {
   await api.delete(`/teachers/${id}`);
+}
+
+// Un docente por id (para mostrar la etiqueta del que ya estaba elegido).
+export async function getTeacher(id) {
+  const { data } = await api.get(`/teachers/${id}`);
+  return data;
+}
+
+// Busqueda en el servidor para los combos: { items, total }.
+export async function searchTeachers({ q, size = 20, signal } = {}) {
+  const response = await api.get("/teachers", { params: cleanParams({ q, page: 1, size }), signal });
+  return toPage(response);
 }
