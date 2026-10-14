@@ -12,6 +12,12 @@ export async function getMyTeacherProfile() {
   return data;
 }
 
+// El perfil de docente (id, legajo, título) de un usuario; null si no tiene.
+export async function getTeacherByUserId(userId) {
+  const { data } = await api.get(`/teachers?user_id=${userId}`);
+  return data[0] ?? null;
+}
+
 export async function createTeacher(data) {
   const res = await api.post("/teachers", data);
   return res.data;

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getErrorMessage } from "../../shared/api/api";
 import LoadError from "../../shared/ui/LoadError";
+import Pagination from "../../shared/ui/Pagination";
 import { getAuditLogs } from "./services/auditService";
 import "../users/usersPage.css";
 import "./auditPage.css";
@@ -57,7 +58,6 @@ export default function AuditPage() {
     setFilters((current) => ({ ...current, [name]: value }));
   }
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const hasFilters = filters.action || filters.from || filters.to;
 
   return (
@@ -168,29 +168,13 @@ export default function AuditPage() {
             </table>
           </div>
 
-          <div className="audit-pagination">
-            <span className="audit-pagination-info">
-              Página {page} de {totalPages} · {total} {total === 1 ? "registro" : "registros"}
-            </span>
-            <div className="audit-pagination-buttons">
-              <button
-                type="button"
-                className="users-btn users-btn--ghost"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Anterior
-              </button>
-              <button
-                type="button"
-                className="users-btn users-btn--ghost"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
+          <Pagination
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={total}
+            onPageChange={setPage}
+            noun={["registro", "registros"]}
+          />
         </>
       )}
     </div>

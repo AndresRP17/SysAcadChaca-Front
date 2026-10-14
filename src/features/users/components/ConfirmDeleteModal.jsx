@@ -9,8 +9,7 @@ export default function ConfirmDeleteModal({ open, user, onCancel, onConfirm }) 
       title="Eliminar usuario"
       message={
         <>
-          ¿Seguro que querés eliminar a <strong>{user.nombre} {user.apellido}</strong>{" "}
-          (legajo {user.legajo})? Esta acción no se puede deshacer.
+          ¿Seguro que querés eliminar a <strong>{user.nombre} {user.apellido}</strong>{user.legajo ? ` (legajo ${user.legajo})` : ""}? Esta acción no se puede deshacer.
         </>
       }
       note={DELETE_NOTE}

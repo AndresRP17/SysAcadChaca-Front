@@ -1,24 +1,34 @@
-export default function UserRow({ user, onEdit, onDelete, showCareer = false }) {
+export default function UserRow({ user, onEdit, onDelete, studentsOnly = false }) {
   return (
     <tr className="users-row">
-      <td className="users-td users-td--mono" data-label="Legajo">{user.legajo}</td>
-      <td className="users-td" data-label="Nombre">
-        {user.nombre} {user.apellido}
-      </td>
-      {showCareer && (
-        <td className="users-td" data-label="Carrera">{user.carrera || "—"}</td>
+      {studentsOnly ? (
+        <>
+          <td className="users-td users-td--mono" data-label="Legajo">{user.legajo}</td>
+          <td className="users-td" data-label="Nombre">
+            {user.nombre} {user.apellido}
+          </td>
+          <td className="users-td" data-label="Carrera">{user.carrera || "—"}</td>
+          <td className="users-td" data-label="Email">{user.email}</td>
+        </>
+      ) : (
+        <>
+          <td className="users-td" data-label="Nombre">
+            {user.nombre} {user.apellido}
+          </td>
+          <td className="users-td" data-label="Email">{user.email}</td>
+          <td className="users-td users-td--mono" data-label="DNI">{user.dni}</td>
+          <td className="users-td" data-label="Rol">
+            <span
+              className={
+                "users-badge " +
+                (user.rol === "Docente" ? "users-badge--navy" : "users-badge--gray")
+              }
+            >
+              {user.rol}
+            </span>
+          </td>
+        </>
       )}
-      <td className="users-td" data-label="Email">{user.email}</td>
-      <td className="users-td" data-label="Rol">
-        <span
-          className={
-            "users-badge " +
-            (user.rol === "Docente" ? "users-badge--navy" : "users-badge--gray")
-          }
-        >
-          {user.rol}
-        </span>
-      </td>
       <td className="users-td" data-label="Estado">
         <span
           className={
