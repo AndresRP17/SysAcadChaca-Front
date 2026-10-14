@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { getErrorMessage } from "../../shared/api/api";
 import LoadError from "../../shared/ui/LoadError";
+import { usePageSize } from "../../shared/hooks/usePageSize";
 import Pagination from "../../shared/ui/Pagination";
 import { getAuditLogs } from "./services/auditService";
 import "../users/usersPage.css";
 import "./auditPage.css";
 
-const PAGE_SIZE = 10;
 
 // Mismas etiquetas que manda el backend en actionLabel (AuditAction::LABELS); acá solo
 // sirven para armar el select de filtro. Al sumar una acción nueva en el backend, se agrega acá.
@@ -31,6 +31,7 @@ export default function AuditPage() {
   const [logs, setLogs] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = usePageSize();
   const [filters, setFilters] = useState({ action: "", from: "", to: "" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -39,7 +40,7 @@ export default function AuditPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await getAuditLogs({ page, size: PAGE_SIZE, ...filters });
+      const data = await getAuditLogs({ page, size: pageSize, ...filters });
       setLogs(data.items ?? []);
       setTotal(data.total ?? 0);
     } catch (e) {
@@ -47,11 +48,16 @@ export default function AuditPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, filters]);
+  }, [page, pageSize, filters]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  function changePageSize(size) {
+    setPage(1);
+    setPageSize(size);
+  }
 
   function changeFilter(name, value) {
     setPage(1);
@@ -170,9 +176,10 @@ export default function AuditPage() {
 
           <Pagination
             page={page}
-            pageSize={PAGE_SIZE}
+            pageSize={pageSize}
             total={total}
             onPageChange={setPage}
+            onPageSizeChange={changePageSize}
             noun={["registro", "registros"]}
           />
         </>

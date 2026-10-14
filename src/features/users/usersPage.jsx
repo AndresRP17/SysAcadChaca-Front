@@ -4,7 +4,7 @@ import { getErrorMessage } from "../../shared/api/api";
 import ListFilters from "../../shared/ui/ListFilters";
 import LoadError from "../../shared/ui/LoadError";
 import Pagination from "../../shared/ui/Pagination";
-import { useUsers, PAGE_SIZE } from "./hooks/useUsers";
+import { useUsers } from "./hooks/useUsers";
 import UserTable from "./components/UserTable";
 import UserFormModal from "./components/UserFormModal";
 import ConfirmDeleteModal from "./components/ConfirmDeleteModal";
@@ -21,6 +21,8 @@ export default function UsersPage({ studentsOnly = false }) {
     total,
     page,
     setPage,
+    pageSize,
+    changePageSize,
     loading,
     error,
     reload,
@@ -150,9 +152,10 @@ export default function UsersPage({ studentsOnly = false }) {
             </div>
             <Pagination
               page={page}
-              pageSize={PAGE_SIZE}
+              pageSize={pageSize}
               total={total}
               onPageChange={setPage}
+              onPageSizeChange={changePageSize}
               noun={studentsOnly ? ["alumno", "alumnos"] : ["usuario", "usuarios"]}
             />
           </div>

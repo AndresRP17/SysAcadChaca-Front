@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getErrorMessage } from "../../../shared/api/api";
 import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
+import { usePageSize } from "../../../shared/hooks/usePageSize";
 import { getPrograms } from "../../plans/services/programService";
 import { getStudentsPage, createStudent, updateStudent, deleteStudent } from "../services/studentService";
 import { getTeacherByUserId, createTeacher, updateTeacher, deleteTeacher } from "../services/teacherService";
 import { getUsersPage, createUser, updateUser as updateUserRequest, deleteUser as deleteUserRequest } from "../services/userService";
 import { getRoles } from "../services/roleService";
 
-export const PAGE_SIZE = 10;
 export const SEARCH_DELAY_MS = 300;
 
 const EMPTY_FILTERS = { search: "", role: "", active: "", program: "" };
@@ -66,6 +66,7 @@ export function useUsers({ studentsOnly = false } = {}) {
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSizeValue] = usePageSize();
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [roles, setRoles] = useState([]);
   const [programs, setPrograms] = useState([]);
@@ -96,7 +97,7 @@ export function useUsers({ studentsOnly = false } = {}) {
     setLoading(true);
     setError("");
 
-    const common = { q: debouncedSearch, active: filters.active, page, size: PAGE_SIZE };
+    const common = { q: debouncedSearch, active: filters.active, page, size: pageSize };
     const request = studentsOnly
       ? getStudentsPage({ ...common, programId: filters.program })
       : getUsersPage({ ...common, roleId: filters.role, excludeRole: "Alumno" });
@@ -106,7 +107,7 @@ export function useUsers({ studentsOnly = false } = {}) {
         if (id !== requestId.current) return;
         // Si al borrar quedó vacía la última página, se vuelve a la anterior.
         if (items.length === 0 && count > 0 && page > 1) {
-          setPage(Math.ceil(count / PAGE_SIZE));
+          setPage(Math.ceil(count / pageSize));
           return;
         }
         setRows(items.map(studentsOnly ? studentToRow : userToRow));
@@ -118,7 +119,7 @@ export function useUsers({ studentsOnly = false } = {}) {
         setError(getErrorMessage(e, "No se pudo cargar la lista."));
         setLoading(false);
       });
-  }, [studentsOnly, debouncedSearch, filters.role, filters.active, filters.program, page, reloadKey]);
+  }, [studentsOnly, debouncedSearch, filters.role, filters.active, filters.program, page, pageSize, reloadKey]);
 
   // Recarga la misma página con los mismos filtros (después de crear, editar o borrar).
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
@@ -126,6 +127,11 @@ export function useUsers({ studentsOnly = false } = {}) {
   function changeFilter(name, value) {
     setPage(1);
     setFilters((current) => ({ ...current, [name]: value }));
+  }
+
+  function changePageSize(size) {
+    setPage(1);
+    setPageSizeValue(size);
   }
 
   function clearFilters() {
@@ -183,6 +189,8 @@ export function useUsers({ studentsOnly = false } = {}) {
     total,
     page,
     setPage,
+    pageSize,
+    changePageSize,
     loading,
     error,
     reload,
