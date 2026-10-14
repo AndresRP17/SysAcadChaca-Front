@@ -6,7 +6,7 @@
 // carreras/materias/planes/usuarios (sí alumnos: alta/edición/baja); Docente toma asistencia desde
 // el Calendario y gestiona notas/cierre desde la pantalla de cada comisión.
 export const LINKS_BY_ROLE = {
-  Administrador: ["usuarios", "alumnos", "planes", "cursadas", "calendario", "inscribir-alumno", "actas", "certificados", "equivalencias"],
+  Administrador: ["usuarios", "alumnos", "planes", "cursadas", "calendario", "inscribir-alumno", "actas", "certificados", "equivalencias", "auditoria"],
   Alumno: ["alumno", "calendario", "historial", "mis-cursadas", "finales", "certificados", "equivalencias"],
   Docente: ["calendario", "mis-comisiones", "actas", "equivalencias"],
   Bedel: ["calendario", "cursadas", "alumnos", "inscribir-alumno", "actas", "certificados", "equivalencias"],
