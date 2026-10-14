@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
-import { getErrorMessage } from "../../shared/api/api";
 import { formatDateTime, isPast } from "../../shared/utils/formatters";
 import ConfirmModal, { DELETE_NOTE } from "../../shared/ui/ConfirmModal";
-import { getMyTeacherProfile } from "../users/services/teacherService";
-import { getExamBoards, createExamBoard, closeExamBoard, deleteExamBoard, cancelExamBoard } from "./services/examBoardService";
-import { getExamEnrollments, updateExamEnrollment } from "./services/examEnrollmentService";
+import ListFilters from "../../shared/ui/ListFilters";
+import LoadError from "../../shared/ui/LoadError";
+import Pagination from "../../shared/ui/Pagination";
+import { getExamBoard, createExamBoard, closeExamBoard, deleteExamBoard, cancelExamBoard } from "./services/examBoardService";
+import { updateExamEnrollment } from "./services/examEnrollmentService";
+import { useExamBoards } from "./hooks/useExamBoards";
+import { useBoardEnrollments } from "./hooks/useBoardEnrollments";
 import ActaDetail from "./components/ActaDetail";
 import GradeModal from "./components/GradeModal";
 import CloseActaModal from "./components/CloseActaModal";
@@ -16,10 +19,10 @@ import "../users/usersPage.css";
 import "../plans/plansPage.css";
 import "../enrollments/portalCursadasPage.css";
 
-const FILTERS = [
-  { key: "abiertas", label: "Actas abiertas" },
-  { key: "cerradas", label: "Actas cerradas" },
-  { key: "todas", label: "Todas" },
+const STATUS_OPTIONS = [
+  { value: "open", label: "Abiertas" },
+  { value: "closed", label: "Cerradas" },
+  { value: "cancelled", label: "Canceladas" },
 ];
 
 // Quién puede qué (espeja el backend): Administrador y Bedel programan mesas;
@@ -36,13 +39,14 @@ export default function ActasPage() {
   const canGrade = ROLES_THAT_GRADE.includes(role);
   const { showToast } = useToast();
 
-  const [boards, setBoards] = useState([]);
-  const [filter, setFilter] = useState(FILTERS[0].key);
-  const [selectedBoardId, setSelectedBoardId] = useState(null);
-  const [enrollments, setEnrollments] = useState([]);
-  const [loadingBoards, setLoadingBoards] = useState(true);
-  const [loadingEnrollments, setLoadingEnrollments] = useState(false);
-  const [error, setError] = useState("");
+  // El Docente solo ve las mesas donde participa (presidente o vocal): lo filtra el servidor.
+  const list = useExamBoards({ mine: role === "Docente" });
+  const { boards } = list;
+
+  // La mesa elegida se guarda entera: puede no estar en la página visible (recién creada, otro filtro).
+  const [selectedBoard, setSelectedBoard] = useState(null);
+  const selectedBoardId = selectedBoard?.id ?? null;
+  const enrollmentsList = useBoardEnrollments(selectedBoardId);
 
   const [enrollmentToGrade, setEnrollmentToGrade] = useState(null);
   const [closeModalOpen, setCloseModalOpen] = useState(false);
@@ -50,73 +54,46 @@ export default function ActasPage() {
   const [boardToDelete, setBoardToDelete] = useState(null);
   const [boardToCancel, setBoardToCancel] = useState(null);
 
-  const reloadBoards = useCallback(async () => {
-    setLoadingBoards(true);
-    setError("");
-    try {
-      let data = await getExamBoards();
-      if (role === "Docente") {
-        const me = await getMyTeacherProfile();
-        data = data.filter((b) => b.chairTeacherId === me.id || b.memberTeacherId === me.id);
-      }
-      setBoards(data.sort((a, b) => String(b.scheduledAt).localeCompare(String(a.scheduledAt))));
-    } catch (e) {
-      setError(getErrorMessage(e, "No pudimos cargar las mesas de examen."));
-    } finally {
-      setLoadingBoards(false);
-    }
-  }, [role]);
-
+  // Si la mesa elegida aparece en la página cargada, se toma su versión fresca (estado, inscriptos).
   useEffect(() => {
-    reloadBoards();
-  }, [reloadBoards]);
+    setSelectedBoard((current) => {
+      if (!current) return current;
+      const fresh = boards.find((b) => b.id === current.id);
+      return fresh ?? current;
+    });
+  }, [boards]);
 
-  const reloadEnrollments = useCallback(async (boardId) => {
-    if (!boardId) {
-      setEnrollments([]);
-      return;
-    }
-    setLoadingEnrollments(true);
+  // Después de cerrar o cancelar: refresca la mesa elegida aunque no esté en la página visible.
+  async function refreshSelectedBoard(id = selectedBoardId) {
+    if (!id) return;
     try {
-      setEnrollments(await getExamEnrollments({ examBoardId: boardId }));
-    } catch (e) {
-      setError(getErrorMessage(e, "No pudimos cargar los inscriptos de la mesa."));
-    } finally {
-      setLoadingEnrollments(false);
+      setSelectedBoard(await getExamBoard(id));
+    } catch {
+      // la lista recargada igual la actualiza si está visible
     }
-  }, []);
-
-  useEffect(() => {
-    reloadEnrollments(selectedBoardId);
-  }, [selectedBoardId, reloadEnrollments]);
-
-  const visibleBoards = boards.filter((b) => {
-    if (filter === "abiertas") return !b.closed && !b.cancelled;
-    if (filter === "cerradas") return b.closed;
-    return true;
-  });
-
-  const selectedBoard = boards.find((b) => b.id === selectedBoardId) ?? null;
+  }
 
   async function handleGradeSubmit(data) {
     await updateExamEnrollment(enrollmentToGrade.id, data);
     setEnrollmentToGrade(null);
-    await reloadEnrollments(selectedBoardId);
+    enrollmentsList.reload();
   }
 
   async function handleCloseActa(form) {
     await closeExamBoard(selectedBoard.id, form);
     setCloseModalOpen(false);
-    await reloadBoards();
+    list.reload();
+    await refreshSelectedBoard();
     showToast("Acta cerrada correctamente");
   }
 
   async function handleCreateBoard(data) {
     const created = await createExamBoard(data);
     setFormOpen(false);
-    setFilter("abiertas");
-    await reloadBoards();
-    setSelectedBoardId(created.id);
+    list.showDefaultView();
+    list.reload();
+    setSelectedBoard(created);
+    await refreshSelectedBoard(created.id);
   }
 
   async function handleConfirmDelete() {
@@ -124,15 +101,16 @@ export default function ActasPage() {
     const board = boardToDelete;
     await deleteExamBoard(board.id);
     setBoardToDelete(null);
-    if (board.id === selectedBoardId) setSelectedBoardId(null);
-    await reloadBoards();
+    if (board.id === selectedBoardId) setSelectedBoard(null);
+    list.reload();
   }
 
   async function handleConfirmCancel(reason) {
     // Si falla, el error se propaga al CancelActaModal, que queda abierto y lo muestra.
     await cancelExamBoard(boardToCancel.id, reason);
     setBoardToCancel(null);
-    await reloadBoards();
+    list.reload();
+    await refreshSelectedBoard();
     showToast("Mesa cancelada: se rechazaron sus inscripciones");
   }
 
@@ -156,54 +134,96 @@ export default function ActasPage() {
         )}
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
+      <ListFilters
+        idPrefix="actas"
+        search={list.filters.search}
+        onSearchChange={(value) => list.changeFilter("search", value)}
+        searchLabel="Buscar materia"
+        searchPlaceholder="Nombre o código de la materia"
+        selects={[
+          {
+            id: "status",
+            label: "Estado",
+            value: list.filters.status,
+            onChange: (value) => list.changeFilter("status", value),
+            options: STATUS_OPTIONS,
+            allLabel: "Todas",
+          },
+        ]}
+        hasFilters={list.hasFilters}
+        onClear={list.clearFilters}
+      >
+        <div className="users-form-field">
+          <label className="users-form-label" htmlFor="actas-from">Desde</label>
+          <input
+            id="actas-from"
+            type="date"
+            className="users-form-input"
+            value={list.filters.from}
+            max={list.filters.to || undefined}
+            onChange={(e) => list.changeFilter("from", e.target.value)}
+          />
+        </div>
+        <div className="users-form-field">
+          <label className="users-form-label" htmlFor="actas-to">Hasta</label>
+          <input
+            id="actas-to"
+            type="date"
+            className="users-form-input"
+            value={list.filters.to}
+            min={list.filters.from || undefined}
+            onChange={(e) => list.changeFilter("to", e.target.value)}
+          />
+        </div>
+      </ListFilters>
 
-      <div className="users-filter-bar">
-        {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            type="button"
-            className={`users-filter-btn ${filter === f.key ? "users-filter-btn--active" : ""}`}
-            onClick={() => setFilter(f.key)}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
+      <LoadError message={list.error} onRetry={list.reload} />
 
-      {loadingBoards && <p className="users-empty">Cargando...</p>}
+      {list.loading && boards.length === 0 && !list.error && <p className="users-empty">Cargando...</p>}
 
-      {!loadingBoards && visibleBoards.length === 0 && (
-        <p className="users-empty">No hay mesas para este filtro.</p>
+      {!list.loading && !list.error && boards.length === 0 && (
+        <p className="users-empty">
+          {list.hasFilters ? "No hay mesas con esos filtros." : "No hay mesas para mostrar."}
+        </p>
       )}
 
-      {!loadingBoards && visibleBoards.length > 0 && (
+      {!list.error && boards.length > 0 && (
         <div className="portal-acta-layout">
-          <div className="portal-acta-list">
-            {visibleBoards.map((board) => (
-              <button
-                key={board.id}
-                type="button"
-                className={`portal-acta-btn ${board.id === selectedBoardId ? "portal-acta-btn--active" : ""}`}
-                onClick={() => setSelectedBoardId(board.id)}
-              >
-                <span>{board.courseName}</span>
-                <span className="portal-card-sub">{formatDateTime(board.scheduledAt)}</span>
-                <span
-                  className={`users-badge ${
-                    board.cancelled ? "users-badge--inactive" : board.closed ? "users-badge--gray" : "users-badge--navy"
-                  }`}
+          <div className={"users-list" + (list.loading ? " users-list--loading" : "")} aria-busy={list.loading}>
+            <div className="portal-acta-list">
+              {boards.map((board) => (
+                <button
+                  key={board.id}
+                  type="button"
+                  className={`portal-acta-btn ${board.id === selectedBoardId ? "portal-acta-btn--active" : ""}`}
+                  onClick={() => setSelectedBoard(board)}
                 >
-                  {board.cancelled
-                    ? "Cancelada"
-                    : board.closed
-                    ? "Cerrada"
-                    : isPast(board.scheduledAt)
-                    ? "Pendiente de cierre"
-                    : "Programada"}
-                </span>
-              </button>
-            ))}
+                  <span>{board.courseName}</span>
+                  <span className="portal-card-sub">{formatDateTime(board.scheduledAt)}</span>
+                  <span
+                    className={`users-badge ${
+                      board.cancelled ? "users-badge--inactive" : board.closed ? "users-badge--gray" : "users-badge--navy"
+                    }`}
+                  >
+                    {board.cancelled
+                      ? "Cancelada"
+                      : board.closed
+                      ? "Cerrada"
+                      : isPast(board.scheduledAt)
+                      ? "Pendiente de cierre"
+                      : "Programada"}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <Pagination
+              page={list.page}
+              pageSize={list.pageSize}
+              total={list.total}
+              onPageChange={list.setPage}
+              onPageSizeChange={list.changePageSize}
+              noun={["mesa", "mesas"]}
+            />
           </div>
 
           <div>
@@ -214,8 +234,7 @@ export default function ActasPage() {
             {selectedBoard && (
               <ActaDetail
                 board={selectedBoard}
-                enrollments={enrollments}
-                loading={loadingEnrollments}
+                list={enrollmentsList}
                 closed={selectedBoard.closed}
                 canGrade={canGrade}
                 onGrade={setEnrollmentToGrade}

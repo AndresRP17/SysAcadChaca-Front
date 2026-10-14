@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { useCourses } from "../hooks/useCourses";
+import { usePagedCourses } from "../hooks/usePagedCourses";
 import CourseFormModal from "./CourseFormModal";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
+import ListFilters from "../../../shared/ui/ListFilters";
+import LoadError from "../../../shared/ui/LoadError";
+import Pagination from "../../../shared/ui/Pagination";
 
 export default function CoursesTab() {
-  const { courses, loading, error, addCourse, editCourse, removeCourse } = useCourses();
+  const list = usePagedCourses();
+  const { courses, loading, error, addCourse, editCourse, removeCourse } = list;
 
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
@@ -40,14 +44,26 @@ export default function CoursesTab() {
   return (
     <div>
       <div className="plans-toolbar">
-        <p className="users-subtitle">{courses.length} materia{courses.length !== 1 ? "s" : ""}</p>
+        <p className="users-subtitle">{list.total} materia{list.total !== 1 ? "s" : ""}</p>
         <button type="button" className="users-btn users-btn--primary" onClick={openCreateModal}>
           + Nueva materia
         </button>
       </div>
 
-      {error && <p className="users-form-error">{error}</p>}
+      <ListFilters
+        idPrefix="courses"
+        search={list.search}
+        onSearchChange={list.changeSearch}
+        searchLabel="Buscar"
+        searchPlaceholder="Nombre o código de la materia"
+        hasFilters={list.hasFilters}
+        onClear={list.clearFilters}
+      />
 
+      <LoadError message={error} onRetry={list.reload} />
+
+      {!error && (
+      <div className={"users-list" + (loading && courses.length > 0 ? " users-list--loading" : "")} aria-busy={loading}>
       <div className="users-table-wrapper">
         <table className="users-table plans-data-table">
           <thead>
@@ -58,11 +74,15 @@ export default function CoursesTab() {
             </tr>
           </thead>
           <tbody>
-            {loading && (
+            {loading && courses.length === 0 && (
               <tr><td className="users-empty" colSpan={3}>Cargando...</td></tr>
             )}
             {!loading && courses.length === 0 && (
-              <tr><td className="users-empty" colSpan={3}>No hay materias cargadas.</td></tr>
+              <tr>
+                <td className="users-empty" colSpan={3}>
+                  {list.hasFilters ? "No hay materias con esa búsqueda." : "No hay materias cargadas."}
+                </td>
+              </tr>
             )}
             {courses.map((course) => (
               <tr key={course.id} className="users-row">
@@ -85,6 +105,16 @@ export default function CoursesTab() {
           </tbody>
         </table>
       </div>
+      <Pagination
+        page={list.page}
+        pageSize={list.pageSize}
+        total={list.total}
+        onPageChange={list.setPage}
+        onPageSizeChange={list.changePageSize}
+        noun={["materia", "materias"]}
+      />
+      </div>
+      )}
 
       <CourseFormModal
         open={formOpen}

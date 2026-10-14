@@ -1,10 +1,20 @@
 import { api } from "../../../shared/api/api";
 import { buildParams } from "../../../shared/utils/formatters";
+import { cleanParams, toPage } from "../../users/services/pagedList";
 
 export async function getExamBoards({ curriculumCourseId, studyPlanId } = {}) {
   const qs = buildParams({ curriculum_course_id: curriculumCourseId, study_plan_id: studyPlanId, size: 1000 });
   const { data } = await api.get(`/exam-boards?${qs}`);
   return data;
+}
+
+// Una página de mesas filtrada en el servidor: { items, total }.
+// status: open | closed | cancelled. mine: solo las mesas del Docente que consulta.
+export async function getExamBoardsPage({ q, status, from, to, mine, page = 1, size = 10 } = {}) {
+  const response = await api.get("/exam-boards", {
+    params: cleanParams({ q, status, from, to, mine: mine ? 1 : "", page, size }),
+  });
+  return toPage(response);
 }
 
 export async function getExamBoard(id) {
