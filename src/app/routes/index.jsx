@@ -22,6 +22,7 @@ import SectionDetailPage from "../../features/grades/sectionDetailPage";
 import CalendarRoutePage from "../../features/calendar/calendarRoutePage";
 import TakeAttendancePage from "../../features/attendance/takeAttendancePage";
 import MisComisionesPage from "../../features/grades/misComisionesPage";
+import ProfilePage from "../../features/profile/profilePage";
 
 
 import { ResetPasswordPage } from '../../features/auth/resetPasswordPage/ResetPasswordPage';
@@ -173,6 +174,8 @@ export const router = createBrowserRouter([
           </RequireRole>
         ),
       },
+      // Cualquier usuario logueado, sea cual sea su rol: es su propio perfil.
+      { path: "/perfil", element: <ProfilePage /> },
       { path: "/planilla", element: <Navigate to="/mis-comisiones" replace /> },
       { path: "/sin-acceso", element: <NoAccessPage /> },
     ],
