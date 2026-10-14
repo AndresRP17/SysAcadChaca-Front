@@ -1,5 +1,6 @@
 import { api } from "../../../shared/api/api";
 import { buildParams } from "../../../shared/utils/formatters";
+import { cleanParams, toPage } from "../../users/services/pagedList";
 
 // Estados de la columna enrollments.status. Si en el backend quedaron con otros
 // nombres, alcanza con cambiarlos acá: el resto de la feature usa estas constantes.
@@ -14,6 +15,14 @@ export async function getEnrollments({ studentId, sectionId, status } = {}) {
   const qs = buildParams({ student_id: studentId, section_id: sectionId, status, size: 1000 });
   const { data } = await api.get(`/enrollments?${qs}`);
   return data;
+}
+
+// Una página de inscripciones filtrada en el servidor: { items, total }. q busca por alumno (nombre, legajo, DNI).
+export async function getEnrollmentsPage({ sectionId, studentId, status, q, sectionQ, page = 1, size = 10 } = {}) {
+  const response = await api.get("/enrollments", {
+    params: cleanParams({ section_id: sectionId, student_id: studentId, status, q, section_q: sectionQ, page, size }),
+  });
+  return toPage(response);
 }
 
 // outOfTerm: { reason } cuando el Bedel/Administrador confirma inscribir fuera del periodo.
