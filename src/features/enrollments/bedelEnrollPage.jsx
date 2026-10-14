@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { ENROLLMENT_PERIOD_CLOSED, getErrorCode, getErrorMessage } from "../../shared/api/api";
 import Combobox from "../../shared/ui/Combobox";
@@ -7,12 +7,10 @@ import LoadError from "../../shared/ui/LoadError";
 import { getStudents } from "../users/services/studentService";
 import { useStudentSections } from "./hooks/useStudentSections";
 import { useStudentExamBoards } from "../exams/hooks/useStudentExamBoards";
-import { findScheduleConflicts } from "./utils/scheduleConflicts";
 import { getResultLabel, getResultStatus } from "../exams/services/examEnrollmentService";
 import { isPast } from "../../shared/utils/formatters";
 import AvailableSectionsList from "./components/AvailableSectionsList";
 import EnrolledSectionsList from "./components/EnrolledSectionsList";
-import ConflictModal from "./components/ConflictModal";
 import OutOfTermModal from "./components/OutOfTermModal";
 import ExamBoardCard from "../exams/components/ExamBoardCard";
 import "../users/usersPage.css";
@@ -37,7 +35,6 @@ function StudentEnrollments({ studentId }) {
   const sectionsHook = useStudentSections(studentId);
   const examBoardsHook = useStudentExamBoards(studentId);
   const [submitting, setSubmitting] = useState(false);
-  const [shownConflicts, setShownConflicts] = useState(null);
   const [sectionToCancel, setSectionToCancel] = useState(null);
   const [examToCancel, setExamToCancel] = useState(null);
   // Inscripción rechazada por período cerrado, a la espera de que el Bedel confirme: { kind, id }
@@ -53,15 +50,6 @@ function StudentEnrollments({ studentId }) {
     enroll: enrollExam,
     unenroll: unenrollExam,
   } = examBoardsHook;
-
-  const conflictsBySection = useMemo(() => {
-    const map = new Map();
-    available.forEach(({ section, schedules }) => {
-      const conflicts = findScheduleConflicts(schedules, enrolled);
-      if (conflicts.length > 0) map.set(section.id, conflicts);
-    });
-    return map;
-  }, [available, enrolled]);
 
   async function doEnrollSection(sectionId) {
     setSubmitting(true);
@@ -80,9 +68,10 @@ function StudentEnrollments({ studentId }) {
   }
 
   function handleEnrollSection(sectionId) {
-    const conflicts = conflictsBySection.get(sectionId) ?? [];
-    if (conflicts.length > 0) {
-      setShownConflicts(conflicts);
+    // El servidor ya avisa si el período está cerrado: se pide directo la confirmación y el motivo.
+    const section = available.find((item) => item.section.id === sectionId)?.section;
+    if (section?.blockedReasons?.some((r) => r.overridable)) {
+      setOutOfTermTarget({ kind: "section", id: sectionId });
       return;
     }
     doEnrollSection(sectionId);
@@ -157,7 +146,6 @@ function StudentEnrollments({ studentId }) {
             <p className="users-subtitle">Oferta disponible</p>
             <AvailableSectionsList
               items={available}
-              conflictsBySection={conflictsBySection}
               onEnroll={handleEnrollSection}
               submitting={submitting}
               actionLabel="Inscribir"
@@ -233,14 +221,6 @@ function StudentEnrollments({ studentId }) {
           </>
         )}
       </section>
-
-      <ConflictModal
-        open={shownConflicts !== null}
-        conflicts={shownConflicts ?? []}
-        onClose={() => setShownConflicts(null)}
-        title="No se puede inscribir a esta comisión"
-        message="El horario se superpone con materias en las que el alumno ya está inscripto:"
-      />
 
       <OutOfTermModal
         open={outOfTermTarget !== null}
