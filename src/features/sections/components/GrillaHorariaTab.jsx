@@ -1,11 +1,26 @@
 import { useEffect, useState } from "react";
+import { getErrorMessage } from "../../../shared/api/api";
 import { usePrograms } from "../../plans/hooks/usePrograms";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
-import { getSections } from "../services/sectionService";
-import { getAllSectionSchedules } from "../services/sectionScheduleService";
+import { getSchedulesForGrid, GRID_SIZE } from "../services/sectionScheduleService";
+import LoadError from "../../../shared/ui/LoadError";
 import WeekScheduleGrid from "../../../shared/ui/WeekScheduleGrid";
 
+const TERM_OPTIONS = [
+  { value: "1", label: "1º cuatrimestre" },
+  { value: "2", label: "2º cuatrimestre" },
+  { value: "0", label: "Anual" },
+];
+
+// Años ofrecidos: del próximo al de hace 5.
+function yearOptions() {
+  const current = new Date().getFullYear();
+  return Array.from({ length: 7 }, (_, i) => String(current + 1 - i));
+}
+
+// La grilla es una vista de calendario de UN plan en UN período: necesita todos los bloques del filtro, así
+// que no se pagina; el servidor filtra por plan, año y cuatrimestre y la pantalla avisa si el resultado se cortó.
 export default function GrillaHorariaTab() {
   const { programs } = usePrograms();
 
@@ -13,10 +28,13 @@ export default function GrillaHorariaTab() {
   const [studyPlans, setStudyPlans] = useState([]);
   const [studyPlanId, setStudyPlanId] = useState("");
   const [curriculumCourses, setCurriculumCourses] = useState([]);
-  const [allSections, setAllSections] = useState([]);
-  const [allSchedules, setAllSchedules] = useState([]);
+  const [academicYear, setAcademicYear] = useState(String(new Date().getFullYear()));
+  const [term, setTerm] = useState("");
+  const [schedules, setSchedules] = useState([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     setStudyPlanId("");
@@ -32,23 +50,34 @@ export default function GrillaHorariaTab() {
   }, [studyPlanId]);
 
   useEffect(() => {
+    if (!studyPlanId) {
+      setSchedules([]);
+      setTotal(0);
+      return;
+    }
+    let cancelled = false;
     setLoading(true);
-    Promise.all([getSections(), getAllSectionSchedules()])
-      .then(([sections, schedules]) => {
-        setAllSections(sections);
-        setAllSchedules(schedules);
+    setError("");
+    getSchedulesForGrid({ studyPlanId, academicYear, term })
+      .then(({ items, total: count }) => {
+        if (cancelled) return;
+        setSchedules(items);
+        setTotal(count);
       })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const curriculumCourseIds = new Set(curriculumCourses.map((cc) => cc.id));
-  const sectionIds = new Set(allSections.filter((s) => curriculumCourseIds.has(s.curriculumCourseId)).map((s) => s.id));
-  const schedulesForPlan = allSchedules.filter((sch) => sectionIds.has(sch.sectionId));
+      .catch((e) => {
+        if (!cancelled) setError(getErrorMessage(e, "No se pudo cargar la grilla horaria."));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [studyPlanId, academicYear, term, reloadKey]);
 
   return (
     <div>
-      {error && <p className="users-form-error">{error}</p>}
+      <LoadError message={error} onRetry={() => setReloadKey((k) => k + 1)} />
 
       <div className="plans-selectors">
         <div className="users-form-field">
@@ -74,6 +103,22 @@ export default function GrillaHorariaTab() {
             ))}
           </select>
         </div>
+
+        <div className="users-form-field">
+          <label className="users-form-label" htmlFor="grillaHorariaTab-3">Año</label>
+          <select id="grillaHorariaTab-3" value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} className="users-form-input">
+            <option value="">Todos</option>
+            {yearOptions().map((y) => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
+
+        <div className="users-form-field">
+          <label className="users-form-label" htmlFor="grillaHorariaTab-4">Cuatrimestre</label>
+          <select id="grillaHorariaTab-4" value={term} onChange={(e) => setTerm(e.target.value)} className="users-form-input">
+            <option value="">Todos</option>
+            {TERM_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
       </div>
 
       <hr className="plans-divider" />
@@ -82,9 +127,13 @@ export default function GrillaHorariaTab() {
 
       {studyPlanId && loading && <p className="users-empty">Cargando...</p>}
 
-      {studyPlanId && !loading && (
+      {studyPlanId && !loading && !error && total > schedules.length && (
+        <p className="users-empty">Se muestran {GRID_SIZE} de {total} horarios: filtrá por año o cuatrimestre para ver el resto.</p>
+      )}
+
+      {studyPlanId && !loading && !error && (
         <WeekScheduleGrid
-          schedules={schedulesForPlan}
+          schedules={schedules}
           emptyMessage="Este plan todavía no tiene comisiones con horarios cargados."
           getKey={(sch) => sch.id}
           getBlockTitle={(sch) => `${sch.classroomName} — ${sch.teacherFirstName} ${sch.teacherLastName}`}

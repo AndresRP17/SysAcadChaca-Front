@@ -1,5 +1,8 @@
 import { api } from "../../../shared/api/api";
 import { buildParams } from "../../../shared/utils/formatters";
+import { cleanParams, toPage } from "../../users/services/pagedList";
+
+export const GRID_SIZE = 1000;
 
 export async function getSectionSchedules(sectionId) {
   const qs = buildParams({ section_id: sectionId, size: 1000 });
@@ -7,9 +10,14 @@ export async function getSectionSchedules(sectionId) {
   return data;
 }
 
-export async function getAllSectionSchedules() {
-  const { data } = await api.get("/section-schedules?size=1000");
-  return data;
+// Horarios de un plan (opcionalmente de un año y cuatrimestre) para la grilla semanal: la grilla es una vista de
+// calendario y necesita todos los bloques del filtro, por eso no se pagina; { items, total } deja avisar si
+// el servidor corto en `size`.
+export async function getSchedulesForGrid({ studyPlanId, academicYear, term }) {
+  const response = await api.get("/section-schedules", {
+    params: cleanParams({ study_plan_id: studyPlanId, academic_year: academicYear, term, size: GRID_SIZE }),
+  });
+  return toPage(response);
 }
 
 export async function createSectionSchedule(data) {
