@@ -3,8 +3,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { getCurrentStudent } from "../../../shared/api/currentStudent";
 import { getStudent } from "../../users/services/studentService";
 import { getErrorMessage } from "../../../shared/api/api";
-import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
-import { getExamBoards } from "../services/examBoardService";
+import { getExamBoard, getExamBoards } from "../services/examBoardService";
 import {
   getExamEnrollments,
   createExamEnrollment,
@@ -21,7 +20,6 @@ export function useStudentExamBoards(studentIdOverride) {
   const [student, setStudent] = useState(null);
   const [boards, setBoards] = useState([]);
   const [myEnrollments, setMyEnrollments] = useState([]);
-  const [curriculumCourseIds, setCurriculumCourseIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -35,20 +33,20 @@ export function useStudentExamBoards(studentIdOverride) {
         : await getCurrentStudent(user);
       setStudent(currentStudent);
 
+      // El servidor ya devuelve solo las mesas de las materias del plan del alumno.
       const [boardsData, enrollmentsData] = await Promise.all([
-        getExamBoards(),
+        getExamBoards({ studyPlanId: currentStudent?.studyPlanId }),
         getExamEnrollments({ studentId: currentStudent.id }),
       ]);
 
-      setBoards(boardsData);
-      setMyEnrollments(enrollmentsData);
+      // Una inscripción vieja puede ser a una mesa de otro plan (el alumno cambió de plan):
+      // esas mesas no vienen en la lista filtrada y se piden de a una.
+      const knownBoardIds = new Set(boardsData.map((b) => b.id));
+      const missingBoardIds = [...new Set(enrollmentsData.map((e) => e.examBoardId))].filter((id) => !knownBoardIds.has(id));
+      const extraBoards = await Promise.all(missingBoardIds.map((id) => getExamBoard(id).catch(() => null)));
 
-      if (currentStudent?.studyPlanId) {
-        const curriculumCourses = await getCurriculumCourses(currentStudent.studyPlanId);
-        setCurriculumCourseIds(curriculumCourses.map((cc) => cc.id));
-      } else {
-        setCurriculumCourseIds([]);
-      }
+      setBoards([...boardsData, ...extraBoards.filter(Boolean)]);
+      setMyEnrollments(enrollmentsData);
     } catch (e) {
       setLoadError(getErrorMessage(e, "No pudimos cargar las mesas de examen."));
     } finally {
@@ -71,16 +69,14 @@ export function useStudentExamBoards(studentIdOverride) {
   }, [myEnrollments, boards]);
 
   const available = useMemo(() => {
-    const planCourseIds = new Set(curriculumCourseIds);
     const enrolledBoardIds = new Set(myEnrollments.map((e) => e.examBoardId));
 
     return boards
-      .filter((b) => planCourseIds.size === 0 || planCourseIds.has(b.curriculumCourseId))
       .filter((b) => !enrolledBoardIds.has(b.id))
       .filter((b) => !isPast(b.scheduledAt))
       .filter((b) => !b.cancelled)
       .sort((a, b) => String(a.scheduledAt).localeCompare(String(b.scheduledAt)));
-  }, [boards, curriculumCourseIds, myEnrollments]);
+  }, [boards, myEnrollments]);
 
   async function enroll(examBoardId) {
     await createExamEnrollment({ examBoardId, studentId: student.id });

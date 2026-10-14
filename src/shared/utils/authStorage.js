@@ -2,7 +2,8 @@
 // o en sessionStorage (solo dura la pestaña actual) según el checkbox
 // "Recordarme en este equipo". Todo lo que lee/escribe token o user pasa por
 // acá para no tener que saber en cuál de los dos vive.
-const KEYS = ["token", "user"];
+// sga_current_student es el alumno cacheado de currentStudent.js: se borra con la sesión.
+const KEYS = ["token", "user", "sga_current_student"];
 
 function clearBoth() {
   KEYS.forEach((key) => {

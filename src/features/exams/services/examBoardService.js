@@ -1,9 +1,14 @@
 import { api } from "../../../shared/api/api";
 import { buildParams } from "../../../shared/utils/formatters";
 
-export async function getExamBoards({ curriculumCourseId } = {}) {
-  const qs = buildParams({ curriculum_course_id: curriculumCourseId, size: 1000 });
+export async function getExamBoards({ curriculumCourseId, studyPlanId } = {}) {
+  const qs = buildParams({ curriculum_course_id: curriculumCourseId, study_plan_id: studyPlanId, size: 1000 });
   const { data } = await api.get(`/exam-boards?${qs}`);
+  return data;
+}
+
+export async function getExamBoard(id) {
+  const { data } = await api.get(`/exam-boards/${id}`);
   return data;
 }
 
