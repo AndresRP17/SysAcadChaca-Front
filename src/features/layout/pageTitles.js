@@ -7,6 +7,7 @@ export const PAGE_TITLES = {
   alumno: "Vista alumno",
   historial: "Historial académico",
   certificados: "Certificados",
+  auditoria: "Auditoría",
   "inscribir-alumno": "Inscribir alumno",
   "mis-cursadas": "Inscripción a cursadas",
   finales: "Inscripción a finales",

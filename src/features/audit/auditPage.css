@@ -1,0 +1,65 @@
+.audit-filters {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.audit-filters .users-form-field {
+  min-width: 0;
+}
+
+.audit-filters-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+.audit-actor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.audit-summary {
+  overflow-wrap: anywhere;
+}
+
+.audit-reason {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.audit-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.audit-pagination-info {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.audit-pagination-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+@media (min-width: 701px) {
+  .audit-filters {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .audit-td--nowrap,
+  .audit-actor > span:first-child {
+    white-space: nowrap;
+  }
+}
