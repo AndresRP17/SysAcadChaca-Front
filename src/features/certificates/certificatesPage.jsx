@@ -12,8 +12,9 @@ import CertificateReportView from "./components/CertificateReportView";
 import { useToast } from "../../context/ToastContext";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import LoadError from "../../shared/ui/LoadError";
-import Combobox from "../../shared/ui/Combobox";
-import { getStudents } from "../users/services/studentService";
+import SearchCombobox from "../../shared/ui/SearchCombobox";
+import { studentOption } from "../../shared/ui/searchOptions";
+import { searchStudents } from "../users/services/studentService";
 import "../users/usersPage.css";
 import "./certificatesPage.css";
 
@@ -63,13 +64,12 @@ export default function CertificatesPage() {
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [studentsError, setStudentsError] = useState("");
   const [viewError, setViewError] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [reportView, setReportView] = useState(null); // { certificate, report }
   const [confirmAction, setConfirmAction] = useState(null); // { type: 'request'|'issue'|'reject', payload, label }
-  const [students, setStudents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const selectedStudentId = selectedStudent ? String(selectedStudent.id) : "";
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -86,25 +86,6 @@ export default function CertificatesPage() {
   useEffect(() => {
     reload();
   }, [reload]);
-
-  // Bedel/Administrador piden el certificado en nombre de un alumno: hace falta la lista para elegirlo.
-  const loadStudents = useCallback(() => {
-    setStudentsError("");
-    getStudents()
-      .then(setStudents)
-      .catch((e) => setStudentsError(getErrorMessage(e, "No pudimos cargar la lista de alumnos.")));
-  }, []);
-
-  useEffect(() => {
-    if (canManage) loadStudents();
-  }, [canManage, loadStudents]);
-
-  const studentOptions = students.map((s) => ({
-    value: s.id,
-    label: `${s.lastName}, ${s.firstName} — legajo ${s.enrollmentNumber} (DNI ${s.nationalId}) · ${s.programName}`,
-    searchText: `${s.lastName} ${s.firstName} ${s.enrollmentNumber} ${s.nationalId} ${s.programName}`,
-  }));
-  const selectedStudent = students.find((s) => String(s.id) === String(selectedStudentId));
 
   function openConfirm(type, payload, label) {
     setConfirmAction({ type, payload, label });
@@ -185,15 +166,17 @@ export default function CertificatesPage() {
           <h3 className="dash-panel-title">Nuevo certificado para un alumno</h3>
           <div className="users-form-field" style={{ maxWidth: 480 }}>
             <label className="users-form-label" htmlFor="certificatesPage-1">Alumno</label>
-            <Combobox id="certificatesPage-1"
-              options={studentOptions}
+            <SearchCombobox id="certificatesPage-1"
               value={selectedStudentId}
-              onChange={setSelectedStudentId}
+              onChange={(_, option) => setSelectedStudent(option ? option.data : null)}
+              loadOptions={async (q) => {
+                const page = await searchStudents({ q });
+                return { items: page.items.map(studentOption), total: page.total };
+              }}
               placeholder="Buscar por apellido, nombre, legajo o DNI..."
               emptyLabel="No se encontraron alumnos"
             />
           </div>
-          <LoadError message={studentsError} onRetry={loadStudents} />
           <div className="certificate-types">
             {TYPES.map((t) => (
               <button

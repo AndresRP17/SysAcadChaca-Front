@@ -3,6 +3,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { getErrorMessage } from "../../shared/api/api";
 import { todayIso } from "../../shared/utils/formatters";
 import Combobox from "../../shared/ui/Combobox";
+import SearchCombobox from "../../shared/ui/SearchCombobox";
+import { teacherOption } from "../../shared/ui/searchOptions";
+import { getTeacher, searchTeachers } from "../users/services/teacherService";
 import LoadError from "../../shared/ui/LoadError";
 import AcademicCalendarManager from "./AcademicCalendarManager";
 import ClassSheet, { formatDate } from "./ClassSheet";
@@ -110,11 +113,6 @@ export default function StaffCalendarPage() {
         label: c.buildingName ? `${c.name} (${c.buildingName})` : c.name,
       })),
     [catalog.classrooms],
-  );
-
-  const teacherOptions = useMemo(
-    () => catalog.teachers.map((t) => ({ value: t.id, label: `${t.lastName}, ${t.firstName}` })),
-    [catalog.teachers],
   );
 
   function changeFilter(key, value) {
@@ -252,11 +250,17 @@ export default function StaffCalendarPage() {
           </div>
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="staffCalendarPage-4">Docente</label>
-            <Combobox id="staffCalendarPage-4"
-              options={teacherOptions}
+            <SearchCombobox id="staffCalendarPage-4"
               value={filters.teacherId}
               onChange={(v) => changeFilter("teacherId", v)}
+              loadOptions={async (q) => {
+                const page = await searchTeachers({ q });
+                return { items: page.items.map(teacherOption), total: page.total };
+              }}
+              loadSelected={async (id) => teacherOption(await getTeacher(id))}
+              browse
               placeholder="Todos los docentes"
+              emptyLabel="No se encontraron docentes"
             />
           </div>
           {activeFilters > 0 && (

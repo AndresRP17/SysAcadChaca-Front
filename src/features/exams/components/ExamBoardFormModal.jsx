@@ -5,7 +5,9 @@ import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { usePrograms } from "../../plans/hooks/usePrograms";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
-import { getTeachers } from "../../users/services/teacherService";
+import SearchCombobox from "../../../shared/ui/SearchCombobox";
+import { teacherOption } from "../../../shared/ui/searchOptions";
+import { getTeacher, searchTeachers } from "../../users/services/teacherService";
 import { useClassrooms } from "../../sections/hooks/useClassrooms";
 
 const EMPTY_FORM = {
@@ -18,12 +20,20 @@ const EMPTY_FORM = {
   scheduled_at: "",
 };
 
+async function loadTeacherOptions(q) {
+  const page = await searchTeachers({ q });
+  return { items: page.items.map(teacherOption), total: page.total };
+}
+
+async function loadTeacherOption(id) {
+  return teacherOption(await getTeacher(id));
+}
+
 // Alta de una mesa de examen. El acta (libro y folio) se completa después, al
 // cerrarla; acá solo se programa la mesa.
 export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
   const { programs } = usePrograms();
   const { classrooms } = useClassrooms();
-  const [teachers, setTeachers] = useState([]);
   const [studyPlans, setStudyPlans] = useState([]);
   const [curriculumCourses, setCurriculumCourses] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -36,7 +46,6 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
     setForm(EMPTY_FORM);
     setError("");
     setFieldErrors({});
-    getTeachers().then(setTeachers).catch((e) => setError(getErrorMessage(e)));
   }, [open]);
 
   useEffect(() => {
@@ -152,28 +161,30 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
         <div className="users-form-row">
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="xb-chair">Docente presidente</label>
-            <select
+<SearchCombobox
               id="xb-chair"
               value={form.chair_teacher_id}
-              onChange={(e) => handleChange("chair_teacher_id", e.target.value)}
-              className="users-form-input"
-            >
-              <option value="">Seleccioná un docente...</option>
-              {teachers.map((t) => <option key={t.id} value={t.id}>{t.lastName}, {t.firstName}</option>)}
-            </select>
+              onChange={(v) => handleChange("chair_teacher_id", String(v))}
+              loadOptions={loadTeacherOptions}
+              loadSelected={loadTeacherOption}
+              browse
+              placeholder="Buscar docente..."
+              emptyLabel="No se encontraron docentes"
+            />
             <FieldError errors={fieldErrors} field="chair_teacher_id" />
           </div>
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="xb-member">Docente vocal</label>
-            <select
+<SearchCombobox
               id="xb-member"
               value={form.member_teacher_id}
-              onChange={(e) => handleChange("member_teacher_id", e.target.value)}
-              className="users-form-input"
-            >
-              <option value="">Seleccioná un docente...</option>
-              {teachers.map((t) => <option key={t.id} value={t.id}>{t.lastName}, {t.firstName}</option>)}
-            </select>
+              onChange={(v) => handleChange("member_teacher_id", String(v))}
+              loadOptions={loadTeacherOptions}
+              loadSelected={loadTeacherOption}
+              browse
+              placeholder="Buscar docente..."
+              emptyLabel="No se encontraron docentes"
+            />
             <FieldError errors={fieldErrors} field="member_teacher_id" />
           </div>
         </div>

@@ -4,7 +4,6 @@ import { useToast } from "../../../context/ToastContext";
 import { usePrograms } from "../../plans/hooks/usePrograms";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
-import { getTeachers } from "../../users/services/teacherService";
 import { useClassrooms } from "../hooks/useClassrooms";
 import { getSections, createSection, updateSection, deleteSection } from "../services/sectionService";
 import { getSectionSchedules, createSectionSchedule, updateSectionSchedule, deleteSectionSchedule } from "../services/sectionScheduleService";
@@ -33,7 +32,6 @@ export default function ComisionesTab({ deepLink = null }) {
   const [studyPlans, setStudyPlans] = useState([]);
   const [studyPlanId, setStudyPlanId] = useState(deepLink?.studyPlanId ?? "");
   const [curriculumCourses, setCurriculumCourses] = useState([]);
-  const [teachers, setTeachers] = useState([]);
   const [allSections, setAllSections] = useState([]);
   const [loadingSections, setLoadingSections] = useState(false);
   const [error, setError] = useState("");
@@ -54,10 +52,6 @@ export default function ComisionesTab({ deepLink = null }) {
   const [roster, setRoster] = useState(null);
 
   const [selectedPeriod, setSelectedPeriod] = useState("");
-
-  useEffect(() => {
-    getTeachers().then(setTeachers).catch((e) => setError(e.message));
-  }, []);
 
   useEffect(() => {
     setStudyPlans([]);
@@ -456,7 +450,6 @@ export default function ComisionesTab({ deepLink = null }) {
         mode={sectionFormMode}
         initialData={editingSection}
         curriculumCourseOptions={curriculumCourses.map((cc) => ({ id: cc.id, code: cc.courseCode, name: cc.courseName }))}
-        teacherOptions={teachers}
         onClose={() => setSectionFormOpen(false)}
         onSubmit={handleSectionFormSubmit}
       />
