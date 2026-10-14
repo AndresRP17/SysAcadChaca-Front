@@ -43,10 +43,10 @@ export function useStudentSections(studentIdOverride) {
         : await getCurrentStudent(user);
       setStudent(currentStudent);
 
-      // El servidor devuelve solo las comisiones activas de las materias del plan del alumno,
+      // El servidor devuelve solo las comisiones de las materias del plan del alumno,
       // con sus horarios, en un único pedido.
       const [sectionsData, enrollmentsData] = await Promise.all([
-        getSections({ studyPlanId: currentStudent?.studyPlanId, active: true, includeSchedules: true }),
+        getSections({ studyPlanId: currentStudent?.studyPlanId, includeSchedules: true }),
         getEnrollmentsSafe(),
       ]);
 
@@ -121,7 +121,6 @@ export function useStudentSections(studentIdOverride) {
     );
 
     return sections
-      .filter((s) => s.active)
       .filter((s) => !enrolledSectionIds.has(s.id))
       .filter((s) => !enrolledCourseIds.has(s.curriculumCourseId))
       .map((section) => ({
@@ -130,8 +129,8 @@ export function useStudentSections(studentIdOverride) {
       }));
   }, [sections, activeEnrollments, enrolled, schedulesBySection]);
 
-  async function enroll(sectionId) {
-    await createEnrollment({ studentId: student.id, sectionId });
+  async function enroll(sectionId, outOfTerm = null) {
+    await createEnrollment({ studentId: student.id, sectionId, outOfTerm });
     await reload();
   }
 

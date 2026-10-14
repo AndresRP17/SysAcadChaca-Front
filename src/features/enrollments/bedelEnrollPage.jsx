@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "../../context/ToastContext";
-import { getErrorMessage } from "../../shared/api/api";
+import { ENROLLMENT_PERIOD_CLOSED, getErrorCode, getErrorMessage } from "../../shared/api/api";
 import Combobox from "../../shared/ui/Combobox";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import LoadError from "../../shared/ui/LoadError";
@@ -13,6 +13,7 @@ import { isPast } from "../../shared/utils/formatters";
 import AvailableSectionsList from "./components/AvailableSectionsList";
 import EnrolledSectionsList from "./components/EnrolledSectionsList";
 import ConflictModal from "./components/ConflictModal";
+import OutOfTermModal from "./components/OutOfTermModal";
 import ExamBoardCard from "../exams/components/ExamBoardCard";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
@@ -27,9 +28,10 @@ function badgeForEnrollment(enrollment) {
 
 // Cursadas y finales del alumno elegido — mismos hooks y componentes que el
 // portal del alumno, pero con studentId explícito (el Bedel inscribe "por" el
-// alumno, no a sí mismo). El backend no aplica la ventana de inscripción para
-// Administrador/Bedel (gestión administrativa presencial), así que acá no hay
-// banner de período: solo se validan cupo, correlativas y choque de horario.
+// alumno, no a sí mismo). Fuera del período de inscripción el servidor responde
+// ENROLLMENT_PERIOD_CLOSED: se avisa y, si el Bedel confirma con un motivo, se
+// inscribe fuera de término (queda registrado). Además se validan cupo,
+// correlativas y choque de horario.
 function StudentEnrollments({ studentId }) {
   const { showToast } = useToast();
   const sectionsHook = useStudentSections(studentId);
@@ -38,6 +40,8 @@ function StudentEnrollments({ studentId }) {
   const [shownConflicts, setShownConflicts] = useState(null);
   const [sectionToCancel, setSectionToCancel] = useState(null);
   const [examToCancel, setExamToCancel] = useState(null);
+  // Inscripción rechazada por período cerrado, a la espera de que el Bedel confirme: { kind, id }
+  const [outOfTermTarget, setOutOfTermTarget] = useState(null);
 
   const { available, enrolled, loading, loadError, reload, enroll, unenroll } = sectionsHook;
   const {
@@ -65,6 +69,10 @@ function StudentEnrollments({ studentId }) {
       await enroll(sectionId);
       showToast("Inscripción a la cursada confirmada");
     } catch (e) {
+      if (getErrorCode(e) === ENROLLMENT_PERIOD_CLOSED) {
+        setOutOfTermTarget({ kind: "section", id: sectionId });
+        return;
+      }
       showToast(getErrorMessage(e, "No pudimos completar la inscripción."), "error");
     } finally {
       setSubmitting(false);
@@ -100,10 +108,27 @@ function StudentEnrollments({ studentId }) {
       await enrollExam(examBoardId);
       showToast("Inscripción a la mesa confirmada");
     } catch (e) {
+      if (getErrorCode(e) === ENROLLMENT_PERIOD_CLOSED) {
+        setOutOfTermTarget({ kind: "exam", id: examBoardId });
+        return;
+      }
       showToast(getErrorMessage(e, "No pudimos inscribir al alumno a la mesa."), "error");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  // Si el servidor rechaza de nuevo, el error queda en el modal (lo muestra OutOfTermModal).
+  async function confirmOutOfTerm(reason) {
+    const { kind, id } = outOfTermTarget;
+    if (kind === "section") {
+      await enroll(id, { reason });
+      showToast("Inscripción a la cursada confirmada (fuera de término)");
+    } else {
+      await enrollExam(id, { reason });
+      showToast("Inscripción a la mesa confirmada (fuera de término)");
+    }
+    setOutOfTermTarget(null);
   }
 
   async function confirmUnenrollExam() {
@@ -215,6 +240,13 @@ function StudentEnrollments({ studentId }) {
         onClose={() => setShownConflicts(null)}
         title="No se puede inscribir a esta comisión"
         message="El horario se superpone con materias en las que el alumno ya está inscripto:"
+      />
+
+      <OutOfTermModal
+        open={outOfTermTarget !== null}
+        what={outOfTermTarget?.kind === "exam" ? "mesas de examen" : "cursadas"}
+        onClose={() => setOutOfTermTarget(null)}
+        onConfirm={confirmOutOfTerm}
       />
 
       <ConfirmModal

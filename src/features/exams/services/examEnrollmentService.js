@@ -39,10 +39,12 @@ export async function getExamEnrollments({ examBoardId, studentId } = {}) {
   return data;
 }
 
-export async function createExamEnrollment({ examBoardId, studentId }) {
+// outOfTerm: { reason } cuando el Bedel/Administrador confirma inscribir fuera del periodo.
+export async function createExamEnrollment({ examBoardId, studentId, outOfTerm = null }) {
   const res = await api.post("/exam-enrollments", {
     exam_board_id: examBoardId,
     student_id: studentId,
+    ...(outOfTerm ? { out_of_term: true, out_of_term_reason: outOfTerm.reason } : {}),
   });
   return res.data;
 }

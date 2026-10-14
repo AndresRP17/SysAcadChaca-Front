@@ -78,8 +78,8 @@ export function useStudentExamBoards(studentIdOverride) {
       .sort((a, b) => String(a.scheduledAt).localeCompare(String(b.scheduledAt)));
   }, [boards, myEnrollments]);
 
-  async function enroll(examBoardId) {
-    await createExamEnrollment({ examBoardId, studentId: student.id });
+  async function enroll(examBoardId, outOfTerm = null) {
+    await createExamEnrollment({ examBoardId, studentId: student.id, outOfTerm });
     await reload();
   }
 

@@ -118,6 +118,14 @@ export function getErrorMessage(err, fallback = "Ocurrió un error") {
   return err?.message || fallback;
 }
 
+// Codigo estable que el backend agrega a ciertos errores de dominio (campo "code"), para no
+// depender del texto del mensaje. Ej.: ENROLLMENT_PERIOD_CLOSED.
+export function getErrorCode(err) {
+  return err?.response?.data?.code ?? null;
+}
+
+export const ENROLLMENT_PERIOD_CLOSED = "ENROLLMENT_PERIOD_CLOSED";
+
 // El backend manda, en un 422, un mapa {campo: mensaje} además del mensaje
 // general (RequestValidator). Los formularios lo usan para marcar el campo
 // puntual en vez de mostrar solo "Datos invalidos".
