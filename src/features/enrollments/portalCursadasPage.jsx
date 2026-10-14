@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { getCurrentStudent } from "../../shared/api/currentStudent";
 import { useToast } from "../../context/ToastContext";
 import { useStudentSections } from "./hooks/useStudentSections";
-import { findScheduleConflicts } from "./utils/scheduleConflicts";
 import { getErrorMessage } from "../../shared/api/api";
 import AvailableSectionsList from "./components/AvailableSectionsList";
 import EnrolledSectionsList from "./components/EnrolledSectionsList";
-import ConflictModal from "./components/ConflictModal";
 import EnrollmentPeriodBanner from "./components/EnrollmentPeriodBanner";
 import { useOpenEnrollmentPeriods } from "./hooks/useOpenEnrollmentPeriods";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
@@ -15,24 +15,19 @@ import "../plans/plansPage.css";
 import "./portalCursadasPage.css";
 
 export default function PortalCursadasPage() {
-  const { student, available, enrolled, loading, loadError, reload, enroll, unenroll } = useStudentSections();
+  const { user } = useAuth();
+  const { available, enrolled, loading, loadError, reload, enroll, unenroll } = useStudentSections();
+  // Solo para el subtítulo (legajo y nombre); no frena la carga de la oferta.
+  const [student, setStudent] = useState(null);
+  useEffect(() => {
+    getCurrentStudent(user).then(setStudent).catch(() => setStudent(null));
+  }, [user]);
   const { showToast } = useToast();
 
   const { periods, loading: loadingPeriods, isOpen: enrollmentOpen } = useOpenEnrollmentPeriods("CURSADA");
   const [search, setSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [shownConflicts, setShownConflicts] = useState(null);
   const [enrollmentToCancel, setEnrollmentToCancel] = useState(null);
-
-  // Para cada comisión de la oferta, contra qué horarios ya inscriptos choca.
-  const conflictsBySection = useMemo(() => {
-    const map = new Map();
-    available.forEach(({ section, schedules }) => {
-      const conflicts = findScheduleConflicts(schedules, enrolled);
-      if (conflicts.length > 0) map.set(section.id, conflicts);
-    });
-    return map;
-  }, [available, enrolled]);
 
   const filteredAvailable = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -54,15 +49,6 @@ export default function PortalCursadasPage() {
     } finally {
       setSubmitting(false);
     }
-  }
-
-  function handleEnroll(sectionId) {
-    const conflicts = conflictsBySection.get(sectionId) ?? [];
-    if (conflicts.length > 0) {
-      setShownConflicts(conflicts);
-      return;
-    }
-    doEnroll(sectionId);
   }
 
   async function confirmUnenroll() {
@@ -115,8 +101,7 @@ export default function PortalCursadasPage() {
 
             <AvailableSectionsList
               items={filteredAvailable}
-              conflictsBySection={conflictsBySection}
-              onEnroll={handleEnroll}
+              onEnroll={doEnroll}
               submitting={submitting || !enrollmentOpen}
             />
           </section>
@@ -139,12 +124,6 @@ export default function PortalCursadasPage() {
           </section>
         </>
       )}
-
-      <ConflictModal
-        open={shownConflicts !== null}
-        conflicts={shownConflicts ?? []}
-        onClose={() => setShownConflicts(null)}
-      />
 
       <ConfirmModal
         open={!!enrollmentToCancel}

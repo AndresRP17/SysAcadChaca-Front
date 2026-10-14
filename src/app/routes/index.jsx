@@ -13,6 +13,7 @@ import StudentDashboardPage from "../../features/dashboard/studentDashboardPage"
 import HistorialAlumnoPage from "../../features/dashboard/historialAlumnoPage";
 import CertificatesPage from "../../features/certificates/certificatesPage";
 import PortalCursadasPage from "../../features/enrollments/portalCursadasPage";
+import AuditPage from "../../features/audit/auditPage";
 import EquivalencesPage from "../../features/equivalences/equivalencesPage";
 import BedelEnrollPage from "../../features/enrollments/bedelEnrollPage";
 import PortalFinalesPage from "../../features/exams/portalFinalesPage";
@@ -89,6 +90,14 @@ export const router = createBrowserRouter([
         element: (
           <RequireRole allow={getRolesAllowedForLink("certificados")}>
             <CertificatesPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "/auditoria",
+        element: (
+          <RequireRole allow={getRolesAllowedForLink("auditoria")}>
+            <AuditPage />
           </RequireRole>
         ),
       },

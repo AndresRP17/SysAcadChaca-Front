@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Users, Contact, GraduationCap, UserCircle, CalendarClock, ClipboardList, FileText, NotebookPen, LayoutList, ChevronLeft, ChevronRight, History, Award, UserPlus, CalendarDays, Repeat } from "lucide-react";
+import { Users, Contact, GraduationCap, UserCircle, CalendarClock, ClipboardList, FileText, NotebookPen, LayoutList, ChevronLeft, ChevronRight, History, Award, UserPlus, CalendarDays, Repeat, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../../../context/AuthContext";
 import { LINKS_BY_ROLE } from "../../roleLinks";
 import "./Sidebar.css";
@@ -19,6 +19,7 @@ const ALL_LINKS = {
   calendario: { to: "/calendario", icon: <CalendarDays size={18} />, label: "Calendario" },
   equivalencias: { to: "/equivalencias", icon: <Repeat size={18} />, label: "Equivalencias" },
   certificados: { to: "/certificados", icon: <Award size={18} />, label: "Certificados" },
+  auditoria: { to: "/auditoria", icon: <ShieldCheck size={18} />, label: "Auditoría" },
 };
 
 const Sidebar = ({ collapsed, onToggle }) => {
