@@ -1,8 +1,11 @@
 import ScheduleLines from "./ScheduleLines";
 
+// Estos motivos ya se ven en la etiqueta de cupo.
+const SEATS_REASON_CODES = ["SECTION_FULL", "SECTION_WITHOUT_SCHEDULE"];
+
 export default function AvailableSectionsList({
   items,
-  conflictsBySection,
+  conflictsBySection = new Map(),
   onEnroll,
   submitting,
   actionLabel = "Inscribirme",
@@ -20,6 +23,12 @@ export default function AvailableSectionsList({
         const seats = section.availableSeats;
         const noSchedule = seats === null || seats === undefined;
         const full = seats === 0;
+        // El servidor decide: enrollable=false (regla dura) no tiene botón; el período cerrado
+        // (overridable) lo conserva para que Bedel / Administrador inscriban fuera de término.
+        const reasons = (section.blockedReasons ?? []).filter((r) => !SEATS_REASON_CODES.includes(r.code));
+        const outOfPeriod = reasons.some((r) => r.overridable);
+        const hardReasons = reasons.filter((r) => !r.overridable);
+        const blocked = section.enrollable === false;
 
         return (
           <article key={section.id} className="portal-card">
@@ -35,6 +44,7 @@ export default function AvailableSectionsList({
                   </p>
                 )}
               </div>
+              {outOfPeriod && <span className="users-badge users-badge--inactive">Fuera de período</span>}
               <span className={`users-badge ${full || noSchedule ? "users-badge--inactive" : "users-badge--navy"}`}>
                 {noSchedule ? "Sin horario asignado" : full ? "Sin cupo" : `${seats} ${seats === 1 ? "lugar disponible" : "lugares disponibles"}`}
               </span>
@@ -48,16 +58,24 @@ export default function AvailableSectionsList({
               </p>
             )}
 
-            <div className="portal-card-actions">
-              <button
-                type="button"
-                className="users-btn users-btn--primary"
-                disabled={full || noSchedule || submitting}
-                onClick={() => onEnroll(section.id)}
-              >
-                {actionLabel}
-              </button>
-            </div>
+            {hardReasons.map((reason) => (
+              <p key={reason.code} className="portal-conflict-note">
+                {reason.message}
+              </p>
+            ))}
+
+            {!blocked && (
+              <div className="portal-card-actions">
+                <button
+                  type="button"
+                  className="users-btn users-btn--primary"
+                  disabled={full || noSchedule || submitting}
+                  onClick={() => onEnroll(section.id)}
+                >
+                  {actionLabel}
+                </button>
+              </div>
+            )}
           </article>
         );
       })}
