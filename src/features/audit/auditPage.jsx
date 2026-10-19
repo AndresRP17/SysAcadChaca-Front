@@ -13,6 +13,8 @@ import "./auditPage.css";
 const ACTION_OPTIONS = [
   { value: "ENROLLMENT_OUT_OF_TERM", label: "Inscripción a cursada fuera de término" },
   { value: "EXAM_ENROLLMENT_OUT_OF_TERM", label: "Inscripción a mesa de final fuera de término" },
+  { value: "ATTENDANCE_JUSTIFIED", label: "Ausencia justificada" },
+  { value: "ATTENDANCE_RULES_UPDATED", label: "Cambio en reglas de asistencia" },
 ];
 
 const ROLE_BADGE_CLASS = {
@@ -163,8 +165,8 @@ export default function AuditPage() {
                     <td className="users-td" data-label="Detalle">
                       <span className="audit-summary">
                         {log.summary}
-                        {log.details?.reason && (
-                          <span className="audit-reason">Motivo: {log.details.reason}</span>
+                        {(log.details?.reason || log.details?.comment) && (
+                          <span className="audit-reason">Motivo: {log.details.reason || log.details.comment}</span>
                         )}
                       </span>
                     </td>
