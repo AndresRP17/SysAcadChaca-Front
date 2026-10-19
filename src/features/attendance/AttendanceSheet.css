@@ -46,6 +46,24 @@
   color: #7f1d1d;
 }
 
+.take-attendance-pill--justified {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e3a8a;
+}
+
+.take-attendance-pill--late {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #78350f;
+}
+
+.take-attendance-pill--left-early {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+  color: #4c1d95;
+}
+
 .take-attendance-toolbar .users-btn {
   width: 100%;
   min-height: 44px;
@@ -102,10 +120,22 @@
   font-weight: 600;
 }
 
+/* Celular: Presente y Ausente arriba (grandes) y los otros tres abajo. */
 .attendance-choices {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(6, 1fr);
   gap: 8px;
+}
+
+.attendance-choice--present,
+.attendance-choice--absent {
+  grid-column: span 3;
+}
+
+.attendance-choice--justified,
+.attendance-choice--late,
+.attendance-choice--left-early {
+  grid-column: span 2;
 }
 
 .attendance-choice {
@@ -114,9 +144,11 @@
   border-radius: 10px;
   background: var(--surface);
   color: var(--text-secondary);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  padding: 4px 6px;
+  line-height: 1.15;
 }
 
 .attendance-choice--present.is-selected {
@@ -131,9 +163,66 @@
   color: #fff;
 }
 
+.attendance-choice--justified.is-selected {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+}
+
+.attendance-choice--late.is-selected {
+  background: #b45309;
+  border-color: #b45309;
+  color: #fff;
+}
+
+.attendance-choice--left-early.is-selected {
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #fff;
+}
+
+.attendance-choice:focus-visible {
+  outline: 3px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+/* Comentario del alumno: ocupa todo el ancho bajo los botones. */
+.attendance-comment {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attendance-comment .users-form-input {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding-right: 64px;
+}
+
+.attendance-comment-count {
+  position: absolute;
+  right: 10px;
+  top: 14px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.attendance-comment .users-form-input[aria-invalid="true"] {
+  border-color: var(--error);
+}
+
+.attendance-comment-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--error);
+}
+
 @media (min-width: 768px) {
   .take-attendance {
-    max-width: 640px;
+    max-width: 760px;
   }
 
   .take-attendance-toolbar {
@@ -147,14 +236,16 @@
     width: auto;
   }
 
-  .attendance-row {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+  .attendance-choices {
+    grid-template-columns: repeat(5, 1fr);
   }
 
-  .attendance-choices {
-    width: 260px;
+  .attendance-choice--present,
+  .attendance-choice--absent,
+  .attendance-choice--justified,
+  .attendance-choice--late,
+  .attendance-choice--left-early {
+    grid-column: span 1;
   }
 }
 
@@ -241,4 +332,22 @@
 :root[data-theme="dark"] .take-attendance-editing,
 :root[data-theme="dark"] .take-attendance-hint {
   color: #fbbf24;
+}
+
+:root[data-theme="dark"] .take-attendance-pill--justified {
+  background: #1e3a8a;
+  border-color: #1d4ed8;
+  color: #dbeafe;
+}
+
+:root[data-theme="dark"] .take-attendance-pill--late {
+  background: #78350f;
+  border-color: #b45309;
+  color: #fef3c7;
+}
+
+:root[data-theme="dark"] .take-attendance-pill--left-early {
+  background: #4c1d95;
+  border-color: #6d28d9;
+  color: #ede9fe;
 }
