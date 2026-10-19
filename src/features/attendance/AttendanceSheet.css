@@ -1,0 +1,244 @@
+/* Asistencia de una clase: mobile first. El boton de guardar queda fijo abajo para que
+   siempre este a mano, aunque la lista de alumnos sea larga. */
+.take-attendance-header {
+  margin-bottom: 12px;
+}
+
+.take-attendance-editing {
+  margin: 8px 0 0 0;
+  font-size: 13px;
+  color: #b45309;
+}
+
+.take-attendance-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.take-attendance-count {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.take-attendance-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.take-attendance-pill--present {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #14532d;
+}
+
+.take-attendance-pill--absent {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #7f1d1d;
+}
+
+.take-attendance-toolbar .users-btn {
+  width: 100%;
+  min-height: 44px;
+}
+
+.take-attendance-footer {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 0 16px 0;
+  background: var(--bg);
+}
+
+.take-attendance-hint {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #b45309;
+}
+
+.take-attendance-footer .users-btn {
+  width: 100%;
+  min-height: 48px;
+}
+
+.take-attendance-footer .users-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.attendance-list {
+  list-style: none;
+  margin: 12px 0 0 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.attendance-list li + li {
+  border-top: 1px solid var(--border);
+}
+
+/* Una fila por alumno: el nombre arriba y, debajo, dos botones grandes. */
+.attendance-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.attendance-row-name {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.attendance-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.attendance-choice {
+  min-height: 44px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.attendance-choice--present.is-selected {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+}
+
+.attendance-choice--absent.is-selected {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+
+@media (min-width: 768px) {
+  .take-attendance {
+    max-width: 640px;
+  }
+
+  .take-attendance-toolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .take-attendance-toolbar .users-btn,
+  .take-attendance-footer .users-btn {
+    width: auto;
+  }
+
+  .attendance-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .attendance-choices {
+    width: 260px;
+  }
+}
+
+/* Buscador de alumnos (con listas largas) */
+.take-attendance-search {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.take-attendance-search .users-form-input {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.take-attendance-unmarked {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  min-height: 32px;
+}
+
+.take-attendance-more {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 12px;
+}
+
+.take-attendance-footer .form-error {
+  margin: 8px 0 0 0;
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  .take-attendance-search {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .take-attendance-search .users-form-input {
+    max-width: 320px;
+  }
+
+  .take-attendance-more {
+    width: auto;
+  }
+}
+
+/* Dentro del modal: el pie fijo queda sobre la superficie del modal y la lista usa todo el ancho. */
+.modal-box .take-attendance {
+  max-width: none;
+}
+
+.modal-box .take-attendance-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px)) 0;
+  margin-top: 12px;
+  z-index: 1;
+}
+
+.modal-box .attendance-list {
+  margin-top: 8px;
+}
+
+/* Modo oscuro: los contadores de color claro bajan de brillo para no encandilar. */
+:root[data-theme="dark"] .take-attendance-pill--present {
+  background: #14532d;
+  border-color: #166534;
+  color: #dcfce7;
+}
+
+:root[data-theme="dark"] .take-attendance-pill--absent {
+  background: #7f1d1d;
+  border-color: #991b1b;
+  color: #fee2e2;
+}
+
+:root[data-theme="dark"] .take-attendance-editing,
+:root[data-theme="dark"] .take-attendance-hint {
+  color: #fbbf24;
+}

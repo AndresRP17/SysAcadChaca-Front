@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ScheduleXCalendar, useCalendarApp } from "@schedule-x/react";
 import {
   createViewList,
@@ -16,6 +15,7 @@ import { todayIso } from "../../shared/utils/formatters";
 import { getCalendar } from "./services/calendarService";
 import { AgendaEvent, GridEvent } from "./calendarEventViews";
 import Modal from "../../shared/ui/Modal";
+import AttendanceModal from "../attendance/AttendanceModal";
 import LoadError from "../../shared/ui/LoadError";
 import "../users/usersPage.css";
 import "./calendarPage.css";
@@ -123,7 +123,6 @@ async function loadAttendanceSummary() {
 
 function CalendarContent({ onRetry }) {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const isDocente = user?.role === "Docente";
   const isAlumno = user?.role === "Alumno";
 
@@ -133,11 +132,37 @@ function CalendarContent({ onRetry }) {
   const [todayError, setTodayError] = useState("");
   const [attendance, setAttendance] = useState(null); // { total, present, percentage } (solo Alumno)
   const [detail, setDetail] = useState(null); // { title, lines } de la clase tocada
+  const [attendanceTarget, setAttendanceTarget] = useState(null); // { sectionId, date } de la clase cuya asistencia se esta tomando
 
   const classesRef = useRef({}); // clases del rango visible por id de evento, para resolver el clic
 
   function takeAttendance(sectionId, date) {
-    navigate(`/asistencia?section=${sectionId}&date=${date}`);
+    setAttendanceTarget({ sectionId, date });
+  }
+
+  // Despues de guardar: se cierra el modal y la clase pasa a "asistencia cargada" en la grilla y en
+  // la tarjeta "Hoy", sin recargar la pagina. Los rangos ya pedidos quedan viejos: se descartan.
+  function handleAttendanceSaved({ sectionId, date }) {
+    setAttendanceTarget(null);
+    rangesRef.current.clear();
+
+    for (const c of Object.values(classesRef.current)) {
+      if (c.sectionId === sectionId && c.date === date) c.attendanceTaken = true;
+    }
+
+    for (const event of calendarApp.events.getAll()) {
+      const found = classesRef.current[event.id];
+      if (found && found.sectionId === sectionId && found.date === date) {
+        calendarApp.events.update({ ...event, attendanceTaken: true, actionLabel: "Editar asistencia" });
+      }
+    }
+
+    setToday((prev) => ({
+      ...prev,
+      classes: prev.classes.map((c) =>
+        c.sectionId === sectionId && c.date === date ? { ...c, attendanceTaken: true } : c,
+      ),
+    }));
   }
 
   // Schedule-X llama a fetchEvents al renderizar, cada vez que cambia el rango visible y
@@ -312,6 +337,8 @@ function CalendarContent({ onRetry }) {
           ))}
         </ul>
       </section>
+
+      <AttendanceModal target={attendanceTarget} onClose={() => setAttendanceTarget(null)} onSaved={handleAttendanceSaved} />
 
       <Modal open={detail !== null} title={detail?.title ?? ""} onClose={() => setDetail(null)}>
         <ul className="calendar-detail-lines">
