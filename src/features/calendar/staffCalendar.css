@@ -604,3 +604,8 @@
     justify-self: start;
   }
 }
+
+/* Selectores de reglas de asistencia: que entre completo "Cuenta como presente". */
+.cal-rules-select {
+  min-width: 220px;
+}

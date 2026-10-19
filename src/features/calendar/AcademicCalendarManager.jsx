@@ -180,9 +180,9 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
               <label className="users-form-label" htmlFor="rule-late">Llegó tarde</label>
               <select
                 id="rule-late"
-                className="users-form-input"
+                className="users-form-input cal-rules-select"
                 value={rules.late}
-                disabled={!canEditRules || rulesSaving}
+                disabled={!canEditRules || rulesSaving || !savedRules}
                 onChange={(e) => setRules({ ...rules, late: e.target.value })}
               >
                 {CREDIT_OPTIONS.map((o) => (
@@ -194,9 +194,9 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
               <label className="users-form-label" htmlFor="rule-left-early">Se retiró antes</label>
               <select
                 id="rule-left-early"
-                className="users-form-input"
+                className="users-form-input cal-rules-select"
                 value={rules.leftEarly}
-                disabled={!canEditRules || rulesSaving}
+                disabled={!canEditRules || rulesSaving || !savedRules}
                 onChange={(e) => setRules({ ...rules, leftEarly: e.target.value })}
               >
                 {CREDIT_OPTIONS.map((o) => (
