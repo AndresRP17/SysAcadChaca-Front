@@ -23,8 +23,20 @@ export async function updateAttendance(id, payload) {
 }
 
 // Guarda la asistencia de toda la clase en un solo pedido (transaccional e idempotente en el
-// backend: sirve para crear y para editar, y reintentar es seguro). records: [{ enrollment_id, present }].
+// backend: sirve para crear y para editar, y reintentar es seguro). records: [{ enrollment_id, status, comment? }].
 export async function saveAttendanceBatch({ sectionId, date, records }) {
   const { data } = await api.post("/attendances/batch", { section_id: sectionId, date, records });
+  return data;
+}
+
+// Reglas institucionales de asistencia: cuanto cuenta "llego tarde" y "se retiro antes"
+// (1 = presente, 0.5 = media falta, 0 = falta). Las lee cualquier usuario; las edita el Administrador.
+export async function getAttendanceRules() {
+  const { data } = await api.get("/attendance-rules");
+  return data;
+}
+
+export async function updateAttendanceRules({ lateCredit, leftEarlyCredit }) {
+  const { data } = await api.put("/attendance-rules", { late_credit: lateCredit, left_early_credit: leftEarlyCredit });
   return data;
 }

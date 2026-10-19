@@ -164,3 +164,16 @@
     max-height: none;
   }
 }
+
+.calendar-today-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.calendar-today-comment {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-secondary);
+}

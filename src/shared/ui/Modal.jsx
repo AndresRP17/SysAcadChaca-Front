@@ -14,15 +14,22 @@ function visibleFocusables(root) {
 // Esc / clic afuera / X piden confirmacion si el formulario tiene cambios sin guardar
 // (cualquier input/change del usuario dentro del modal lo marca como "sucio"),
 // y al cerrar el foco vuelve al elemento que lo abrio.
-export default function Modal({ open, title, onClose, children }) {
+//
+// `dirty` (opcional): si el contenido sabe por si mismo si hay cambios (p. ej. botones que no
+// disparan input/change), lo informa asi y se ignora el rastreo automatico de campos.
+// `size="wide"`: modal ancho para listas largas; en celular ocupa toda la pantalla.
+export default function Modal({ open, title, onClose, children, dirty, size }) {
   const titleId = useId();
   const boxRef = useRef(null);
   const dirtyRef = useRef(false);
   const requestCloseRef = useRef(() => {});
+  const externalDirtyRef = useRef(dirty);
+  externalDirtyRef.current = dirty;
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
 
   function requestClose() {
-    if (dirtyRef.current) {
+    const isDirty = externalDirtyRef.current ?? dirtyRef.current;
+    if (isDirty) {
       setConfirmingDiscard(true);
       return;
     }
@@ -93,9 +100,9 @@ export default function Modal({ open, title, onClose, children }) {
   if (!open) return null;
 
   return (
-    <div className="modal-overlay" onClick={requestClose}>
+    <div className={`modal-overlay ${size === "wide" ? "modal-overlay--wide" : ""}`} onClick={requestClose}>
       <div
-        className="modal-box"
+        className={`modal-box ${size === "wide" ? "modal-box--wide" : ""}`}
         ref={boxRef}
         role="dialog"
         aria-modal="true"

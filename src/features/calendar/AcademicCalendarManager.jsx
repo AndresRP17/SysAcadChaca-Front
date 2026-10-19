@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../context/AuthContext";
 import LoadError from "../../shared/ui/LoadError";
 import FormError from "../../shared/ui/FormError";
 import { getErrorMessage } from "../../shared/api/api";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import { formatDate } from "./ClassSheet";
+import { getAttendanceRules, updateAttendanceRules } from "../grades/services/attendanceService";
 import {
   createAcademicTerm,
   createNonTeachingDay,
@@ -17,10 +19,24 @@ import "./staffCalendar.css";
 
 const currentYear = new Date().getFullYear();
 
+// Cuanto cuenta cada situacion en el porcentaje de asistencia (el backend solo acepta estos tres numeros).
+const CREDIT_OPTIONS = [
+  { value: "1", label: "Cuenta como presente" },
+  { value: "0.5", label: "Media falta" },
+  { value: "0", label: "Falta" },
+];
+
 // Calendario academico: fechas de cursado de cada cuatrimestre y feriados. Sin esas
 // fechas el calendario no puede mostrar las clases de las comisiones.
 export default function AcademicCalendarManager({ onBack, onChanged }) {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const canEditRules = user?.role === "Administrador"; // Bedel la ve en solo lectura
+  const [rules, setRules] = useState({ late: "1", leftEarly: "1" });
+  const [savedRules, setSavedRules] = useState(null);
+  const [rulesError, setRulesError] = useState("");
+  const [rulesLoadError, setRulesLoadError] = useState("");
+  const [rulesSaving, setRulesSaving] = useState(false);
   const [terms, setTerms] = useState([]);
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +64,39 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
   useEffect(() => {
     reload();
   }, [reload]);
+
+  const loadRules = useCallback(async () => {
+    try {
+      const r = await getAttendanceRules();
+      const next = { late: String(r.lateCredit), leftEarly: String(r.leftEarlyCredit) };
+      setRules(next);
+      setSavedRules(next);
+      setRulesLoadError("");
+    } catch (e) {
+      setRulesLoadError(getErrorMessage(e, "No se pudieron cargar las reglas de asistencia."));
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRules();
+  }, [loadRules]);
+
+  async function submitRules(e) {
+    e.preventDefault();
+    setRulesError("");
+    setRulesSaving(true);
+    try {
+      const r = await updateAttendanceRules({ lateCredit: Number(rules.late), leftEarlyCredit: Number(rules.leftEarly) });
+      const next = { late: String(r.lateCredit), leftEarly: String(r.leftEarlyCredit) };
+      setRules(next);
+      setSavedRules(next);
+      showToast("Reglas de asistencia guardadas.");
+    } catch (err) {
+      setRulesError(getErrorMessage(err, "No se pudieron guardar las reglas de asistencia."));
+    } finally {
+      setRulesSaving(false);
+    }
+  }
 
   async function submitTerm(e) {
     e.preventDefault();
@@ -117,6 +166,63 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
 
       <LoadError message={error} onRetry={reload} />
       {loading && <p className="users-empty">Cargando...</p>}
+
+      <section className="cal-card" aria-labelledby="attendance-rules-title">
+        <h2 className="cal-card-title" id="attendance-rules-title">Reglas de asistencia</h2>
+        <p className="cal-card-help">
+          Una ausencia justificada no cuenta como falta ni como presente. Los porcentajes de clases ya cerradas no se
+          recalculan.
+        </p>
+        <LoadError message={rulesLoadError} onRetry={loadRules} />
+        <form className="users-form cal-inline-form" onSubmit={submitRules}>
+          <div className="cal-form-grid">
+            <div className="users-form-field">
+              <label className="users-form-label" htmlFor="rule-late">Llegó tarde</label>
+              <select
+                id="rule-late"
+                className="users-form-input cal-rules-select"
+                value={rules.late}
+                disabled={!canEditRules || rulesSaving || !savedRules}
+                onChange={(e) => setRules({ ...rules, late: e.target.value })}
+              >
+                {CREDIT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="users-form-field">
+              <label className="users-form-label" htmlFor="rule-left-early">Se retiró antes</label>
+              <select
+                id="rule-left-early"
+                className="users-form-input cal-rules-select"
+                value={rules.leftEarly}
+                disabled={!canEditRules || rulesSaving || !savedRules}
+                onChange={(e) => setRules({ ...rules, leftEarly: e.target.value })}
+              >
+                {CREDIT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {canEditRules ? (
+            <button
+              type="submit"
+              className="users-btn users-btn--primary"
+              disabled={
+                rulesSaving ||
+                !savedRules ||
+                (rules.late === savedRules.late && rules.leftEarly === savedRules.leftEarly)
+              }
+            >
+              {rulesSaving ? "Guardando..." : "Guardar reglas"}
+            </button>
+          ) : (
+            <p className="cal-card-help">Solo el Administrador puede cambiar estas reglas.</p>
+          )}
+          <FormError message={rulesError} />
+        </form>
+      </section>
 
       <section className="cal-card">
         <h2 className="cal-card-title">Fechas de cursado</h2>
