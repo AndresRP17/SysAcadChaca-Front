@@ -12,8 +12,10 @@ import "@schedule-x/theme-default/dist/index.css";
 import { useAuth } from "../../context/AuthContext";
 import { getErrorMessage } from "../../shared/api/api";
 import { todayIso } from "../../shared/utils/formatters";
+import { getAttendanceRules } from "../grades/services/attendanceService";
+import { DEFAULT_RULES, STUDENT_STATUS_LABELS, attendanceSummary } from "../attendance/attendanceStatus";
 import { getCalendar } from "./services/calendarService";
-import { AgendaEvent, GridEvent } from "./calendarEventViews";
+import { AgendaEvent, GridEvent, StudentStatusBadge } from "./calendarEventViews";
 import Modal from "../../shared/ui/Modal";
 import AttendanceModal from "../attendance/AttendanceModal";
 import LoadError from "../../shared/ui/LoadError";
@@ -44,7 +46,6 @@ const CALENDARS = {
   },
 };
 
-const ATTENDANCE_LABELS = { PRESENT: "Estuviste presente", ABSENT: "Estuviste ausente" };
 
 function formatDate(isoDate) {
   const [y, m, d] = isoDate.split("-");
@@ -73,8 +74,9 @@ function toCalendarEvents(classes, isDocente) {
       calendarId: c.status === "CANCELLED" ? "cancelled" : "scheduled",
       // Para dibujar la clase como boton (ver calendarEventViews.jsx).
       attendanceTaken: c.attendanceTaken === true,
-      // Solo el Alumno: su propia asistencia en esa clase (PRESENT / ABSENT / null).
+      // Solo el Alumno: su propia asistencia en esa clase (PRESENT / ABSENT / JUSTIFIED / LATE / LEFT_EARLY / null).
       attendanceStatus: c.attendanceStatus ?? null,
+      attendanceComment: c.attendanceComment ?? null,
       actionLabel:
         isDocente && c.status === "SCHEDULED" ? (c.attendanceTaken ? "Editar asistencia" : "Tomar asistencia") : null,
     });
@@ -107,18 +109,26 @@ function addDays(isoDate, delta) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-// Asistencia del Alumno: presentes sobre las clases en las que ya hay asistencia cargada.
-// El backend limita cada pedido a 100 dias, asi que se piden los ultimos 200 en dos tandas.
+function formatCredit(value) {
+  return String(Math.round(value * 10) / 10).replace(".", ",");
+}
+
+// Asistencia del Alumno sobre las clases con asistencia cargada, con las reglas institucionales
+// (cuanto cuenta tarde / retiro anticipado; la justificada no cuenta). Si no se pueden leer las
+// reglas se usan las de por defecto. El backend limita cada pedido a 100 dias, asi que se piden
+// los ultimos 200 en dos tandas.
 async function loadAttendanceSummary() {
   const today = todayIso();
   const ranges = [
     [addDays(today, -199), addDays(today, -100)],
     [addDays(today, -99), today],
   ];
-  const results = await Promise.all(ranges.map(([from, to]) => getCalendar(from, to)));
+  const [rules, ...results] = await Promise.all([
+    getAttendanceRules().catch(() => DEFAULT_RULES),
+    ...ranges.map(([from, to]) => getCalendar(from, to)),
+  ]);
   const classes = results.flatMap((r) => r.events).filter((c) => c.status === "SCHEDULED" && c.attendanceStatus);
-  const present = classes.filter((c) => c.attendanceStatus === "PRESENT").length;
-  return { total: classes.length, present, percentage: classes.length ? Math.round((present / classes.length) * 100) : null };
+  return attendanceSummary(classes.map((c) => c.attendanceStatus), rules);
 }
 
 function CalendarContent({ onRetry }) {
@@ -130,7 +140,7 @@ function CalendarContent({ onRetry }) {
   const [missingTerms, setMissingTerms] = useState([]);
   const [error, setError] = useState("");
   const [todayError, setTodayError] = useState("");
-  const [attendance, setAttendance] = useState(null); // { total, present, percentage } (solo Alumno)
+  const [attendance, setAttendance] = useState(null); // { total, justified, credit, percentage } (solo Alumno)
   const [detail, setDetail] = useState(null); // { title, lines } de la clase tocada
   const [attendanceTarget, setAttendanceTarget] = useState(null); // { sectionId, date } de la clase cuya asistencia se esta tomando
 
@@ -226,7 +236,7 @@ function CalendarContent({ onRetry }) {
           } else if (isDocente) {
             takeAttendance(found.sectionId, found.date);
           } else {
-            const attendance = ATTENDANCE_LABELS[found.attendanceStatus];
+            const attendance = STUDENT_STATUS_LABELS[found.attendanceStatus];
             setDetail({
               title: found.courseName,
               lines: [
@@ -235,6 +245,7 @@ function CalendarContent({ onRetry }) {
                 `${found.startTime} a ${found.endTime}`,
                 ...(found.classroomName ? [`Aula: ${found.classroomName}`] : []),
                 ...(attendance ? [attendance] : []),
+                ...(attendance && found.attendanceComment ? [`Comentario: ${found.attendanceComment}`] : []),
               ],
             });
           }
@@ -277,12 +288,21 @@ function CalendarContent({ onRetry }) {
 
       <LoadError message={error || todayError} onRetry={onRetry} />
 
-      {isAlumno && attendance && attendance.total > 0 && (
+      {isAlumno && attendance && (attendance.total > 0 || attendance.justified > 0) && (
         <p className="calendar-attendance" aria-label="Resumen de tu asistencia">
-          <strong>Tu asistencia: {attendance.percentage}%</strong>
+          <strong>
+            {attendance.percentage === null ? "Tu asistencia: sin clases contables" : `Tu asistencia: ${attendance.percentage}%`}
+          </strong>
           <span>
-            {attendance.present} presente{attendance.present === 1 ? "" : "s"} de {attendance.total}{" "}
-            {attendance.total === 1 ? "clase con asistencia cargada" : "clases con asistencia cargada"} (últimos 200 días)
+            {attendance.total > 0 && (
+              <>
+                Cuentan {formatCredit(attendance.credit)} de {attendance.total}{" "}
+                {attendance.total === 1 ? "clase contable" : "clases contables"}.{" "}
+              </>
+            )}
+            {attendance.justified > 0 &&
+              `${attendance.justified} ausencia${attendance.justified === 1 ? " justificada" : "s justificadas"} (no ${attendance.justified === 1 ? "cuenta" : "cuentan"}). `}
+            (últimos 200 días)
           </span>
         </p>
       )}
@@ -318,10 +338,9 @@ function CalendarContent({ onRetry }) {
                 </p>
               </div>
               {isAlumno && c.status === "SCHEDULED" && c.attendanceStatus && (
-                <span
-                  className={`cal-event-status ${c.attendanceStatus === "PRESENT" ? "cal-event-status--done" : "cal-event-status--absent"}`}
-                >
-                  {c.attendanceStatus === "PRESENT" ? "Presente ✓" : "Ausente"}
+                <span className="calendar-today-status">
+                  <StudentStatusBadge status={c.attendanceStatus} />
+                  {c.attendanceComment && <span className="calendar-today-comment">{c.attendanceComment}</span>}
                 </span>
               )}
               {isDocente && c.status === "SCHEDULED" && (

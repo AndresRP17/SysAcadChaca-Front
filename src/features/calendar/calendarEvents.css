@@ -119,10 +119,35 @@
   flex-shrink: 0;
 }
 
-.cal-chip-mark--present {
+.cal-chip-mark--done {
   color: #15803d;
 }
 
 .cal-chip-mark--absent {
   color: #b91c1c;
+}
+
+.cal-chip-mark--justified {
+  color: #1d4ed8;
+}
+
+.cal-chip-mark--late {
+  color: #b45309;
+}
+
+.cal-event-status--justified {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+.cal-event-status--late {
+  background: #fef3c7;
+  color: #78350f;
+}
+
+.cal-event-comment {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.85;
 }

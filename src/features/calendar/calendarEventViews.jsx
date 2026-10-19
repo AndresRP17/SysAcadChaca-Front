@@ -2,6 +2,15 @@
 // En la agenda del dia (celular) cada clase es una tarjeta con un boton visible; en la
 // grilla del mes (computadora) el chip lleva una flecha.
 
+import { STUDENT_BADGES } from "../attendance/attendanceStatus";
+
+// Estado de la clase para el Alumno, con su comentario si lo hay.
+export function StudentStatusBadge({ status }) {
+  const badge = STUDENT_BADGES[status];
+  if (!badge) return null;
+  return <span className={`cal-event-status cal-event-status--${badge.tone}`}>{badge.text}</span>;
+}
+
 function formatTime(zoned) {
   if (!zoned || typeof zoned.hour !== "number") return "";
   const pad = (n) => String(n).padStart(2, "0");
@@ -9,7 +18,7 @@ function formatTime(zoned) {
 }
 
 export function AgendaEvent({ calendarEvent }) {
-  const { title, location, actionLabel, attendanceTaken, attendanceStatus, calendarId } = calendarEvent;
+  const { title, location, actionLabel, attendanceTaken, attendanceStatus, attendanceComment, calendarId } = calendarEvent;
   const time = calendarId === "holiday" ? "" : `${formatTime(calendarEvent.start)} – ${formatTime(calendarEvent.end)}`;
 
   return (
@@ -24,11 +33,10 @@ export function AgendaEvent({ calendarEvent }) {
       )}
       {attendanceStatus && (
         <div className="cal-event-footer">
-          <span className={`cal-event-status ${attendanceStatus === "PRESENT" ? "cal-event-status--done" : "cal-event-status--absent"}`}>
-            {attendanceStatus === "PRESENT" ? "Presente ✓" : "Ausente"}
-          </span>
+          <StudentStatusBadge status={attendanceStatus} />
         </div>
       )}
+      {attendanceStatus && attendanceComment && <p className="cal-event-comment">{attendanceComment}</p>}
       {actionLabel && (
         <div className="cal-event-footer">
           <span className={`cal-event-status ${attendanceTaken ? "cal-event-status--done" : "cal-event-status--pending"}`}>
@@ -48,8 +56,14 @@ export function GridEvent({ calendarEvent }) {
     <span className={`cal-chip cal-chip--${calendarId ?? "scheduled"} ${actionLabel ? "cal-chip--action" : ""}`} title={actionLabel ?? title}>
       <span className="cal-chip-text">{title}</span>
       {actionLabel && <span className="cal-chip-arrow">›</span>}
-      {attendanceStatus === "PRESENT" && <span className="cal-chip-mark cal-chip-mark--present">✓</span>}
-      {attendanceStatus === "ABSENT" && <span className="cal-chip-mark cal-chip-mark--absent">✗</span>}
+      {STUDENT_BADGES[attendanceStatus] && (
+        <span
+          className={`cal-chip-mark cal-chip-mark--${STUDENT_BADGES[attendanceStatus].tone}`}
+          title={STUDENT_BADGES[attendanceStatus].text}
+        >
+          {STUDENT_BADGES[attendanceStatus].mark}
+        </span>
+      )}
     </span>
   );
 }
