@@ -650,3 +650,8 @@
     grid-column: 1 / -1;
   }
 }
+
+/* En celular el texto largo de las opciones tiene que entrar completo en el selector. */
+.reg-rules-grid select {
+  font-size: 13px;
+}
