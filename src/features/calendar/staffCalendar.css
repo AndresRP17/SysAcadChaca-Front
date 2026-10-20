@@ -609,3 +609,44 @@
 .cal-rules-select {
   min-width: 220px;
 }
+
+/* Reglas de regularidad: dos columnas desde tablet, interruptores en lista. */
+.reg-rules-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.reg-switches {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reg-switch {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.reg-switch input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+}
+
+@media (min-width: 700px) {
+  .reg-rules-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reg-rules-grid .reg-rules-wide {
+    grid-column: 1 / -1;
+  }
+}
