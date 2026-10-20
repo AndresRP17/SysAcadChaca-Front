@@ -2,11 +2,14 @@ import { useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { useStudentExamBoards } from "./hooks/useStudentExamBoards";
 import { getResultStatus, getResultLabel } from "./services/examEnrollmentService";
-import { getErrorMessage } from "../../shared/api/api";
+import { getErrorCode, getErrorMessage } from "../../shared/api/api";
 import { isPast } from "../../shared/utils/formatters";
 import EnrollmentPeriodBanner from "../enrollments/components/EnrollmentPeriodBanner";
 import { useOpenEnrollmentPeriods } from "../enrollments/hooks/useOpenEnrollmentPeriods";
 import ExamBoardCard from "./components/ExamBoardCard";
+import { useLostRegularity } from "../regularity/useLostRegularity";
+import { lostReasonText } from "../regularity/regularityStatus";
+import { REGULARITY_LOST } from "../regularity/services/regularityService";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import LoadError from "../../shared/ui/LoadError";
 import "../users/usersPage.css";
@@ -23,6 +26,7 @@ function badgeForEnrollment(enrollment) {
 export default function PortalFinalesPage() {
   const { student, available, enrolled, loading, loadError, reload, enroll, unenroll } = useStudentExamBoards();
   const { showToast } = useToast();
+  const { blockedFor, reload: reloadLost } = useLostRegularity();
 
   const { periods, loading: loadingPeriods, isOpen: enrollmentOpen } = useOpenEnrollmentPeriods("FINAL");
   const [submitting, setSubmitting] = useState(false);
@@ -34,6 +38,7 @@ export default function PortalFinalesPage() {
       await enroll(examBoardId);
       showToast("Inscripción a la mesa confirmada.");
     } catch (e) {
+      if (getErrorCode(e) === REGULARITY_LOST) reloadLost();
       showToast(getErrorMessage(e, "No pudimos inscribirte a la mesa."), "error");
     } finally {
       setSubmitting(false);
@@ -88,15 +93,26 @@ export default function PortalFinalesPage() {
             )}
 
             <div className="portal-cards">
-              {available.map((board) => (
-                <ExamBoardCard
-                  key={board.id}
-                  board={board}
-                  actionLabel="Inscribirme"
-                  disabled={submitting || !enrollmentOpen}
-                  onAction={() => handleEnroll(board.id)}
-                />
-              ))}
+              {available.map((board) => {
+                // Con la regularidad perdida no se ofrece el botón; si igual llegara un pedido, el servidor responde REGULARITY_LOST.
+                const lostItem = blockedFor(board.courseId);
+                return (
+                  <ExamBoardCard
+                    key={board.id}
+                    board={board}
+                    badge={lostItem ? "Regularidad perdida" : undefined}
+                    badgeVariant="inactive"
+                    note={
+                      lostItem
+                        ? `Perdiste la regularidad de esta materia ${lostReasonText(lostItem)}. Para rendir el final tenés que recuperarla: consultá en Bedelía.`
+                        : undefined
+                    }
+                    actionLabel={lostItem ? null : "Inscribirme"}
+                    disabled={submitting || !enrollmentOpen}
+                    onAction={() => handleEnroll(board.id)}
+                  />
+                );
+              })}
             </div>
           </section>
 
