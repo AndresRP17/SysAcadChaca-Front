@@ -1,8 +1,25 @@
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import "./landingPage.css";
+import ThemeToggle from "../../shared/ui/ThemeToggle";
+import TeamCarousel from "./components/TeamCarousel";
 import utnLogo from "../auth/login/components/login/utn-logo.jpg";
+import "./landingPage.css";
 
 const LOGIN_PATH = "/login";
+const FORGOT_PASSWORD_PATH = "/forgot-password";
+
+// Integrantes del proyecto (se muestran en el carrusel).
+// Reemplazá los datos de ejemplo. "foto", "github" y "linkedin" son opcionales;
+// sin foto se muestran las iniciales. Para usar foto:
+//   import foto1 from "../../assets/equipo/nombre.jpg";  ->  foto: foto1
+// Si el arreglo queda vacío, la sección del equipo no se muestra.
+const EQUIPO = [
+  { nombre: "Integrante Uno", rol: "Frontend" },
+  { nombre: "Integrante Dos", rol: "Backend" },
+  { nombre: "Integrante Tres", rol: "Base de datos" },
+  { nombre: "Integrante Cuatro", rol: "Análisis y documentación" },
+  { nombre: "Integrante Cinco", rol: "Testing" },
+];
 
 const funciones = [
   {
@@ -16,14 +33,24 @@ const funciones = [
       "Anotate a finales y date de baja cuando lo necesites, con confirmación al instante.",
   },
   {
-    titulo: "Notas y trayectoria",
+    titulo: "Notas e historial",
     texto:
       "Consultá tus notas, tus materias en curso y las que ya regularizaste o aprobaste.",
   },
   {
-    titulo: "Trámites y certificados",
+    titulo: "Calendario académico",
+    texto:
+      "Mirá clases, mesas y fechas importantes de tu cursada en una agenda semanal.",
+  },
+  {
+    titulo: "Certificados y equivalencias",
     texto:
       "Pedí certificados y equivalencias, y seguí el estado de cada trámite sin ir a la sede.",
+  },
+  {
+    titulo: "Comisiones y asistencia",
+    texto:
+      "Los docentes toman asistencia y cargan notas de cada comisión desde el mismo sistema.",
   },
 ];
 
@@ -34,7 +61,7 @@ const roles = [
   },
   {
     nombre: "Docentes",
-    texto: "Listados de alumnos por comisión y carga de notas.",
+    texto: "Listados de alumnos por comisión, asistencia y carga de notas.",
   },
   {
     nombre: "Bedelía",
@@ -42,7 +69,7 @@ const roles = [
   },
   {
     nombre: "Administración",
-    texto: "Carreras, materias, planes de estudio y usuarios.",
+    texto: "Carreras, materias, planes de estudio, usuarios y auditoría.",
   },
 ];
 
@@ -52,9 +79,43 @@ const pasos = [
   { titulo: "Listo", texto: "Cada acción queda confirmada en pantalla y registrada en tu historial." },
 ];
 
-function LandingPage() {
+function Landing() {
+  const rootRef = useRef(null);
+
+  // Animación de entrada al hacer scroll (sin librerías).
+  // Si el usuario prefiere menos movimiento, no se activa nada.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return undefined;
+    if (
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      !("IntersectionObserver" in window)
+    ) {
+      return undefined;
+    }
+
+    root.classList.add("js-reveal");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    root.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+
+    return () => {
+      observer.disconnect();
+      root.classList.remove("js-reveal");
+    };
+  }, []);
+
   return (
-    <div className="landing">
+    <div className="landing" ref={rootRef}>
       <header className="landing-nav">
         <div className="landing-container landing-nav__inner">
           <a href="#inicio" className="landing-brand">
@@ -66,12 +127,15 @@ function LandingPage() {
             <a href="#funciones">Funciones</a>
             <a href="#roles">Para quién</a>
             <a href="#como-funciona">Cómo funciona</a>
-            <a href="#contacto">Contacto</a>
+            <a href="#preguntas">Preguntas</a>
+            <a href="#proyecto">Proyecto</a>
           </nav>
 
-          <Link to={LOGIN_PATH} className="landing-btn landing-btn--primary">
-            Ingresar al SysAcad
-          </Link>
+          <div className="landing-nav__actions">
+            <Link to={LOGIN_PATH} className="landing-btn landing-btn--primary">
+              Ingresar al SysAcad
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -126,14 +190,16 @@ function LandingPage() {
 
         <section id="funciones" className="landing-section">
           <div className="landing-container">
-            <h2>Todo lo que necesitás para cursar</h2>
-            <p className="landing-section__lead">
-              Menos papeles y menos viajes a la sede: las gestiones habituales
-              se resuelven online.
-            </p>
+            <div className="reveal">
+              <h2>Todo lo que necesitás para cursar</h2>
+              <p className="landing-section__lead">
+                Menos papeles y menos viajes a la sede: las gestiones habituales
+                se resuelven online.
+              </p>
+            </div>
             <div className="landing-grid">
               {funciones.map((f) => (
-                <article key={f.titulo} className="landing-card">
+                <article key={f.titulo} className="landing-card reveal">
                   <h3>{f.titulo}</h3>
                   <p>{f.texto}</p>
                 </article>
@@ -144,11 +210,13 @@ function LandingPage() {
 
         <section id="roles" className="landing-section landing-section--alt">
           <div className="landing-container">
-            <h2>Un sistema para cada rol</h2>
-            <p className="landing-section__lead">
-              Cada persona ve únicamente las herramientas que le corresponden.
-            </p>
-            <div className="landing-roles">
+            <div className="reveal">
+              <h2>Un sistema para cada rol</h2>
+              <p className="landing-section__lead">
+                Cada persona ve únicamente las herramientas que le corresponden.
+              </p>
+            </div>
+            <div className="landing-roles reveal">
               {roles.map((r) => (
                 <div key={r.nombre} className="landing-role">
                   <h3>{r.nombre}</h3>
@@ -161,10 +229,10 @@ function LandingPage() {
 
         <section id="como-funciona" className="landing-section">
           <div className="landing-container">
-            <h2>Cómo funciona</h2>
+            <h2 className="reveal">Cómo funciona</h2>
             <ol className="landing-steps">
               {pasos.map((p, i) => (
-                <li key={p.titulo}>
+                <li key={p.titulo} className="reveal">
                   <span className="landing-steps__n">{i + 1}</span>
                   <div>
                     <h3>{p.titulo}</h3>
@@ -173,6 +241,72 @@ function LandingPage() {
                 </li>
               ))}
             </ol>
+          </div>
+        </section>
+
+        <section id="preguntas" className="landing-section landing-section--alt">
+          <div className="landing-container landing-faq">
+            <h2 className="reveal">Preguntas frecuentes</h2>
+            <div className="landing-faq__list reveal">
+              <details>
+                <summary>¿Cómo ingreso por primera vez?</summary>
+                <p>
+                  Ingresá con las credenciales que te asignó la facultad. En el
+                  primer acceso el sistema puede pedirte verificar tu email y
+                  completar tu perfil.
+                </p>
+              </details>
+              <details>
+                <summary>Olvidé mi contraseña, ¿qué hago?</summary>
+                <p>
+                  Podés restablecerla desde{" "}
+                  <Link to={FORGOT_PASSWORD_PATH}>esta pantalla</Link>: te
+                  enviamos un enlace al email registrado.
+                </p>
+              </details>
+              <details>
+                <summary>¿Quiénes pueden usar el sistema?</summary>
+                <p>
+                  Alumnos, docentes, bedelía y administración. Cada rol accede
+                  solo a las funciones que le corresponden.
+                </p>
+              </details>
+              <details>
+                <summary>¿Qué puedo hacer como alumno?</summary>
+                <p>
+                  Inscribirte a cursadas y mesas de examen, ver tus notas e
+                  historial, consultar el calendario académico y pedir
+                  certificados y equivalencias.
+                </p>
+              </details>
+              <details>
+                <summary>¿Necesito instalar algo?</summary>
+                <p>
+                  No. Funciona desde el navegador, con el modo claro u oscuro
+                  que prefieras.
+                </p>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <section id="proyecto" className="landing-section">
+          <div className="landing-container">
+            <div className="reveal">
+              <h2>Sobre el proyecto</h2>
+              <p className="landing-section__lead">
+                SysAcad Chacabuco es un proyecto académico desarrollado por
+                estudiantes de la UTN Facultad Regional San Nicolás, extensión
+                áulica Chacabuco. Está construido con React, Vite y React
+                Router en el frontend, y CodeIgniter 4 en el backend.
+              </p>
+            </div>
+
+            {EQUIPO.length > 0 && (
+              <div className="reveal">
+                <TeamCarousel miembros={EQUIPO} />
+              </div>
+            )}
           </div>
         </section>
 
@@ -198,10 +332,15 @@ function LandingPage() {
           <p className="landing-footer__note">
             Proyecto desarrollado por estudiantes de la extensión áulica.
           </p>
+
+          {/* Flotante en desktop; en celular queda en el footer (ver CSS) */}
+          <div className="landing-theme-fab">
+            <ThemeToggle />
+          </div>
         </div>
       </footer>
     </div>
   );
 }
 
-export default LandingPage;
+export default Landing;
