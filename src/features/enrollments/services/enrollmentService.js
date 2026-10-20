@@ -40,12 +40,14 @@ export async function getEnrollableSections({ studentId, includeBlocked = false,
   return data;
 }
 
-export async function createEnrollment({ studentId, sectionId, outOfTerm = null }) {
+// retake: { reason } cuando el Bedel/Administrador recursa una materia con la regularidad vigente.
+export async function createEnrollment({ studentId, sectionId, outOfTerm = null, retake = null }) {
   const res = await api.post("/enrollments", {
     student_id: studentId,
     section_id: sectionId,
     status: ENROLLMENT_STATUS.ENROLLED,
     ...(outOfTerm ? { out_of_term: true, out_of_term_reason: outOfTerm.reason } : {}),
+    ...(retake ? { retake: true, retake_reason: retake.reason } : {}),
   });
   return res.data;
 }

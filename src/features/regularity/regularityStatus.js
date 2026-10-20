@@ -89,3 +89,17 @@ export function staffRegularityLines(item) {
 export function lostCourseIds(items) {
   return new Set(items.filter((i) => i.status === "LOST").map((i) => i.courseId));
 }
+
+export const ENROLLMENT_PERIOD_CLOSED_CODE = "ENROLLMENT_PERIOD_CLOSED";
+export const COURSE_ALREADY_REGULAR_CODE = "COURSE_ALREADY_REGULAR";
+
+// Qué excepciones necesita Bedelía para inscribir en una comisión según sus blockedReasons:
+// fuera de término (período cerrado) y/o recursar (regularidad vigente). Solo cuentan las que el servidor
+// marca overridable; cualquier otro motivo no se puede saltear.
+export function sectionOverrides(blockedReasons = []) {
+  const overridable = (code) => blockedReasons.some((r) => r.code === code && r.overridable);
+  return {
+    outOfTerm: overridable(ENROLLMENT_PERIOD_CLOSED_CODE),
+    retake: overridable(COURSE_ALREADY_REGULAR_CODE),
+  };
+}

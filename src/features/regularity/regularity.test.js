@@ -94,3 +94,23 @@ test("junta las materias con regularidad perdida", () => {
   ]);
   assert.deepEqual([...ids], [1]);
 });
+
+test("sectionOverrides distingue período cerrado de recursada y descarta lo no salteable", async () => {
+  const { sectionOverrides } = await import("./regularityStatus.js");
+  assert.deepEqual(sectionOverrides([]), { outOfTerm: false, retake: false });
+  assert.deepEqual(
+    sectionOverrides([{ code: "COURSE_ALREADY_REGULAR", overridable: true }]),
+    { outOfTerm: false, retake: true },
+  );
+  assert.deepEqual(
+    sectionOverrides([
+      { code: "ENROLLMENT_PERIOD_CLOSED", overridable: true },
+      { code: "COURSE_ALREADY_REGULAR", overridable: true },
+    ]),
+    { outOfTerm: true, retake: true },
+  );
+  assert.deepEqual(
+    sectionOverrides([{ code: "COURSE_ALREADY_REGULAR", overridable: false }]),
+    { outOfTerm: false, retake: false },
+  );
+});

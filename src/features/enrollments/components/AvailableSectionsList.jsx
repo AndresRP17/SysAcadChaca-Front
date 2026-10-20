@@ -1,4 +1,5 @@
 import ScheduleLines from "./ScheduleLines";
+import { sectionOverrides } from "../../regularity/regularityStatus";
 
 // Estos motivos ya se ven en la etiqueta de cupo.
 const SEATS_REASON_CODES = ["SECTION_FULL", "SECTION_WITHOUT_SCHEDULE"];
@@ -9,6 +10,7 @@ export default function AvailableSectionsList({
   onEnroll,
   submitting,
   actionLabel = "Inscribirme",
+  retakeLabel = "Recursar",
   emptyLabel = "No hay comisiones abiertas para inscribirte en este momento.",
 }) {
   if (items.length === 0) {
@@ -26,8 +28,10 @@ export default function AvailableSectionsList({
         // El servidor decide: enrollable=false (regla dura) no tiene botón; el período cerrado
         // (overridable) lo conserva para que Bedel / Administrador inscriban fuera de término.
         const reasons = (section.blockedReasons ?? []).filter((r) => !SEATS_REASON_CODES.includes(r.code));
-        const outOfPeriod = reasons.some((r) => r.overridable);
+        const { outOfTerm: outOfPeriod, retake } = sectionOverrides(reasons);
         const hardReasons = reasons.filter((r) => !r.overridable);
+        // La regularidad vigente se avisa con su motivo; el período cerrado ya tiene su etiqueta.
+        const retakeReasons = reasons.filter((r) => r.overridable && r.code === "COURSE_ALREADY_REGULAR");
         const blocked = section.enrollable === false;
 
         return (
@@ -46,6 +50,7 @@ export default function AvailableSectionsList({
               </div>
               <div className="portal-card-badges">
                 {outOfPeriod && <span className="users-badge users-badge--inactive">Fuera de período</span>}
+                {retake && <span className="users-badge users-badge--inactive">Regularidad vigente</span>}
                 <span className={`users-badge ${full || noSchedule ? "users-badge--inactive" : "users-badge--navy"}`}>
                   {noSchedule ? "Sin horario asignado" : full ? "Sin cupo" : `${seats} ${seats === 1 ? "lugar disponible" : "lugares disponibles"}`}
                 </span>
@@ -59,6 +64,12 @@ export default function AvailableSectionsList({
                 Se superpone con {conflicts[0].courseName} (comisión {conflicts[0].sectionName})
               </p>
             )}
+
+            {retakeReasons.map((reason) => (
+              <p key={reason.code} className="portal-conflict-note">
+                {reason.message}
+              </p>
+            ))}
 
             {hardReasons.map((reason) => (
               <p key={reason.code} className="portal-conflict-note">
@@ -74,7 +85,7 @@ export default function AvailableSectionsList({
                   disabled={full || noSchedule || submitting}
                   onClick={() => onEnroll(section.id)}
                 >
-                  {actionLabel}
+                  {retake ? retakeLabel : actionLabel}
                 </button>
               </div>
             )}
