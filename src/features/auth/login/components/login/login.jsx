@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Sun, Moon } from "lucide-react";
 import { SiInstagram, SiFacebook, SiX, SiYoutube } from "@icons-pack/react-simple-icons";
@@ -6,8 +6,15 @@ import { useAuth } from "../../../../../context/AuthContext";
 import { useTheme } from "../../../../../context/ThemeContext";
 import { getDefaultRouteForRole } from "../../../../layout/roleLinks";
 import { getErrorMessage, SESSION_EXPIRED_KEY } from "../../../../../shared/api/api";
+import LoginScene from "./LoginScene";
 import utnLogo from "./utn-logo.jpg";
 import "./login.css";
+
+// Duración de la animación final (corre a la puerta, la abre y entra).
+// Es lo único que se agrega a la espera real del login; si hace falta, se baja acá.
+const ENTER_MS = 1100;
+// Tiempo que tarda el estudiante en volver al inicio cuando el login falla.
+const FAIL_MS = 1300;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,6 +27,9 @@ export default function Login() {
   const [focused, setFocused] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // Estado de la escena animada: idle | walking | entering | failed
+  const [scenePhase, setScenePhase] = useState("idle");
+  const failTimer = useRef(null);
   // El interceptor de la API deja esta marca cuando un 401 cierra la sesión.
   const [expiredNotice] = useState(() => {
     try {
@@ -31,6 +41,8 @@ export default function Login() {
     }
   });
 
+  useEffect(() => () => clearTimeout(failTimer.current), []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!legajo.trim() || !password.trim()) {
@@ -39,13 +51,25 @@ export default function Login() {
     }
     setError("");
     setLoading(true);
+    clearTimeout(failTimer.current);
+    setScenePhase("walking");
     try {
       // El campo se sigue llamando "legajo" en la UI (así lo diseñaron), pero
       // el backend real solo tiene login por email todavía — se manda como email.
       const { user } = await login(legajo.trim(), password, remember);
-      navigate(getDefaultRouteForRole(user?.role));
+      const destino = getDefaultRouteForRole(user?.role);
+
+      // Con "reducir movimiento" activado no se espera ninguna animación.
+      const reducirMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!reducirMovimiento) {
+        setScenePhase("entering");
+        await new Promise((resolve) => setTimeout(resolve, ENTER_MS));
+      }
+      navigate(destino);
     } catch (err) {
       setError(getErrorMessage(err));
+      setScenePhase("failed");
+      failTimer.current = setTimeout(() => setScenePhase("idle"), FAIL_MS);
     } finally {
       setLoading(false);
     }
@@ -64,6 +88,10 @@ export default function Login() {
               Tu gestión académica, en un solo lugar: notas, inscripciones y
               trámites de la facultad.
             </p>
+          </div>
+
+          <div className="sysacad-panel-scene">
+            <LoginScene phase={scenePhase} variant="panel" />
           </div>
 
           <div className="sysacad-panel-bottom">
@@ -93,6 +121,10 @@ export default function Login() {
                 <h1 className="sysacad-wordmark-sm">SysAcad</h1>
                 <p className="sysacad-eyebrow-sm">Aula Chacabuco</p>
               </div>
+            </div>
+
+            <div className="sysacad-mobile-scene">
+              <LoginScene phase={scenePhase} variant="mobile" />
             </div>
 
             <h2 className="sysacad-title">Bienvenido de nuevo</h2>
@@ -185,6 +217,11 @@ export default function Login() {
               <button type="submit" className="sysacad-submit" disabled={loading}>
                 {loading ? "INGRESANDO..." : "INGRESAR"}
               </button>
+
+              {/* La escena es decorativa: esto anuncia el estado a lectores de pantalla */}
+              <span className="sysacad-sr-only" role="status">
+                {loading ? "Ingresando…" : ""}
+              </span>
             </form>
 
             <p className="sysacad-footer-note">

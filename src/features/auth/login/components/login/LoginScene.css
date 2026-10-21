@@ -1,0 +1,209 @@
+/* Escena animada del login (estudiante caminando hacia la facultad).
+   El estado lo define data-phase: idle | walking | entering | failed. */
+
+.login-scene {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.login-scene--panel {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.login-scene--mobile {
+  background: var(--navy);
+}
+
+.login-scene__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Contenedores de la escena dentro de login.jsx */
+.sysacad-panel-scene {
+  position: relative;
+  width: 100%;
+}
+
+.sysacad-mobile-scene {
+  margin: -8px 0 28px;
+}
+
+@media (min-width: 768px) {
+  .sysacad-mobile-scene {
+    display: none;
+  }
+}
+
+/* Texto solo para lectores de pantalla */
+.sysacad-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Nubes ---------- */
+.login-scene__cloud {
+  fill: rgba(255, 255, 255, 0.14);
+  animation: login-cloud 55s linear infinite;
+}
+
+.login-scene__cloud--a {
+  animation-delay: -12s;
+}
+
+.login-scene__cloud--b {
+  animation-duration: 80s;
+  animation-delay: -50s;
+}
+
+@keyframes login-cloud {
+  from {
+    transform: translateX(-60px);
+  }
+  to {
+    transform: translateX(470px);
+  }
+}
+
+/* ---------- Estudiante ---------- */
+.login-scene__walker {
+  transform: translateX(0);
+  transition: transform 0.5s ease;
+}
+
+.login-scene__person {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.login-scene__leg,
+.login-scene__arm {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+}
+
+/* En reposo respira suavemente */
+.login-scene__bob {
+  animation: login-breathe 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes login-breathe {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-0.8px);
+  }
+}
+
+@keyframes login-swing {
+  from {
+    transform: rotate(-28deg);
+  }
+  to {
+    transform: rotate(28deg);
+  }
+}
+
+@keyframes login-swing-arm {
+  from {
+    transform: rotate(-22deg);
+  }
+  to {
+    transform: rotate(22deg);
+  }
+}
+
+@keyframes login-step {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-1.6px);
+  }
+}
+
+/* Puerta */
+.login-scene__door-leaf {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  transition: transform 0.3s ease;
+}
+
+/* ---------- Fases ---------- */
+
+/* Caminando: avanza despacio (frena de a poco) mientras se espera al servidor */
+.login-scene[data-phase="walking"] .login-scene__walker {
+  transform: translateX(215px);
+  transition: transform 12s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* Login correcto: va hasta la puerta, la abre y entra */
+.login-scene[data-phase="entering"] .login-scene__walker {
+  transform: translateX(276px);
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.8, 0.6);
+}
+
+.login-scene[data-phase="entering"] .login-scene__person {
+  animation: login-enter 0.3s ease-in 0.62s both;
+}
+
+.login-scene[data-phase="entering"] .login-scene__door-leaf {
+  transform: scaleX(0.12);
+  transition-duration: 0.35s;
+  transition-delay: 0.3s;
+}
+
+@keyframes login-enter {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* Login incorrecto: se da vuelta y vuelve al inicio */
+.login-scene[data-phase="failed"] .login-scene__walker {
+  transform: translateX(0);
+  transition: transform 1.1s ease-in-out;
+}
+
+/* Ciclo de caminata (en las tres fases con movimiento) */
+.login-scene:not([data-phase="idle"]) .login-scene__leg--a,
+.login-scene:not([data-phase="idle"]) .login-scene__arm--b {
+  animation: login-swing 0.6s ease-in-out infinite alternate;
+}
+
+.login-scene:not([data-phase="idle"]) .login-scene__leg--b,
+.login-scene:not([data-phase="idle"]) .login-scene__arm--a {
+  animation: login-swing 0.6s ease-in-out infinite alternate-reverse;
+}
+
+.login-scene:not([data-phase="idle"]) .login-scene__arm--a,
+.login-scene:not([data-phase="idle"]) .login-scene__arm--b {
+  animation-name: login-swing-arm;
+}
+
+.login-scene:not([data-phase="idle"]) .login-scene__bob {
+  animation: login-step 0.3s ease-in-out infinite alternate;
+}
+
+/* Si el usuario prefiere menos movimiento: escena estática */
+@media (prefers-reduced-motion: reduce) {
+  .login-scene *,
+  .login-scene *::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
