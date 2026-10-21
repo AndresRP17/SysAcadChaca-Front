@@ -10,11 +10,17 @@ import LoginScene from "./LoginScene";
 import utnLogo from "./utn-logo.jpg";
 import "./login.css";
 
-// Duración de la animación final (corre a la puerta, la abre y entra).
-// Es lo único que se agrega a la espera real del login; si hace falta, se baja acá.
-const ENTER_MS = 1100;
-// Tiempo que tarda el estudiante en volver al inicio cuando el login falla.
-const FAIL_MS = 1300;
+// Tiempos de la animación de login correcto. Se suman a la espera real del
+// servidor: corre a la puerta -> festeja -> entra. Para acortarla, bajá estos
+// valores (CELEBRATE_MS en 0 saltea el festejo).
+const RUN_MS = 700;
+const CELEBRATE_MS = 800;
+const ENTER_MS = 350;
+// Cuánto dura el enojo cuando el login falla (vuelve al inicio y patalea).
+// Con cada fallo seguido el enojo sube de nivel (1 a 3) y dura más.
+const FAIL_MS_POR_NIVEL = [2100, 2700, 3400];
+
+const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function Login() {
   const navigate = useNavigate();
@@ -27,8 +33,10 @@ export default function Login() {
   const [focused, setFocused] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  // Estado de la escena animada: idle | walking | entering | failed
+  // Estado de la escena animada: idle | walking | entering | celebrating | inside | failed
   const [scenePhase, setScenePhase] = useState("idle");
+  const [rage, setRage] = useState(1);
+  const fallos = useRef(0);
   const failTimer = useRef(null);
   // El interceptor de la API deja esta marca cuando un 401 cierra la sesión.
   const [expiredNotice] = useState(() => {
@@ -63,13 +71,22 @@ export default function Login() {
       const reducirMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (!reducirMovimiento) {
         setScenePhase("entering");
-        await new Promise((resolve) => setTimeout(resolve, ENTER_MS));
+        await esperar(RUN_MS);
+        if (CELEBRATE_MS > 0) {
+          setScenePhase("celebrating");
+          await esperar(CELEBRATE_MS);
+        }
+        setScenePhase("inside");
+        await esperar(ENTER_MS);
       }
       navigate(destino);
     } catch (err) {
       setError(getErrorMessage(err));
+      fallos.current += 1;
+      const nivel = Math.min(fallos.current, 3);
+      setRage(nivel);
       setScenePhase("failed");
-      failTimer.current = setTimeout(() => setScenePhase("idle"), FAIL_MS);
+      failTimer.current = setTimeout(() => setScenePhase("idle"), FAIL_MS_POR_NIVEL[nivel - 1]);
     } finally {
       setLoading(false);
     }
@@ -91,7 +108,7 @@ export default function Login() {
           </div>
 
           <div className="sysacad-panel-scene">
-            <LoginScene phase={scenePhase} variant="panel" />
+            <LoginScene phase={scenePhase} variant="panel" rage={rage} />
           </div>
 
           <div className="sysacad-panel-bottom">
@@ -124,7 +141,7 @@ export default function Login() {
             </div>
 
             <div className="sysacad-mobile-scene">
-              <LoginScene phase={scenePhase} variant="mobile" />
+              <LoginScene phase={scenePhase} variant="mobile" rage={rage} />
             </div>
 
             <h2 className="sysacad-title">Bienvenido de nuevo</h2>
