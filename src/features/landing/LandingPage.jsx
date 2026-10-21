@@ -8,17 +8,13 @@ import "./landingPage.css";
 const LOGIN_PATH = "/login";
 const FORGOT_PASSWORD_PATH = "/forgot-password";
 
-// Integrantes del proyecto (se muestran en el carrusel).
-// Reemplazá los datos de ejemplo. "foto", "github" y "linkedin" son opcionales;
-// sin foto se muestran las iniciales. Para usar foto:
-//   import foto1 from "../../assets/equipo/nombre.jpg";  ->  foto: foto1
-// Si el arreglo queda vacío, la sección del equipo no se muestra.
+
 const EQUIPO = [
-  { nombre: "Integrante Uno", rol: "Frontend" },
-  { nombre: "Integrante Dos", rol: "Backend" },
-  { nombre: "Integrante Tres", rol: "Base de datos" },
-  { nombre: "Integrante Cuatro", rol: "Análisis y documentación" },
-  { nombre: "Integrante Cinco", rol: "Testing" },
+  { nombre: "Diego Petrella", rol: "Backend-Frontend" },
+  { nombre: "Agustin Camera", rol: "Backend-Frontend" },
+  { nombre: "Tomas Carimando", rol: "Backend" },
+  { nombre: "Andres Fernandez", rol: "Frontend" },
+  { nombre: "Santiago Diaz", rol: "Backend-Frontend" },
 ];
 
 const funciones = [
@@ -170,7 +166,7 @@ function Landing() {
                   <p className="landing-panel__title">Mis cursadas</p>
                   <ul>
                     <li>
-                      <span>Investigación Operativa</span>
+                      <span>Programacion IV</span>
                       <em className="tag tag--ok">Inscripto</em>
                     </li>
                     <li>
