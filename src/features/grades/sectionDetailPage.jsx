@@ -4,7 +4,7 @@ import { getErrorMessage } from "../../shared/api/api";
 import { formatDateTime } from "../../shared/utils/formatters";
 import { getMyTeacherProfile } from "../users/services/teacherService";
 import { getMySections, closeSection } from "../sections/services/sectionService";
-import { getEnrollmentsBySection } from "./services/enrollmentService";
+import { getEnrollmentsBySection, isByEquivalence } from "./services/enrollmentService";
 import NotasTab from "./components/NotasTab";
 import CloseSectionModal from "./components/CloseSectionModal";
 import LoadError from "../../shared/ui/LoadError";
@@ -98,7 +98,10 @@ export default function SectionDetailPage() {
         ) : (
           <ul className="section-detail-students">
             {enrollments.map((e) => (
-              <li key={e.id}>{e.studentLastName}, {e.studentFirstName}</li>
+              <li key={e.id}>
+                {e.studentLastName}, {e.studentFirstName}
+                {isByEquivalence(e) && <span className="users-badge users-badge--navy">Por equivalencia</span>}
+              </li>
             ))}
           </ul>
         )}

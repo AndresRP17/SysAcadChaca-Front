@@ -4,7 +4,7 @@ import { useToast } from "../../context/ToastContext";
 import LoadError from "../../shared/ui/LoadError";
 import FormError from "../../shared/ui/FormError";
 import { getCalendar } from "../calendar/services/calendarService";
-import { getEnrollmentsBySection } from "../grades/services/enrollmentService";
+import { getEnrollmentsBySection, isByEquivalence } from "../grades/services/enrollmentService";
 import {
   getAttendancesBySectionAndDate,
   createAttendance,
@@ -57,14 +57,17 @@ function statusClass(value) {
 }
 
 const AttendanceRow = memo(function AttendanceRow({ row, showErrors, onChoose, onComment }) {
-  const needsComment = row.status !== null && row.status !== "PRESENT";
+  const needsComment = !row.byEquivalence && row.status !== null && row.status !== "PRESENT";
   const missing = showErrors && justifiedCommentMissing(row.status, row.comment);
   const commentId = `attendance-comment-${row.enrollmentId}`;
 
   return (
     <li>
       <div className="attendance-row">
-        <span className="attendance-row-name">{row.studentName}</span>
+        <span className="attendance-row-name">
+          {row.studentName}
+          {row.byEquivalence && <span className="users-badge users-badge--navy">Por equivalencia</span>}
+        </span>
         <div className="attendance-choices" role="group" aria-label={`Asistencia de ${row.studentName}`}>
           {STATUSES.map((st) => (
             <button
@@ -73,11 +76,17 @@ const AttendanceRow = memo(function AttendanceRow({ row, showErrors, onChoose, o
               aria-pressed={row.status === st.value}
               className={`attendance-choice attendance-choice--${statusClass(st.value)} ${row.status === st.value ? "is-selected" : ""}`}
               onClick={() => onChoose(row.enrollmentId, st.value)}
+              disabled={row.byEquivalence}
             >
               {st.label}
             </button>
           ))}
         </div>
+        {row.byEquivalence && (
+          <p className="attendance-equivalence-note">
+            Tiene la materia aprobada por equivalencia: el sistema lo marca presente en cada clase.
+          </p>
+        )}
         {needsComment && (
           <div className="attendance-comment">
             <input
@@ -157,12 +166,16 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
 
         const byEnrollment = new Map(attendances.map((a) => [a.enrollmentId, a]));
 
+        // Cursada por equivalencia: el backend lo pone presente en cada clase y no deja
+        // cambiarlo, asi que se muestra fijo en Presente (y no cuenta como cambio sin guardar).
+        const initialStatus = (e, found) => (isByEquivalence(e) ? "PRESENT" : savedStatus(found));
+
         setClassInfo(lesson);
         setEditing(attendances.length > 0);
         initialRef.current = new Map(
           enrollments.map((e) => {
             const found = byEnrollment.get(e.id);
-            return [e.id, { status: savedStatus(found), comment: found?.comment ?? "" }];
+            return [e.id, { status: initialStatus(e, found), comment: found?.comment ?? "" }];
           }),
         );
         setRows(
@@ -173,8 +186,9 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
               studentName: `${e.studentFirstName} ${e.studentLastName}`,
               attendanceId: found?.id ?? null,
               // Sin marcar a proposito: sin estado hasta que el docente lo decida.
-              status: savedStatus(found),
+              status: initialStatus(e, found),
               comment: found?.comment ?? "",
+              byEquivalence: isByEquivalence(e),
             };
           }),
         );
@@ -229,7 +243,9 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
   const choose = useCallback((enrollmentId, status) => {
     setRows((prev) =>
       prev.map((r) =>
-        r.enrollmentId === enrollmentId ? { ...r, status, comment: status === "PRESENT" ? "" : r.comment } : r,
+        r.enrollmentId === enrollmentId && !r.byEquivalence
+          ? { ...r, status, comment: status === "PRESENT" ? "" : r.comment }
+          : r,
       ),
     );
   }, []);
@@ -255,8 +271,9 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
   }
 
   // Plan B (servidor sin /attendances/batch): un pedido por alumno, de a FALLBACK_CONCURRENCY.
+  // Los de cursada por equivalencia no se mandan: el backend no deja cargarlos a mano (409).
   async function saveOneByOne() {
-    const pending = rows.map((r) => ({ ...r }));
+    const pending = rows.filter((r) => !r.byEquivalence).map((r) => ({ ...r }));
     let done = 0;
     setProgress({ done, total: pending.length });
 
@@ -314,6 +331,9 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
 
     try {
       try {
+        // Los de cursada por equivalencia van igual (como Presente): el backend los ignora y les
+        // pone su presente automatico, y asi una comision donde todos cursan por equivalencia
+        // tambien registra la clase.
         await saveAttendanceBatch({
           sectionId: Number(sectionId),
           date,

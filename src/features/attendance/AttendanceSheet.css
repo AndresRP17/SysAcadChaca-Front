@@ -120,6 +120,21 @@
   font-weight: 600;
 }
 
+/* Cursada por equivalencia: fija en Presente, no se puede cambiar. */
+.attendance-choice:disabled {
+  cursor: not-allowed;
+}
+
+.attendance-choice:disabled:not(.is-selected) {
+  opacity: 0.45;
+}
+
+.attendance-equivalence-note {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
 /* Celular: Presente y Ausente arriba (grandes) y los otros tres abajo. */
 .attendance-choices {
   display: grid;
