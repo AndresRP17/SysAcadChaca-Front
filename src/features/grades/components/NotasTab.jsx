@@ -5,6 +5,7 @@ import LoadError from "../../../shared/ui/LoadError";
 import FormError from "../../../shared/ui/FormError";
 import { getEvaluationsBySection, createEvaluation } from "../services/evaluationService";
 import { getGradesByEvaluation, createGrade, updateGrade } from "../services/evaluationGradeService";
+import { isByEquivalence } from "../services/enrollmentService";
 
 // "" = Sin cargar: nadie arranca aprobado, la condición la elige el docente al cargar la nota.
 const CONDITIONS = [
@@ -70,6 +71,9 @@ export default function NotasTab({ sectionId, enrollments }) {
               gradeValue: found?.gradeValue ?? "",
               condition: found?.condition ?? "",
               dirty: false,
+              // Cursada por equivalencia: el backend le pone la nota de la equivalencia en cada
+              // evaluacion y no deja cambiarla.
+              byEquivalence: isByEquivalence(e),
             };
           }),
         );
@@ -104,7 +108,9 @@ export default function NotasTab({ sectionId, enrollments }) {
 
   function updateRow(enrollmentId, field, value) {
     setRows((prev) =>
-      prev.map((r) => (r.enrollmentId === enrollmentId ? { ...r, [field]: value, dirty: true } : r)),
+      prev.map((r) =>
+        r.enrollmentId === enrollmentId && !r.byEquivalence ? { ...r, [field]: value, dirty: true } : r,
+      ),
     );
   }
 
@@ -228,7 +234,10 @@ export default function NotasTab({ sectionId, enrollments }) {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.enrollmentId}>
-                    <td className="users-td notas-name">{row.studentName}</td>
+                    <td className="users-td notas-name">
+                      {row.studentName}
+                      {row.byEquivalence && <span className="users-badge users-badge--navy">Por equivalencia</span>}
+                    </td>
                     <td className="users-td users-td--center notas-cell" data-label="Nota">
                       <input
                         type="number"
@@ -239,6 +248,8 @@ export default function NotasTab({ sectionId, enrollments }) {
                         onChange={(e) => updateRow(row.enrollmentId, "gradeValue", e.target.value)}
                         className="users-form-input"
                         aria-label={`Nota de ${row.studentName}`}
+                        disabled={row.byEquivalence}
+                        title={row.byEquivalence ? "Nota de la equivalencia: la completa el sistema" : undefined}
                       />
                     </td>
                     <td className="users-td users-td--center notas-cell" data-label="Condición">
@@ -247,6 +258,7 @@ export default function NotasTab({ sectionId, enrollments }) {
                         onChange={(e) => updateRow(row.enrollmentId, "condition", e.target.value)}
                         className="users-form-input"
                         aria-label={`Condición de ${row.studentName}`}
+                        disabled={row.byEquivalence}
                       >
                         <option value="" disabled={Boolean(row.gradeId)}>
                           Sin cargar
