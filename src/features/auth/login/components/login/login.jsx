@@ -9,6 +9,7 @@ import { getErrorMessage, SESSION_EXPIRED_KEY } from "../../../../../shared/api/
 import LoginScene from "./LoginScene";
 import utnLogo from "./utn-logo.jpg";
 import "./login.css";
+import "./loginParchment.css";
 
 // Tiempos de la animación de login correcto. Se suman a la espera real del
 // servidor: corre a la puerta -> festeja -> entra. Para acortarla, bajá estos
@@ -122,6 +123,11 @@ export default function Login() {
         {/* Panel de login */}
         <div className="sysacad-form-side">
           <div className="sysacad-form-box">
+            {/* Papel y sello del pergamino (decorativos, ver loginParchment.css) */}
+            <div className="sysacad-paper" aria-hidden="true" />
+            <span className="sysacad-seal" aria-hidden="true">
+              UTN
+            </span>
             <button
               type="button"
               onClick={toggleDarkMode}
