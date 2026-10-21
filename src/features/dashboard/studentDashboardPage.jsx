@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import Notice from "../../shared/ui/Notice";
 import { getErrorMessage } from "../../shared/api/api";
 import { getStudentSummary } from "./services/studentSummaryService";
 import { useStudentSections } from "../enrollments/hooks/useStudentSections";
@@ -69,6 +71,14 @@ export default function StudentDashboard() {
       {summary && (
         <>
           <ProfileCard profile={summary.profile} />
+          {summary.stats.lostRegularities > 0 && (
+            <Notice>
+              {summary.stats.lostRegularities === 1
+                ? "Perdiste la regularidad de una materia. "
+                : `Perdiste la regularidad de ${summary.stats.lostRegularities} materias. `}
+              <Link to="/historial">Ver el detalle en tu historial académico</Link>
+            </Notice>
+          )}
           <StatsRow stats={summary.stats} />
 
           <div className="dash-grid">

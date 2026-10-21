@@ -13,6 +13,9 @@ import { isPast } from "../../shared/utils/formatters";
 import AvailableSectionsList from "./components/AvailableSectionsList";
 import EnrolledSectionsList from "./components/EnrolledSectionsList";
 import OutOfTermModal from "./components/OutOfTermModal";
+import RetakeModal from "../regularity/RetakeModal";
+import StudentRegularityPanel from "../regularity/StudentRegularityPanel";
+import { sectionOverrides } from "../regularity/regularityStatus";
 import ExamBoardCard from "../exams/components/ExamBoardCard";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
@@ -40,6 +43,8 @@ function StudentEnrollments({ studentId }) {
   const [examToCancel, setExamToCancel] = useState(null);
   // Inscripción rechazada por período cerrado, a la espera de que el Bedel confirme: { kind, id }
   const [outOfTermTarget, setOutOfTermTarget] = useState(null);
+  // Comisión con la regularidad vigente (recursar), a la espera de motivo: { id, courseName, outOfTerm }
+  const [retakeTarget, setRetakeTarget] = useState(null);
 
   const { available, enrolled, loading, loadError, reload, enroll, unenroll } = sectionsHook;
   const {
@@ -71,7 +76,13 @@ function StudentEnrollments({ studentId }) {
   function handleEnrollSection(sectionId) {
     // El servidor ya avisa si el período está cerrado: se pide directo la confirmación y el motivo.
     const section = available.find((item) => item.section.id === sectionId)?.section;
-    if (section?.blockedReasons?.some((r) => r.overridable)) {
+    const { outOfTerm, retake } = sectionOverrides(section?.blockedReasons);
+    if (retake) {
+      // Recursar (con o sin período cerrado): un solo modal que pide los motivos que haga falta.
+      setRetakeTarget({ id: sectionId, courseName: section.courseName, outOfTerm });
+      return;
+    }
+    if (outOfTerm) {
       setOutOfTermTarget({ kind: "section", id: sectionId });
       return;
     }
@@ -112,13 +123,31 @@ function StudentEnrollments({ studentId }) {
   async function confirmOutOfTerm(reason) {
     const { kind, id } = outOfTermTarget;
     if (kind === "section") {
-      await enroll(id, { reason });
+      await enroll(id, { outOfTerm: { reason } });
       showToast("Inscripción a la cursada confirmada (fuera de término)");
     } else {
       await enrollExam(id, { reason });
       showToast("Inscripción a la mesa confirmada (fuera de término)");
     }
     setOutOfTermTarget(null);
+  }
+
+  // Si el servidor rechaza de nuevo, el error queda en el modal (lo muestra RetakeModal).
+  async function confirmRetake({ retakeReason, outOfTermReason }) {
+    await enroll(retakeTarget.id, {
+      retake: { reason: retakeReason },
+      outOfTerm: outOfTermReason ? { reason: outOfTermReason } : null,
+    });
+    showToast(
+      retakeTarget.outOfTerm
+        ? "Cursada recursada y confirmada (fuera de término)"
+        : "Cursada recursada y confirmada",
+    );
+    setRetakeTarget(null);
+  }
+
+  async function reloadAfterRevalidation() {
+    await Promise.all([reload(), reloadExams()]);
   }
 
   async function confirmUnenrollExam() {
@@ -137,6 +166,10 @@ function StudentEnrollments({ studentId }) {
 
   return (
     <>
+      <StudentRegularityPanel studentId={studentId} onChanged={reloadAfterRevalidation} />
+
+      <hr className="plans-divider" />
+
       <section className="portal-section">
         <h2 className="portal-section-title">Cursadas</h2>
         <LoadError message={loadError} onRetry={reload} />
@@ -150,6 +183,7 @@ function StudentEnrollments({ studentId }) {
               onEnroll={handleEnrollSection}
               submitting={submitting}
               actionLabel="Inscribir"
+              retakeLabel="Recursar"
               emptyLabel="No hay comisiones abiertas para este alumno en este momento."
             />
 
@@ -228,6 +262,14 @@ function StudentEnrollments({ studentId }) {
         what={outOfTermTarget?.kind === "exam" ? "mesas de examen" : "cursadas"}
         onClose={() => setOutOfTermTarget(null)}
         onConfirm={confirmOutOfTerm}
+      />
+
+      <RetakeModal
+        open={retakeTarget !== null}
+        courseName={retakeTarget?.courseName}
+        outOfTerm={Boolean(retakeTarget?.outOfTerm)}
+        onClose={() => setRetakeTarget(null)}
+        onConfirm={confirmRetake}
       />
 
       <ConfirmModal

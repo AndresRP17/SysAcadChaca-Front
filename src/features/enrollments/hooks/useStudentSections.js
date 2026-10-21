@@ -53,9 +53,10 @@ export function useStudentSections(studentIdOverride) {
     [items],
   );
 
-  async function enroll(sectionId, outOfTerm = null) {
+  // extras (solo Bedel / Administrador): { outOfTerm: { reason }, retake: { reason } }.
+  async function enroll(sectionId, { outOfTerm = null, retake = null } = {}) {
     // Sin studentId el backend inscribe al alumno logueado.
-    await createEnrollment({ studentId: studentIdOverride, sectionId, outOfTerm });
+    await createEnrollment({ studentId: studentIdOverride, sectionId, outOfTerm, retake });
     await reload();
   }
 

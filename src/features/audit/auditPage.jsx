@@ -15,6 +15,9 @@ const ACTION_OPTIONS = [
   { value: "EXAM_ENROLLMENT_OUT_OF_TERM", label: "Inscripción a mesa de final fuera de término" },
   { value: "ATTENDANCE_JUSTIFIED", label: "Ausencia justificada" },
   { value: "ATTENDANCE_RULES_UPDATED", label: "Cambio en reglas de asistencia" },
+  { value: "REGULARITY_REVALIDATED", label: "Reválida de regularidad" },
+  { value: "ENROLLMENT_RETAKE", label: "Recursada con regularidad vigente" },
+  { value: "REGULARITY_RULES_UPDATED", label: "Cambio en reglas de regularidad" },
 ];
 
 const ROLE_BADGE_CLASS = {

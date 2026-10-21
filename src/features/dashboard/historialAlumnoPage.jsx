@@ -52,7 +52,7 @@ export default function HistorialAlumnoPage() {
           <HistoryProgress progress={history.progress} />
 
           <div className="dash-grid">
-            <HistoryCourseList courses={history.courses} />
+            <HistoryCourseList courses={history.courses} regularities={history.regularities ?? []} />
             <HistoryExamList exams={history.exams} />
           </div>
         </>

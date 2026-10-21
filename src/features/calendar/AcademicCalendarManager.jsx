@@ -6,6 +6,7 @@ import FormError from "../../shared/ui/FormError";
 import { getErrorMessage } from "../../shared/api/api";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import { formatDate } from "./ClassSheet";
+import RegularityRulesCard from "../regularity/RegularityRulesCard";
 import { getAttendanceRules, updateAttendanceRules } from "../grades/services/attendanceService";
 import {
   createAcademicTerm,
@@ -223,6 +224,8 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
           <FormError message={rulesError} />
         </form>
       </section>
+
+      <RegularityRulesCard canEdit={canEditRules} />
 
       <section className="cal-card">
         <h2 className="cal-card-title">Fechas de cursado</h2>

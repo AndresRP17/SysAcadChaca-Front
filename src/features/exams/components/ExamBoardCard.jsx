@@ -2,7 +2,7 @@ import { classroomLabel, formatDateTime } from "../../../shared/utils/formatters
 
 // Tarjeta de una mesa de examen. Sirve tanto para la oferta como para las
 // inscripciones del alumno; lo único que cambia es el botón de acción.
-export default function ExamBoardCard({ board, badge, badgeVariant = "navy", actionLabel, actionVariant = "primary", onAction, disabled }) {
+export default function ExamBoardCard({ board, badge, badgeVariant = "navy", actionLabel, actionVariant = "primary", onAction, disabled, note }) {
   return (
     <article className="portal-card">
       <div className="portal-card-head">
@@ -29,6 +29,8 @@ export default function ExamBoardCard({ board, badge, badgeVariant = "navy", act
       {board.cancelled && (
         <p className="portal-card-sub">Mesa cancelada — motivo: {board.cancellationReason}</p>
       )}
+
+      {note && <p className="portal-conflict-note">{note}</p>}
 
       {actionLabel && (
         <div className="portal-card-actions">
