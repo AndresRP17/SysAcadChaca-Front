@@ -542,6 +542,48 @@
   outline-offset: 2px;
 }
 
+.landing-team__stage {
+  position: relative;
+}
+
+.landing-team__arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  border: 1px solid var(--l-divider);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.landing-team__arrow--prev {
+  left: 6px;
+}
+
+.landing-team__arrow--next {
+  right: 6px;
+}
+
+.landing-team__arrow:hover {
+  border-color: var(--accent);
+  transform: scale(1.08);
+}
+
+.landing-team__arrow:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .landing-marquee {
   overflow: hidden;
   padding: 20px 0 24px;
@@ -552,22 +594,7 @@
 .landing-marquee__track {
   display: flex;
   width: max-content;
-  animation: landing-marquee var(--marquee-duration, 35s) linear infinite;
-}
-
-.landing-marquee:hover .landing-marquee__track,
-.landing-marquee:focus-within .landing-marquee__track,
-.landing-marquee__track.is-paused {
-  animation-play-state: paused;
-}
-
-@keyframes landing-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+  will-change: transform;
 }
 
 .landing-marquee__set {
@@ -653,7 +680,11 @@
   }
 
   .landing-marquee__track {
-    animation: none;
+    transform: none !important;
+  }
+
+  .landing-team__arrow:hover {
+    transform: none;
   }
 
   .landing-marquee__set[aria-hidden="true"],
