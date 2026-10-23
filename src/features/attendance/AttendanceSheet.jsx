@@ -15,6 +15,7 @@ import {
   COMMENT_MAX,
   JUSTIFIED_COMMENT_MIN,
   STATUSES,
+  STATUS_LABELS,
   justifiedCommentMissing,
 } from "./attendanceStatus";
 import "../users/usersPage.css";
@@ -25,6 +26,8 @@ import "./AttendanceSheet.css";
 const PAGE_SIZE = 60;
 // Si el servidor no tiene el guardado por lote (404), se guarda de a pocos pedidos en paralelo.
 const FALLBACK_CONCURRENCY = 5;
+// El contador del comentario solo aparece cuando ya se acerca al límite.
+const COMMENT_COUNTER_FROM = Math.floor(COMMENT_MAX * 0.8);
 
 function formatLongDate(isoDate) {
   const text = new Date(`${isoDate}T00:00:00`).toLocaleDateString("es-AR", {
@@ -45,66 +48,185 @@ function normalize(text) {
   return String(text).normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 }
 
-const COMMENT_PLACEHOLDER = {
-  JUSTIFIED: "Motivo (obligatorio)",
-  ABSENT: "Observación (opcional)",
-  LATE: "Observación (opcional)",
-  LEFT_EARLY: "Observación (opcional)",
-};
+function initials(name) {
+  const words = String(name).trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "?";
+  const first = words[0][0];
+  const last = words.length > 1 ? words[words.length - 1][0] : "";
+  return `${first}${last}`.toUpperCase();
+}
 
 function statusClass(value) {
   return value.toLowerCase().replace("_", "-");
 }
 
+// Nombres cortos para que los cinco botones entren en una fila en el celular. El nombre completo
+// queda en el tooltip y en la etiqueta accesible.
+const SHORT_LABEL = {
+  PRESENT: "Presente",
+  ABSENT: "Ausente",
+  JUSTIFIED: "Justif.",
+  LATE: "Tarde",
+  LEFT_EARLY: "Se retiró",
+};
+
+// Atajos de teclado con la fila enfocada: la letra marca el estado y pasa al alumno siguiente.
+const SHORTCUTS = { p: "PRESENT", a: "ABSENT", j: "JUSTIFIED", t: "LATE", r: "LEFT_EARLY" };
+
+const COMMENT_LABEL = {
+  JUSTIFIED: "Motivo de la justificación (obligatorio)",
+  ABSENT: "Nota sobre la ausencia (opcional)",
+  LATE: "Nota sobre la llegada tarde (opcional)",
+  LEFT_EARLY: "Nota sobre el retiro (opcional)",
+};
+
+const ICON_PATHS = {
+  PRESENT: <path d="M5 12.5l4.5 4.5L19 7.5" />,
+  ABSENT: <path d="M6 6l12 12M18 6L6 18" />,
+  JUSTIFIED: <path d="M7 3h7l4 4v14H7zM14 3v4h4M9.5 12h5M9.5 16h5" />,
+  LATE: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 2" />
+    </>
+  ),
+  LEFT_EARLY: <path d="M10 5H6v14h4M14 8l4 4-4 4M18 12H9" />,
+};
+
+function StatusIcon({ status }) {
+  return (
+    <svg
+      className="attendance-icon"
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {ICON_PATHS[status]}
+    </svg>
+  );
+}
+
+function focusRow(listItem) {
+  listItem?.querySelector(".attendance-row")?.focus();
+}
+
 const AttendanceRow = memo(function AttendanceRow({ row, showErrors, onChoose, onComment }) {
-  const needsComment = !row.byEquivalence && row.status !== null && row.status !== "PRESENT";
-  const missing = showErrors && justifiedCommentMissing(row.status, row.comment);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const status = row.status;
+  const isException = !row.byEquivalence && status !== null && status !== "PRESENT";
+  const commentRequired = status === "JUSTIFIED";
+  const showComment = isException && (commentRequired || noteOpen || row.comment.length > 0);
+  const missing = showErrors && justifiedCommentMissing(status, row.comment);
   const commentId = `attendance-comment-${row.enrollmentId}`;
+
+  function handleKeyDown(event) {
+    // Solo cuando el foco está en la fila misma, no en un botón ni en el campo de comentario.
+    if (event.target !== event.currentTarget || event.ctrlKey || event.metaKey || event.altKey) return;
+    const item = event.currentTarget.closest("li");
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      focusRow(event.key === "ArrowDown" ? item?.nextElementSibling : item?.previousElementSibling);
+      return;
+    }
+
+    const target = SHORTCUTS[event.key.toLowerCase()];
+    if (!target || row.byEquivalence) return;
+    event.preventDefault();
+    onChoose(row.enrollmentId, target);
+
+    if (target === "JUSTIFIED") {
+      // El motivo es obligatorio: el foco va directo al campo.
+      requestAnimationFrame(() => {
+        document.querySelector(`[data-comment-for="${row.enrollmentId}"]`)?.focus();
+      });
+    } else {
+      focusRow(item?.nextElementSibling);
+    }
+  }
 
   return (
     <li>
-      <div className="attendance-row">
-        <span className="attendance-row-name">
-          {row.studentName}
+      <div
+        className={`attendance-row attendance-row--${status ? statusClass(status) : "unmarked"}`}
+        tabIndex={0}
+        data-row-id={row.enrollmentId}
+        data-unmarked={status === null && !row.byEquivalence ? "true" : undefined}
+        onKeyDown={handleKeyDown}
+      >
+        <div className="attendance-person">
+          <span className="attendance-avatar" aria-hidden="true">
+            {initials(row.studentName)}
+          </span>
+          <span className="attendance-person-text">
+            <span className="attendance-row-name">{row.studentName}</span>
+            <span className={`attendance-row-state attendance-row-state--${status ? statusClass(status) : "unmarked"}`}>
+              {row.byEquivalence ? "Presente automático" : status ? STATUS_LABELS[status] : "Sin marcar"}
+            </span>
+          </span>
           {row.byEquivalence && <span className="users-badge users-badge--navy">Por equivalencia</span>}
-        </span>
-        <div className="attendance-choices" role="group" aria-label={`Asistencia de ${row.studentName}`}>
-          {STATUSES.map((st) => (
-            <button
-              key={st.value}
-              type="button"
-              aria-pressed={row.status === st.value}
-              className={`attendance-choice attendance-choice--${statusClass(st.value)} ${row.status === st.value ? "is-selected" : ""}`}
-              onClick={() => onChoose(row.enrollmentId, st.value)}
-              disabled={row.byEquivalence}
-            >
-              {st.label}
-            </button>
-          ))}
         </div>
-        {row.byEquivalence && (
+
+        {row.byEquivalence ? (
           <p className="attendance-equivalence-note">
             Tiene la materia aprobada por equivalencia: el sistema lo marca presente en cada clase.
           </p>
+        ) : (
+          <div className="attendance-choices" role="radiogroup" aria-label={`Asistencia de ${row.studentName}`}>
+            {STATUSES.map((st) => (
+              <button
+                key={st.value}
+                type="button"
+                role="radio"
+                aria-checked={status === st.value}
+                title={st.label}
+                aria-label={st.label}
+                className={`attendance-choice attendance-choice--${statusClass(st.value)} ${status === st.value ? "is-selected" : ""}`}
+                onClick={() => onChoose(row.enrollmentId, st.value)}
+              >
+                <StatusIcon status={st.value} />
+                <span className="attendance-choice-label">{SHORT_LABEL[st.value]}</span>
+              </button>
+            ))}
+          </div>
         )}
-        {needsComment && (
+
+        {isException && !showComment && (
+          <button type="button" className="attendance-note-link" onClick={() => setNoteOpen(true)}>
+            + Agregar nota
+          </button>
+        )}
+
+        {showComment && (
           <div className="attendance-comment">
-            <input
-              id={commentId}
-              type="text"
-              className="users-form-input"
-              data-comment-for={row.enrollmentId}
-              aria-label={`Comentario de ${row.studentName}`}
-              aria-invalid={missing || undefined}
-              aria-describedby={missing ? `${commentId}-error` : undefined}
-              placeholder={COMMENT_PLACEHOLDER[row.status]}
-              maxLength={COMMENT_MAX}
-              value={row.comment}
-              onChange={(e) => onComment(row.enrollmentId, e.target.value)}
-            />
-            <span className="attendance-comment-count" aria-hidden="true">
-              {row.comment.length}/{COMMENT_MAX}
-            </span>
+            <label className="attendance-comment-label" htmlFor={commentId}>
+              {COMMENT_LABEL[status]}
+            </label>
+            <div className="attendance-comment-field">
+              <input
+                id={commentId}
+                type="text"
+                className="users-form-input"
+                data-comment-for={row.enrollmentId}
+                aria-invalid={missing || undefined}
+                aria-describedby={missing ? `${commentId}-error` : undefined}
+                maxLength={COMMENT_MAX}
+                value={row.comment}
+                onChange={(e) => onComment(row.enrollmentId, e.target.value)}
+                autoFocus={noteOpen}
+              />
+              {row.comment.length >= COMMENT_COUNTER_FROM && (
+                <span className="attendance-comment-count" aria-hidden="true">
+                  {row.comment.length}/{COMMENT_MAX}
+                </span>
+              )}
+            </div>
             {missing && (
               <p className="attendance-comment-error" id={`${commentId}-error`} role="alert">
                 Indicá el motivo de la ausencia justificada (mínimo {JUSTIFIED_COMMENT_MIN} caracteres).
@@ -116,6 +238,24 @@ const AttendanceRow = memo(function AttendanceRow({ row, showErrors, onChoose, o
     </li>
   );
 });
+
+function SkeletonRows() {
+  return (
+    <ul className="attendance-list attendance-list--skeleton" aria-hidden="true">
+      {[0, 1, 2, 3].map((i) => (
+        <li key={i}>
+          <div className="attendance-skeleton-row">
+            <div className="attendance-person">
+              <span className="attendance-avatar attendance-skeleton" />
+              <span className="attendance-skeleton attendance-skeleton--name" />
+            </div>
+            <div className="attendance-skeleton attendance-skeleton--choices" />
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 // Asistencia de UNA clase, con la comision y la fecha ya definidas: no hay nada que elegir,
 // solo marcar y guardar. Lo usan el modal del calendario y la ruta /asistencia (pantalla completa).
@@ -136,7 +276,7 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState(null); // { done, total } mientras se guarda uno por uno
   const [search, setSearch] = useState("");
-  const [onlyUnmarked, setOnlyUnmarked] = useState(false);
+  const [filter, setFilter] = useState("all"); // all | unmarked | un estado
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [reloadKey, setReloadKey] = useState(0);
   const [showErrors, setShowErrors] = useState(false); // se marcan los motivos faltantes tras intentar guardar
@@ -166,6 +306,13 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
 
         const byEnrollment = new Map(attendances.map((a) => [a.enrollmentId, a]));
 
+        // La planilla va en orden alfabético por apellido y nombre (el servidor las manda por orden de inscripción).
+        const roster = [...enrollments].sort(
+          (a, b) =>
+            String(a.studentLastName).localeCompare(String(b.studentLastName), "es") ||
+            String(a.studentFirstName).localeCompare(String(b.studentFirstName), "es"),
+        );
+
         // Cursada por equivalencia: el backend lo pone presente en cada clase y no deja
         // cambiarlo, asi que se muestra fijo en Presente (y no cuenta como cambio sin guardar).
         const initialStatus = (e, found) => (isByEquivalence(e) ? "PRESENT" : savedStatus(found));
@@ -173,13 +320,13 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
         setClassInfo(lesson);
         setEditing(attendances.length > 0);
         initialRef.current = new Map(
-          enrollments.map((e) => {
+          roster.map((e) => {
             const found = byEnrollment.get(e.id);
             return [e.id, { status: initialStatus(e, found), comment: found?.comment ?? "" }];
           }),
         );
         setRows(
-          enrollments.map((e) => {
+          roster.map((e) => {
             const found = byEnrollment.get(e.id);
             return {
               enrollmentId: e.id,
@@ -212,7 +359,8 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
     });
     return c;
   }, [rows]);
-  const unmarkedCount = rows.length - Object.values(counts).reduce((a, b) => a + b, 0);
+  const markedCount = Object.values(counts).reduce((a, b) => a + b, 0);
+  const unmarkedCount = rows.length - markedCount;
   const dirty = useMemo(
     () =>
       rows.some((r) => {
@@ -223,17 +371,23 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
   );
   const canTakeAttendance = classInfo?.status === "SCHEDULED";
 
+  // Si el filtro elegido se queda sin alumnos (por ejemplo, se cambió al único ausente), se muestra "Todos".
+  const filterEmpty = filter === "unmarked" ? unmarkedCount === 0 : filter !== "all" && counts[filter] === 0;
+  const activeFilter = filterEmpty ? "all" : filter;
+
   const filteredRows = useMemo(() => {
     const term = normalize(search.trim());
-    return rows.filter(
-      (r) => (!onlyUnmarked || r.status === null) && (!term || normalize(r.studentName).includes(term)),
-    );
-  }, [rows, search, onlyUnmarked]);
+    return rows.filter((r) => {
+      if (activeFilter === "unmarked" && r.status !== null) return false;
+      if (activeFilter !== "all" && activeFilter !== "unmarked" && r.status !== activeFilter) return false;
+      return !term || normalize(r.studentName).includes(term);
+    });
+  }, [rows, search, activeFilter]);
 
   // Cambiar el buscador o el filtro vuelve a la primera pagina.
   useEffect(() => {
     setVisible(PAGE_SIZE);
-  }, [search, onlyUnmarked]);
+  }, [search, filter]);
 
   useEffect(() => {
     onDirtyChange?.(dirty);
@@ -254,8 +408,22 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
     setRows((prev) => prev.map((r) => (r.enrollmentId === enrollmentId ? { ...r, comment } : r)));
   }, []);
 
-  function markAllPresent() {
-    setRows((prev) => prev.map((r) => ({ ...r, status: "PRESENT", comment: "" })));
+  // Solo a los que todavía no tienen estado: lo que el docente ya marcó (un ausente, un tarde) no se pisa.
+  function markRemainingPresent() {
+    setRows((prev) => prev.map((r) => (r.status === null ? { ...r, status: "PRESENT", comment: "" } : r)));
+  }
+
+  function goToFirstUnmarked() {
+    const target = rows.find((r) => r.status === null && !r.byEquivalence);
+    if (!target) return;
+    setSearch("");
+    setFilter("all");
+    setVisible(rows.length);
+    requestAnimationFrame(() => {
+      const row = document.querySelector(`[data-row-id="${target.enrollmentId}"]`);
+      row?.scrollIntoView({ block: "center", behavior: "smooth" });
+      row?.focus({ preventScroll: true });
+    });
   }
 
   // Trae del servidor lo que ya quedo guardado y actualiza los ids, sin tocar lo que el docente marco.
@@ -316,7 +484,8 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
     if (invalid) {
       setShowErrors(true);
       setSearch("");
-      setOnlyUnmarked(false);
+      setFilter("all");
+      setVisible(rows.length);
       requestAnimationFrame(() => {
         const field = document.querySelector(`[data-comment-for="${invalid.enrollmentId}"]`);
         field?.scrollIntoView({ block: "center" });
@@ -363,10 +532,15 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
 
   const shownRows = filteredRows.slice(0, visible);
   const hiddenCount = filteredRows.length - shownRows.length;
+  const filterChips = [
+    { value: "all", label: "Todos", count: rows.length },
+    { value: "unmarked", label: "Sin marcar", count: unmarkedCount },
+    ...STATUSES.filter((st) => counts[st.value] > 0).map((st) => ({ value: st.value, label: st.short, count: counts[st.value] })),
+  ];
 
   return (
     <div className="take-attendance">
-      {loading && <p className="users-empty">Cargando...</p>}
+      {loading && <SkeletonRows />}
 
       <LoadError message={loadError} onRetry={validParams ? () => setReloadKey((k) => k + 1) : undefined} />
 
@@ -395,23 +569,48 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
 
           {canTakeAttendance && rows.length > 0 && (
             <>
-              <div className="take-attendance-toolbar">
-                <p className="take-attendance-count" aria-live="polite">
-                  {STATUSES.map((st) => (
+              <section className="attendance-summary" aria-label="Resumen de la asistencia">
+                <div className="attendance-summary-head">
+                  <p className="attendance-progress-text" aria-live="polite">
+                    <strong>{markedCount}</strong> de {rows.length} marcados
+                  </p>
+                  {unmarkedCount > 0 && (
+                    <button type="button" className="attendance-link-btn" onClick={markRemainingPresent}>
+                      Marcar {unmarkedCount === 1 ? "el restante" : `los ${unmarkedCount} restantes`} como {unmarkedCount === 1 ? "presente" : "presentes"}
+                    </button>
+                  )}
+                </div>
+
+                <div
+                  className="attendance-bar"
+                  role="img"
+                  aria-label={`${markedCount} de ${rows.length} alumnos marcados`}
+                >
+                  {STATUSES.filter((st) => counts[st.value] > 0).map((st) => (
                     <span
                       key={st.value}
-                      className={`take-attendance-pill take-attendance-pill--${statusClass(st.value)}`}
-                    >
-                      {st.short} {counts[st.value]}
-                    </span>
+                      className={`attendance-bar-seg attendance-bar-seg--${statusClass(st.value)}`}
+                      style={{ flexGrow: counts[st.value] }}
+                    />
                   ))}
-                  <span className="take-attendance-pill">Sin marcar {unmarkedCount}</span>
-                  <span className="take-attendance-pill">Total {rows.length}</span>
-                </p>
-                <button type="button" className="users-btn users-btn--ghost" onClick={markAllPresent}>
-                  Marcar todos presentes
-                </button>
-              </div>
+                  {unmarkedCount > 0 && <span className="attendance-bar-seg" style={{ flexGrow: unmarkedCount }} />}
+                </div>
+
+                <div className="attendance-filters" role="group" aria-label="Filtrar la lista">
+                  {filterChips.map((chip) => (
+                    <button
+                      key={chip.value}
+                      type="button"
+                      aria-pressed={activeFilter === chip.value}
+                      className={`attendance-chip ${chip.value !== "all" && chip.value !== "unmarked" ? `attendance-chip--${statusClass(chip.value)}` : ""} ${activeFilter === chip.value ? "is-active" : ""}`}
+                      onClick={() => setFilter(chip.value)}
+                    >
+                      {chip.label}
+                      <span className="attendance-chip-count">{chip.count}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
 
               {rows.length > 8 && (
                 <div className="take-attendance-search">
@@ -423,10 +622,6 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
-                  <label className="take-attendance-unmarked">
-                    <input type="checkbox" checked={onlyUnmarked} onChange={(e) => setOnlyUnmarked(e.target.checked)} />
-                    Solo sin marcar
-                  </label>
                 </div>
               )}
 
@@ -450,12 +645,24 @@ export default function AttendanceSheet({ sectionId: rawSectionId, date, onSaved
                 </button>
               )}
 
+              <p className="attendance-shortcuts">
+                Con una fila enfocada: <kbd>P</kbd> presente · <kbd>A</kbd> ausente · <kbd>J</kbd> justificado ·{" "}
+                <kbd>T</kbd> tarde · <kbd>R</kbd> se retiró · <kbd>↑</kbd> <kbd>↓</kbd> para moverte.
+              </p>
+
               <div className="take-attendance-footer">
-                {unmarkedCount > 0 && (
-                  <p className="take-attendance-hint">
-                    Falta marcar a {unmarkedCount} {unmarkedCount === 1 ? "alumno" : "alumnos"} para poder guardar.
-                  </p>
-                )}
+                <div className="take-attendance-footer-info">
+                  {unmarkedCount > 0 ? (
+                    <p className="take-attendance-hint">
+                      Falta marcar a {unmarkedCount} {unmarkedCount === 1 ? "alumno" : "alumnos"} para poder guardar.{" "}
+                      <button type="button" className="attendance-link-btn" onClick={goToFirstUnmarked}>
+                        Ir al primero
+                      </button>
+                    </p>
+                  ) : (
+                    <p className="take-attendance-ready">Todos marcados. Revisá y guardá.</p>
+                  )}
+                </div>
                 <button
                   type="button"
                   className="users-btn users-btn--primary"
