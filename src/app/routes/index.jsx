@@ -4,7 +4,7 @@ import RequireAuth from "../../features/layout/components/RequireAuth";
 import RequireRole from "../../features/layout/components/RequireRole";
 import NoAccessPage from "../../features/layout/components/NoAccessPage";
 import { getRolesAllowedForLink } from "../../features/layout/roleLinks";
-import LandingPage from "../../features/landing/landingPage";
+import LandingPage from "../../features/landing/LandingPage";
 import LoginPage from "../../features/auth/login/loginPage";
 import UsersPage from "../../features/users/usersPage";
 import StudentsPage from "../../features/users/studentsPage";

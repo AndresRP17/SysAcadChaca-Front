@@ -100,7 +100,7 @@ export const useVerifyEmail = () => {
         setResendSuccess('');
     };
 
-    const handleGoToLogin = () => navigate('/', { state: { openLogin: true } });
+    const handleGoToLogin = () => navigate('/login');
 
     return {
         loading,

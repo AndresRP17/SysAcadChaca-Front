@@ -43,7 +43,7 @@ api.interceptors.response.use(
       } catch {
         // sin sessionStorage solo se pierde el aviso
       }
-      window.location.href = "/";
+      window.location.href = "/login";
     }
 
     // Se rechaza el error de axios original (conserva error.response), pero con

@@ -25,7 +25,7 @@ export default function ProfilePage() {
     // El servidor ya invalidó la sesión: se sale de forma limpia en vez de esperar un 401.
     showToast("Contraseña actualizada. Ingresá de nuevo.");
     logout();
-    navigate("/");
+    navigate("/login");
   }
 
   return (

@@ -20,7 +20,7 @@
 // La escena transcurre de noche: cielo estrellado, luna, farol y ventanas prendidas.
 // Todo el movimiento está en loginScene.css (SVG + CSS, sin librerías).
 import { PERSONAJES } from "./personajes";
-import "./loginScene.css";
+import "./LoginScene.css";
 
 const COLORES_CONFETI = ["#f2a900", "#ffffff", "#66c994", "#9fc2f2", "#ff9a82"];
 

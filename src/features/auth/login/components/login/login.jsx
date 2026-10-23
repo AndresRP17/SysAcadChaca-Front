@@ -10,7 +10,7 @@ import LoginScene from "./LoginScene";
 import { PERSONAJES, elegirPersonaje } from "./personajes";
 import utnLogo from "./utn-logo.jpg";
 import "./login.css";
-import "./loginParchment.css";
+import "./LoginParchment.css";
 
 // Tiempos de la animación de login correcto. Se suman a la espera real del
 // servidor: corre a la puerta -> festeja -> entra. Para acortarla, bajá estos
