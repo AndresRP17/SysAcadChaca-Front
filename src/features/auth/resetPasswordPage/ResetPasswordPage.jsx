@@ -43,7 +43,7 @@ export const ResetPasswordPage = () => {
                     <button
                         type="button"
                         className="snp-error-page-button"
-                        onClick={() => navigate('/', { state: { openLogin: true } })}
+                        onClick={() => navigate('/login')}
                     >
                         Ir al inicio de sesión
                     </button>
@@ -55,7 +55,7 @@ export const ResetPasswordPage = () => {
         <div className="auth-page">
             <SetNewPasswordModal
                 token={token}
-                onSuccessRedirect={() => navigate('/', { state: { openLogin: true } })}
+                onSuccessRedirect={() => navigate('/login')}
             />
         </div>
     );

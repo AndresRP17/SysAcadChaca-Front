@@ -1,0 +1,795 @@
+/* Escena animada del login (estudiante caminando hacia la facultad).
+   El estado lo define data-phase:
+   idle | walking | entering | celebrating | inside | failed */
+
+.login-scene {
+  position: relative;
+  container-type: inline-size;
+  border-radius: 14px;
+  overflow: hidden;
+  /* Cielo nocturno */
+  background: linear-gradient(180deg, #0a1229 0%, #16264d 62%, #22376b 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shake-delay: 1.1s;
+}
+
+/* Error de validación: el estudiante ya está en el inicio, no camina de vuelta */
+.login-scene[data-still="true"] {
+  --shake-delay: 0s;
+}
+
+.login-scene__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Contenedores de la escena dentro de login.jsx */
+.sysacad-panel-scene {
+  position: relative;
+  width: 100%;
+}
+
+.sysacad-mobile-scene {
+  margin: -8px 0 28px;
+}
+
+@media (min-width: 768px) {
+  .sysacad-mobile-scene {
+    display: none;
+  }
+}
+
+/* Flecha para volver a la landing (ver login.jsx) */
+.sysacad-back {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.sysacad-back:hover {
+  border-color: var(--accent);
+}
+
+.sysacad-back:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* En desktop queda sobre el panel azul de la izquierda */
+@media (min-width: 768px) {
+  .sysacad-back {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+
+  .sysacad-back:hover {
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Texto solo para lectores de pantalla */
+.sysacad-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Nubes ---------- */
+.login-scene__cloud {
+  fill: rgba(170, 190, 255, 0.1);
+  animation: login-cloud 55s linear infinite;
+}
+
+.login-scene__cloud--a {
+  animation-delay: -12s;
+}
+
+.login-scene__cloud--b {
+  animation-duration: 80s;
+  animation-delay: -50s;
+}
+
+@keyframes login-cloud {
+  from {
+    transform: translateX(-60px);
+  }
+  to {
+    transform: translateX(470px);
+  }
+}
+
+/* ---------- Estudiante ---------- */
+.login-scene__walker {
+  transform: translateX(0);
+  transition: transform 0.5s ease;
+}
+
+.login-scene__person {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.login-scene__leg,
+.login-scene__arm {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+}
+
+/* En reposo respira suavemente */
+.login-scene__bob {
+  animation: login-breathe 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes login-breathe {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-0.8px);
+  }
+}
+
+@keyframes login-swing {
+  from {
+    transform: rotate(-28deg);
+  }
+  to {
+    transform: rotate(28deg);
+  }
+}
+
+@keyframes login-swing-arm {
+  from {
+    transform: rotate(-22deg);
+  }
+  to {
+    transform: rotate(22deg);
+  }
+}
+
+@keyframes login-step {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-1.6px);
+  }
+}
+
+/* Puerta */
+.login-scene__door-leaf {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  transition: transform 0.3s ease;
+}
+
+/* ---------- Ciclo de caminata (walking, entering y failed) ---------- */
+.login-scene:is([data-phase="walking"], [data-phase="entering"], [data-phase="failed"]) .login-scene__leg--a {
+  animation: login-swing 0.6s ease-in-out infinite alternate;
+}
+
+.login-scene:is([data-phase="walking"], [data-phase="entering"], [data-phase="failed"]) .login-scene__leg--b {
+  animation: login-swing 0.6s ease-in-out infinite alternate-reverse;
+}
+
+.login-scene:is([data-phase="walking"], [data-phase="entering"], [data-phase="failed"]) .login-scene__arm--a {
+  animation: login-swing-arm 0.6s ease-in-out infinite alternate-reverse;
+}
+
+.login-scene:is([data-phase="walking"], [data-phase="entering"], [data-phase="failed"]) .login-scene__arm--b {
+  animation: login-swing-arm 0.6s ease-in-out infinite alternate;
+}
+
+.login-scene:is([data-phase="walking"], [data-phase="entering"], [data-phase="failed"]) .login-scene__bob {
+  animation: login-step 0.3s ease-in-out infinite alternate;
+}
+
+/* ---------- Fases ---------- */
+
+/* Caminando: avanza despacio (frena de a poco) mientras se espera al servidor */
+.login-scene[data-phase="walking"] .login-scene__walker {
+  transform: translateX(215px);
+  transition: transform 12s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* Login correcto 1/3: corre hasta la puerta y la abre */
+.login-scene[data-phase="entering"] .login-scene__walker {
+  transform: translateX(276px);
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.8, 0.6);
+}
+
+.login-scene:is([data-phase="entering"], [data-phase="celebrating"], [data-phase="inside"]) .login-scene__door-leaf {
+  transform: scaleX(0.12);
+  transition-duration: 0.35s;
+  transition-delay: 0.3s;
+}
+
+/* Login correcto 2/3: festeja (saltitos, brazos en alto, confeti) */
+.login-scene:is([data-phase="celebrating"], [data-phase="inside"]) .login-scene__walker {
+  transform: translateX(276px);
+  transition: none;
+}
+
+.login-scene:is([data-phase="celebrating"], [data-phase="inside"]) .login-scene__arm {
+  transition: transform 0.15s ease;
+}
+
+.login-scene:is([data-phase="celebrating"], [data-phase="inside"]) .login-scene__arm--a {
+  transform: rotate(155deg);
+}
+
+.login-scene:is([data-phase="celebrating"], [data-phase="inside"]) .login-scene__arm--b {
+  transform: rotate(-155deg);
+}
+
+.login-scene[data-phase="celebrating"] .login-scene__person {
+  animation: login-jump 0.4s ease-out 2;
+}
+
+@keyframes login-jump {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.login-scene__confetti {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.login-scene[data-phase="celebrating"] .login-scene__confetti {
+  animation: login-confetti 1s ease-out forwards;
+}
+
+@keyframes login-confetti {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  45% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.7), var(--dy)) rotate(calc(var(--rot) * 0.5));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), calc(var(--dy) + 55px)) rotate(var(--rot));
+  }
+}
+
+/* Login correcto 3/3: entra por la puerta */
+.login-scene[data-phase="inside"] .login-scene__person {
+  animation: login-enter 0.3s ease-in both;
+}
+
+@keyframes login-enter {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* Login incorrecto: se enoja, vuelve al inicio y patalea */
+.login-scene[data-phase="failed"] .login-scene__walker {
+  transform: translateX(0);
+  transition: transform 1.1s ease-in-out;
+}
+
+/* Camina de vuelta ~1.2s y se queda en el lugar */
+.login-scene[data-phase="failed"] .login-scene__leg,
+.login-scene[data-phase="failed"] .login-scene__arm {
+  animation-iteration-count: 2;
+}
+
+.login-scene[data-phase="failed"] .login-scene__bob {
+  animation-iteration-count: 4;
+}
+
+/* Cuando llega, patalea (tiembla) */
+.login-scene[data-phase="failed"] .login-scene__person {
+  animation: login-shake 0.1s linear var(--shake-delay) 9 alternate;
+}
+
+@keyframes login-shake {
+  from {
+    transform: translateX(-1.6px);
+  }
+  to {
+    transform: translateX(1.6px);
+  }
+}
+
+/* Humo de enojo */
+.login-scene__steam {
+  fill: rgba(255, 255, 255, 0.85);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.login-scene[data-phase="failed"] .login-scene__steam {
+  animation: login-steam 0.9s ease-out infinite;
+}
+
+.login-scene[data-phase="failed"] .login-scene__steam--b {
+  animation-delay: 0.4s;
+}
+
+@keyframes login-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  30% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px) scale(1.5);
+  }
+}
+
+/* ---------- Enojo creciente (data-rage = 2 o 3, tras varios fallos seguidos) ---------- */
+
+/* Nivel 2: furioso. Pataleo fuerte con saltitos y más humo */
+.login-scene[data-phase="failed"][data-rage="2"] .login-scene__person {
+  animation: login-shake-2 0.2s linear var(--shake-delay) 8;
+}
+
+/* Nivel 3: berrinche. Sacudón violento, saltos más altos y rotación */
+.login-scene[data-phase="failed"][data-rage="3"] .login-scene__person {
+  animation: login-shake-3 0.16s linear var(--shake-delay) 14;
+}
+
+/* Nivel 4: igual de violento, dura más */
+.login-scene[data-phase="failed"][data-rage="4"] .login-scene__person {
+  animation: login-shake-3 0.16s linear var(--shake-delay) 18;
+}
+
+/* Nivel 5: explota, todo tiembla */
+.login-scene[data-phase="failed"][data-rage="5"] .login-scene__person {
+  animation: login-shake-4 0.12s linear var(--shake-delay) 27;
+}
+
+@keyframes login-shake-2 {
+  0%,
+  100% {
+    transform: translate(-2.5px, 0);
+  }
+  25% {
+    transform: translate(2px, -5px);
+  }
+  50% {
+    transform: translate(-2.5px, 0);
+  }
+  75% {
+    transform: translate(2px, -5px);
+  }
+}
+
+@keyframes login-shake-3 {
+  0%,
+  100% {
+    transform: translate(-3.5px, 0) rotate(-3deg);
+  }
+  50% {
+    transform: translate(3.5px, -9px) rotate(3deg);
+  }
+}
+
+@keyframes login-shake-4 {
+  0%,
+  100% {
+    transform: translate(-4px, 0) rotate(-4deg);
+  }
+  50% {
+    transform: translate(4px, -11px) rotate(4deg);
+  }
+}
+
+.login-scene[data-phase="failed"] .login-scene__steam--c {
+  animation-delay: 0.2s;
+}
+
+.login-scene[data-phase="failed"] .login-scene__steam--d {
+  animation-delay: 0.65s;
+}
+
+.login-scene:is([data-rage="3"], [data-rage="4"], [data-rage="5"])[data-phase="failed"] .login-scene__steam {
+  animation-duration: 0.6s;
+}
+
+/* Venita de enojo que late */
+.login-scene__vein {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: login-vein 0.35s ease-in-out infinite alternate;
+}
+
+@keyframes login-vein {
+  from {
+    transform: scale(0.85);
+  }
+  to {
+    transform: scale(1.25);
+  }
+}
+
+/* Tormenta con rayos (nivel 3) */
+.login-scene__storm ellipse {
+  fill: #121a26;
+  stroke: rgba(255, 255, 255, 0.18);
+  stroke-width: 0.8;
+}
+
+.login-scene__bolt {
+  fill: #ffd84a;
+  opacity: 0;
+  animation: login-bolt 0.7s linear infinite;
+}
+
+@keyframes login-bolt {
+  0%,
+  8%,
+  26%,
+  100% {
+    opacity: 0;
+  }
+  10%,
+  18% {
+    opacity: 1;
+  }
+  30%,
+  34% {
+    opacity: 1;
+  }
+}
+
+/* ---------- Noche: estrellas y ventanas ---------- */
+.login-scene__star {
+  fill: #ffffff;
+  opacity: 0.9;
+  animation: login-twinkle 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes login-twinkle {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.login-scene__window {
+  opacity: 0.9;
+}
+
+.login-scene__window--b {
+  animation: login-flicker 5s steps(1) infinite;
+}
+
+@keyframes login-flicker {
+  0%,
+  86%,
+  92%,
+  100% {
+    opacity: 0.9;
+  }
+  88%,
+  90% {
+    opacity: 0.35;
+  }
+}
+
+/* ---------- Globo de diálogo ---------- */
+.login-scene__bubble {
+  position: absolute;
+  left: 18%;
+  bottom: 57%;
+  width: max-content;
+  max-width: 50%;
+  padding: 0.45em 0.8em;
+  border-radius: 0.9em;
+  background: #ffffff;
+  color: #14181d;
+  font-size: clamp(9px, 3.5cqw, 13px);
+  font-weight: 600;
+  line-height: 1.25;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  animation: login-bubble-in 0.25s ease-out var(--bubble-delay, 0s) backwards;
+}
+
+/* Colita del globo, apuntando hacia la cabeza del estudiante (a la izquierda) */
+.login-scene__bubble::after {
+  content: "";
+  position: absolute;
+  left: -0.5em;
+  bottom: 0.4em;
+  border: 0.5em solid transparent;
+  border-left: 0;
+  border-right-color: #ffffff;
+}
+
+.login-scene__bubble strong {
+  color: #b32218;
+}
+
+.login-scene[data-rage="2"] .login-scene__bubble {
+  box-shadow: 0 0 0 2px #e5533d, 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.login-scene:is([data-rage="3"], [data-rage="4"], [data-rage="5"]) .login-scene__bubble {
+  box-shadow: 0 0 0 2px #e5533d, 0 4px 12px rgba(0, 0, 0, 0.35);
+  animation:
+    login-bubble-in 0.25s ease-out var(--bubble-delay, 0s) backwards,
+    login-bubble-shake 0.12s linear calc(var(--bubble-delay, 0s) + 0.25s) infinite alternate;
+}
+
+@keyframes login-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes login-bubble-shake {
+  from {
+    transform: translateX(-1px);
+  }
+  to {
+    transform: translateX(1px);
+  }
+}
+
+/* Error de validación: el estudiante no camina, solo patalea en su lugar */
+.login-scene[data-still="true"][data-phase="failed"] :is(.login-scene__leg, .login-scene__arm, .login-scene__bob) {
+  animation: none;
+}
+
+/* ---------- Nivel 4: tira el celular / notebook y hay relámpagos ---------- */
+.login-scene__pack {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: login-pack-back 0.4s ease-out;
+}
+
+@keyframes login-pack-back {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.login-scene[data-rage="5"][data-phase="failed"] .login-scene__pack {
+  animation: login-throw 1.3s ease-in calc(var(--shake-delay) + 1.6s) both;
+}
+
+.login-scene[data-rage="5"][data-phase="failed"] .login-scene__strap {
+  animation: login-strap-out 0.1s linear calc(var(--shake-delay) + 1.6s) both;
+}
+
+/* La mochila sale volando hacia atrás, rebota en el piso y se queda tirada */
+@keyframes login-throw {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  35% {
+    transform: translate(-34px, -34px) rotate(-200deg);
+  }
+  65% {
+    transform: translate(-58px, 36px) rotate(-340deg);
+  }
+  78% {
+    transform: translate(-64px, 24px) rotate(-362deg);
+  }
+  100% {
+    transform: translate(-70px, 36px) rotate(-390deg);
+  }
+}
+
+@keyframes login-strap-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* El celular / la notebook sale disparado contra la facultad, rebota y cae al piso.
+   Las coordenadas son relativas a la mano del estudiante (el piso está a +34). */
+.login-scene__device {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.login-scene__thrown {
+  animation:
+    login-device-throw 1.6s linear var(--shake-delay) both,
+    login-device-fade 0.4s ease-in 3.4s forwards;
+}
+
+@keyframes login-device-throw {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  8% {
+    transform: translate(-6px, -8px) rotate(-20deg);
+  }
+  14% {
+    transform: translate(39px, -25px) rotate(120deg);
+  }
+  20% {
+    transform: translate(79px, -41px) rotate(240deg);
+  }
+  26% {
+    transform: translate(118px, -48px) rotate(360deg);
+  }
+  32% {
+    transform: translate(157px, -46px) rotate(480deg);
+  }
+  38% {
+    transform: translate(197px, -36px) rotate(600deg);
+  }
+  44% {
+    transform: translate(236px, -16px) rotate(720deg);
+  }
+  52% {
+    transform: translate(215px, -34px) rotate(780deg);
+  }
+  60% {
+    transform: translate(192px, -26px) rotate(830deg);
+  }
+  68% {
+    transform: translate(172px, -4px) rotate(860deg);
+  }
+  76% {
+    transform: translate(156px, 22px) rotate(880deg);
+  }
+  82% {
+    transform: translate(148px, 34px) rotate(890deg);
+  }
+  88% {
+    transform: translate(142px, 24px) rotate(900deg);
+  }
+  94% {
+    transform: translate(138px, 34px) rotate(905deg);
+  }
+  100% {
+    transform: translate(136px, 34px) rotate(908deg);
+  }
+}
+
+@keyframes login-device-fade {
+  to {
+    opacity: 0;
+  }
+}
+
+/* La facultad se sacude cuando recibe el golpe (a 0.7 s del lanzamiento) */
+.login-scene:is([data-rage="4"], [data-rage="5"])[data-phase="failed"] .login-scene__faculty {
+  animation: login-faculty-hit 0.3s ease-out calc(var(--shake-delay) + 0.7s);
+}
+
+@keyframes login-faculty-hit {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(3px);
+  }
+  55% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(1px);
+  }
+}
+
+/* Relámpagos: el cielo se ilumina a destellos */
+.login-scene__flash {
+  position: absolute;
+  inset: 0;
+  background: #dfe8ff;
+  opacity: 0;
+  pointer-events: none;
+  animation: login-flash 1.2s steps(1) 0.9s 3;
+}
+
+@keyframes login-flash {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.55;
+  }
+  12% {
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.35;
+  }
+  26% {
+    opacity: 0;
+  }
+}
+
+/* ---------- Nivel 5: fuego, temblor general y globo gigante ---------- */
+.login-scene__fire {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: login-fire 0.18s ease-in-out infinite alternate;
+}
+
+@keyframes login-fire {
+  from {
+    transform: scale(0.9, 1.05);
+  }
+  to {
+    transform: scale(1.1, 0.9);
+  }
+}
+
+.login-scene[data-rage="5"][data-phase="failed"] .login-scene__svg {
+  animation: login-quake 0.08s linear infinite alternate;
+}
+
+@keyframes login-quake {
+  from {
+    transform: translate(-1.5px, 0.5px);
+  }
+  to {
+    transform: translate(1.5px, -0.5px);
+  }
+}
+
+.login-scene:is([data-rage="4"], [data-rage="5"]) .login-scene__bubble {
+  font-size: clamp(10px, 3.9cqw, 15px);
+  box-shadow: 0 0 0 3px #e5533d, 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* Si el usuario prefiere menos movimiento: escena estática */
+@media (prefers-reduced-motion: reduce) {
+  .login-scene *,
+  .login-scene *::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
