@@ -13,14 +13,14 @@
 //        y el cielo se ilumina con relámpagos,
 //   5 -> explota de furia: fuego en la cabeza, todo tiembla y además tira la mochila
 // `dispositivo` ("movil" | "notebook") decide qué tira en el nivel 4 y 5.
+// `personaje` (ver personajes.js) define quién camina: colores y peinado.
 // `dialogo` ({ id, texto, grito, demora, estatico }) muestra un globo de diálogo
 // con lo que salió mal cuando phase === "failed". `estatico` = no camina de vuelta
 // (se usa cuando el error es de validación y el estudiante ya está en el inicio).
 // La escena transcurre de noche: cielo estrellado, luna, farol y ventanas prendidas.
-// Todo el movimiento está en LoginScene.css (SVG + CSS, sin librerías).
+// Todo el movimiento está en loginScene.css (SVG + CSS, sin librerías).
+import { PERSONAJES } from "./personajes";
 import "./LoginScene.css";
-
-const SKIN = "#f1c9a5";
 
 const COLORES_CONFETI = ["#f2a900", "#ffffff", "#66c994", "#9fc2f2", "#ff9a82"];
 
@@ -55,14 +55,42 @@ const ESTRELLAS = [
   [98, 84, 1.0, 1.4],
 ];
 
-function Boca({ phase }) {
+function Boca({ phase, personaje }) {
   if (phase === "failed") {
-    return <path d="M2.5 -56.5 Q5.5 -59.5 8 -56.5" stroke="#8a3f2a" strokeWidth="1.2" strokeLinecap="round" fill="none" />;
+    return <path d="M2.5 -56.5 Q5.5 -59.5 8 -56.5" stroke={personaje.bocaFuerte} strokeWidth="1.2" strokeLinecap="round" fill="none" />;
   }
   if (phase === "celebrating" || phase === "inside") {
-    return <path d="M2 -58.5 Q5 -54 8.5 -58.5 Z" fill="#8a3f2a" />;
+    return <path d="M2 -58.5 Q5 -54 8.5 -58.5 Z" fill={personaje.bocaFuerte} />;
   }
-  return <path d="M3 -57.5 L7 -57.5" stroke="#8a5a44" strokeWidth="1" strokeLinecap="round" />;
+  return <path d="M3 -57.5 L7 -57.5" stroke={personaje.boca} strokeWidth="1" strokeLinecap="round" />;
+}
+
+// Peinado que va detrás de la cabeza (cola, pelo largo, rulos)
+function PeloAtras({ personaje }) {
+  const { estilo, pelo, cinta } = personaje;
+  if (estilo === "cola") {
+    return (
+      <g>
+        <path d="M-8 -67 C-19 -69 -20 -54 -14 -48 C-14 -55 -12 -60 -8 -62 Z" fill={pelo} />
+        <circle cx="-8" cy="-64.5" r="1.6" fill={cinta || "#e8517a"} />
+      </g>
+    );
+  }
+  if (estilo === "largo") {
+    return <path d="M-9 -66 C-16 -58 -15 -46 -9 -40 C-5 -39 0 -40 3 -41 C-1 -49 0 -57 4 -63 Z" fill={pelo} />;
+  }
+  if (estilo === "rulos") {
+    return (
+      <g fill={pelo}>
+        <circle cx="-8" cy="-64" r="4" />
+        <circle cx="-9" cy="-58" r="3.6" />
+        <circle cx="-4" cy="-70" r="4.4" />
+        <circle cx="3" cy="-72" r="4.4" />
+        <circle cx="9" cy="-67" r="3.8" />
+      </g>
+    );
+  }
+  return null;
 }
 
 // Color y opacidad del enojo en la cara según el nivel
@@ -80,6 +108,7 @@ export default function LoginScene({
   rage = 1,
   dialogo = null,
   dispositivo = "notebook",
+  personaje = PERSONAJES[0],
 }) {
   const enojado = phase === "failed";
   const nivel = Math.min(Math.max(rage, 1), 5);
@@ -174,44 +203,50 @@ export default function LoginScene({
               <g className="login-scene__person">
                 {/* Piernas */}
                 <g className="login-scene__leg login-scene__leg--b">
-                  <rect x="-3.5" y="-28" width="7" height="22" rx="3.5" fill="#6d8fbe" />
+                  <rect x="-3.5" y="-28" width="7" height="22" rx="3.5" fill={personaje.piernaAtras} />
                   <rect x="-4" y="-8" width="11" height="7" rx="3.5" fill="#dfe6ef" />
                 </g>
                 <g className="login-scene__leg login-scene__leg--a">
-                  <rect x="-3.5" y="-28" width="7" height="22" rx="3.5" fill="#8fb0dc" />
+                  <rect x="-3.5" y="-28" width="7" height="22" rx="3.5" fill={personaje.piernaFrente} />
                   <rect x="-4" y="-8" width="11" height="7" rx="3.5" fill="#ffffff" />
                 </g>
 
                 {/* Torso, cabeza, mochila y brazos (suben y bajan al caminar) */}
+                {personaje.falda && (
+                  <path d="M-10 -29 L10 -29 L14 -14 L-14 -14 Z" fill={personaje.falda} stroke="rgba(0,0,0,0.15)" strokeWidth="0.6" />
+                )}
+
                 <g className="login-scene__bob">
                   <g className="login-scene__arm login-scene__arm--b">
-                    <rect x="-3" y="-50" width="6" height="19" rx="3" fill="#cfd8e6" />
-                    <circle cx="0" cy="-30" r="3" fill={SKIN} />
+                    <rect x="-3" y="-50" width="6" height="19" rx="3" fill={personaje.mangaAtras} />
+                    <circle cx="0" cy="-30" r="3" fill={personaje.piel} />
                   </g>
                   <g className="login-scene__pack">
-                    <rect x="-19" y="-50" width="12" height="22" rx="5" fill="#f2a900" />
+                    <rect x="-19" y="-50" width="12" height="22" rx="5" fill={personaje.mochila} />
                     <rect x="-19" y="-41" width="12" height="2.5" fill="rgba(0,0,0,0.18)" />
                   </g>
-                  <rect x="-9" y="-52" width="18" height="26" rx="7" fill="#ffffff" />
-                  <path className="login-scene__strap" d="M-4 -51 L-8 -34" stroke="#f2a900" strokeWidth="2.5" strokeLinecap="round" />
+                  <rect x="-9" y="-52" width="18" height="26" rx="7" fill={personaje.remera} />
+                  <path className="login-scene__strap" d="M-4 -51 L-8 -34" stroke={personaje.mochila} strokeWidth="2.5" strokeLinecap="round" />
+
+                  <PeloAtras personaje={personaje} />
 
                   {/* Cabeza */}
-                  <circle cx="1" cy="-62" r="9" fill={SKIN} />
+                  <circle cx="1" cy="-62" r="9" fill={personaje.piel} />
                   {enojado && <circle cx="1" cy="-62" r="9" fill={cara.fill} opacity={cara.opacity} />}
                   <path
                     d="M-9.5 -61 C-10 -73 8 -75 10 -64 C5 -67 -3 -66 -9.5 -61 Z"
-                    fill="#2b2118"
+                    fill={personaje.pelo}
                   />
                   <circle cx="5" cy="-62" r="1.2" fill="#14181d" />
                   {enojado && (
                     <path
                       d="M1.5 -66.5 L8.5 -64"
-                      stroke="#2b2118"
+                      stroke={personaje.pelo}
                       strokeWidth={nivel >= 2 ? 2.4 : 1.6}
                       strokeLinecap="round"
                     />
                   )}
-                  <Boca phase={phase} />
+                  <Boca phase={phase} personaje={personaje} />
 
                   {/* Humo de enojo */}
                   <circle className="login-scene__steam login-scene__steam--a" cx="-3" cy="-76" r="3" />
@@ -262,11 +297,11 @@ export default function LoginScene({
                       width="6"
                       height="19"
                       rx="3"
-                      fill="#ffffff"
+                      fill={personaje.remera}
                       stroke="rgba(0,0,0,0.18)"
                       strokeWidth="0.8"
                     />
-                    <circle cx="0" cy="-30" r="3" fill={SKIN} />
+                    <circle cx="0" cy="-30" r="3" fill={personaje.piel} />
                   </g>
                 </g>
               </g>
@@ -275,19 +310,22 @@ export default function LoginScene({
             {/* Nivel 4 o más: tira su celular / notebook contra la facultad */}
             {enojado && nivel >= 4 && (
               <g className="login-scene__thrown">
-                <g className="login-scene__device" transform="translate(0 -34)">
-                  {dispositivo === "movil" ? (
-                    <>
-                      <rect x="-4" y="-7" width="8" height="14" rx="1.6" fill="#1a1f2b" stroke="#aab4c8" strokeWidth="0.8" />
-                      <rect x="-3" y="-5.5" width="6" height="10" rx="0.8" fill="#6fc3ff" />
-                    </>
-                  ) : (
-                    <>
-                      <rect x="-9" y="-7" width="18" height="11" rx="1" fill="#1a1f2b" stroke="#aab4c8" strokeWidth="0.8" />
-                      <rect x="-7.5" y="-5.5" width="15" height="8" fill="#6fc3ff" />
-                      <path d="M-11 4.5 L11 4.5 L9 7 L-9 7 Z" fill="#aab4c8" />
-                    </>
-                  )}
+                {/* La mano del estudiante está a 34 unidades sobre los pies */}
+                <g transform="translate(0 -34)">
+                  <g className="login-scene__device">
+                    {dispositivo === "movil" ? (
+                      <>
+                        <rect x="-4" y="-7" width="8" height="14" rx="1.6" fill="#1a1f2b" stroke="#aab4c8" strokeWidth="0.8" />
+                        <rect x="-3" y="-5.5" width="6" height="10" rx="0.8" fill="#6fc3ff" />
+                      </>
+                    ) : (
+                      <>
+                        <rect x="-9" y="-7" width="18" height="11" rx="1" fill="#1a1f2b" stroke="#aab4c8" strokeWidth="0.8" />
+                        <rect x="-7.5" y="-5.5" width="15" height="8" fill="#6fc3ff" />
+                        <path d="M-11 4.5 L11 4.5 L9 7 L-9 7 Z" fill="#aab4c8" />
+                      </>
+                    )}
+                  </g>
                 </g>
               </g>
             )}
