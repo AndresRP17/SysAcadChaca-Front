@@ -6,10 +6,10 @@ import { useAuth } from "../../../../../context/AuthContext";
 import { useTheme } from "../../../../../context/ThemeContext";
 import { getDefaultRouteForRole } from "../../../../layout/roleLinks";
 import { getErrorMessage, SESSION_EXPIRED_KEY } from "../../../../../shared/api/api";
-import LoginScene from "./loginScene";
+import LoginScene from "./LoginScene";
 import utnLogo from "./utn-logo.jpg";
 import "./login.css";
-import "./loginParchment.css";
+import "./LoginParchment.css";
 
 // Tiempos de la animación de login correcto. Se suman a la espera real del
 // servidor: corre a la puerta -> festeja -> entra. Para acortarla, bajá estos

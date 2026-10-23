@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import ThemeToggle from "../../shared/ui/ThemeToggle";
 import TeamCarousel from "./components/TeamCarousel";
 import utnLogo from "../auth/login/components/login/utn-logo.jpg";
-import "./landingPage.css";
+import "./LandingPage.css";
 
 const LOGIN_PATH = "/login";
 const FORGOT_PASSWORD_PATH = "/forgot-password";

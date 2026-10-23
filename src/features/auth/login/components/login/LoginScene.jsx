@@ -17,8 +17,8 @@
 // con lo que salió mal cuando phase === "failed". `estatico` = no camina de vuelta
 // (se usa cuando el error es de validación y el estudiante ya está en el inicio).
 // La escena transcurre de noche: cielo estrellado, luna, farol y ventanas prendidas.
-// Todo el movimiento está en loginScene.css (SVG + CSS, sin librerías).
-import "./loginScene.css";
+// Todo el movimiento está en LoginScene.css (SVG + CSS, sin librerías).
+import "./LoginScene.css";
 
 const SKIN = "#f1c9a5";
 

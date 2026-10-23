@@ -5,7 +5,7 @@ export const ForgotPasswordPage = () => {
     const navigate = useNavigate();
     return (
         <div className="auth-page">
-            <ResetPasswordModal onBack={() => navigate('/')} />
+            <ResetPasswordModal onBack={() => navigate('/login')} />
         </div>
     );
 };
