@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getErrorMessage } from "../../../shared/api/api";
 import { useToast } from "../../../context/ToastContext";
 import LoadError from "../../../shared/ui/LoadError";
@@ -27,6 +28,8 @@ export default function NotasTab({ sectionId, enrollments }) {
   const [saveError, setSaveError] = useState("");
   const [saving, setSaving] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [searchParams] = useSearchParams();
+  const requestedEvaluationId = searchParams.get("evaluacion");
 
   useEffect(() => {
     // Si no se resetea acá, al cambiar de comisión queda seleccionada la
@@ -43,10 +46,13 @@ export default function NotasTab({ sectionId, enrollments }) {
     getEvaluationsBySection(sectionId)
       .then((data) => {
         setEvaluations(data);
-        if (data.length > 0) setEvaluationId(String(data[0].id));
+        // Desde el calendario se llega con ?evaluacion=ID: queda elegida esa evaluacion.
+        const requested = data.find((ev) => String(ev.id) === requestedEvaluationId);
+        if (requested) setEvaluationId(String(requested.id));
+        else if (data.length > 0) setEvaluationId(String(data[0].id));
       })
       .catch((err) => setLoadError(getErrorMessage(err, "No se pudieron cargar las evaluaciones.")));
-  }, [sectionId, reloadKey]);
+  }, [sectionId, reloadKey, requestedEvaluationId]);
 
   useEffect(() => {
     async function load() {
