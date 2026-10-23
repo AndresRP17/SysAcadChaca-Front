@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { ScheduleXCalendar, useCalendarApp } from "@schedule-x/react";
 import {
   createViewList,
@@ -68,7 +69,8 @@ function toEvaluationEvents(evaluations) {
   }));
 }
 
-function evaluationDetail(ev, isAlumno) {
+// El Alumno ve su nota; el Docente, un acceso directo a cargar las notas de ese parcial.
+function evaluationDetail(ev, { isAlumno, isDocente }) {
   const grade =
     ev.condition === "AUSENTE"
       ? "Tu resultado: Ausente"
@@ -79,6 +81,9 @@ function evaluationDetail(ev, isAlumno) {
   return {
     title: `${ev.name} · ${ev.courseName}`,
     lines: [`Comisión ${ev.sectionName}`, formatDate(ev.date), ...(isAlumno ? [grade] : [])],
+    action: isDocente
+      ? { label: "Cargar notas", to: `/comision/${ev.sectionId}?evaluacion=${ev.evaluationId}` }
+      : null,
   };
 }
 
@@ -264,7 +269,7 @@ function CalendarContent({ onRetry }) {
           const evaluation = evaluationsRef.current[event.id];
 
           if (evaluation) {
-            setDetail(evaluationDetail(evaluation, isAlumno));
+            setDetail(evaluationDetail(evaluation, { isAlumno, isDocente }));
             return;
           }
 
@@ -421,7 +426,16 @@ function CalendarContent({ onRetry }) {
           ))}
         </ul>
         <div className="users-form-actions">
-          <button type="button" className="users-btn users-btn--primary" onClick={() => setDetail(null)}>
+          {detail?.action && (
+            <Link to={detail.action.to} className="users-btn users-btn--primary">
+              {detail.action.label}
+            </Link>
+          )}
+          <button
+            type="button"
+            className={`users-btn ${detail?.action ? "users-btn--ghost" : "users-btn--primary"}`}
+            onClick={() => setDetail(null)}
+          >
             Cerrar
           </button>
         </div>
