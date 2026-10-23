@@ -632,66 +632,87 @@
 }
 
 /* El celular / la notebook sale disparado contra la facultad, rebota y cae al piso.
-   Las coordenadas son relativas a la mano del estudiante (el piso está a +34). */
-.login-scene__device {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
+   Trayectoria (translate) y giro (rotate) van en elementos distintos para que el giro
+   sea sobre el centro del aparato. Las coordenadas son relativas a la mano del
+   estudiante (el piso está a +34). */
 .login-scene__thrown {
   animation:
     login-device-throw 1.6s linear var(--shake-delay) both,
     login-device-fade 0.4s ease-in 3.4s forwards;
 }
 
+.login-scene__device {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: login-device-spin 1.6s linear var(--shake-delay) both;
+}
+
 @keyframes login-device-throw {
   0% {
-    transform: translate(0, 0) rotate(0deg);
+    transform: translate(0, 0);
   }
   8% {
-    transform: translate(-6px, -8px) rotate(-20deg);
+    transform: translate(-6px, -8px);
   }
   14% {
-    transform: translate(39px, -25px) rotate(120deg);
+    transform: translate(39px, -25px);
   }
   20% {
-    transform: translate(79px, -41px) rotate(240deg);
+    transform: translate(79px, -41px);
   }
   26% {
-    transform: translate(118px, -48px) rotate(360deg);
+    transform: translate(118px, -48px);
   }
   32% {
-    transform: translate(157px, -46px) rotate(480deg);
+    transform: translate(157px, -46px);
   }
   38% {
-    transform: translate(197px, -36px) rotate(600deg);
+    transform: translate(197px, -36px);
   }
   44% {
-    transform: translate(236px, -16px) rotate(720deg);
+    transform: translate(236px, -16px);
   }
   52% {
-    transform: translate(215px, -34px) rotate(780deg);
+    transform: translate(215px, -34px);
   }
   60% {
-    transform: translate(192px, -26px) rotate(830deg);
+    transform: translate(192px, -26px);
   }
   68% {
-    transform: translate(172px, -4px) rotate(860deg);
+    transform: translate(172px, -4px);
   }
   76% {
-    transform: translate(156px, 22px) rotate(880deg);
+    transform: translate(156px, 22px);
   }
   82% {
-    transform: translate(148px, 34px) rotate(890deg);
+    transform: translate(148px, 34px);
   }
   88% {
-    transform: translate(142px, 24px) rotate(900deg);
+    transform: translate(142px, 24px);
   }
   94% {
-    transform: translate(138px, 34px) rotate(905deg);
+    transform: translate(138px, 34px);
   }
   100% {
-    transform: translate(136px, 34px) rotate(908deg);
+    transform: translate(136px, 34px);
+  }
+}
+
+@keyframes login-device-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  8% {
+    transform: rotate(-20deg);
+  }
+  44% {
+    transform: rotate(720deg);
+  }
+  82% {
+    transform: rotate(890deg);
+  }
+  100% {
+    transform: rotate(908deg);
   }
 }
 

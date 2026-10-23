@@ -6,7 +6,8 @@ import { useAuth } from "../../../../../context/AuthContext";
 import { useTheme } from "../../../../../context/ThemeContext";
 import { getDefaultRouteForRole } from "../../../../layout/roleLinks";
 import { getErrorMessage, SESSION_EXPIRED_KEY } from "../../../../../shared/api/api";
-import LoginScene from "./loginScene";
+import LoginScene from "./LoginScene";
+import { PERSONAJES, elegirPersonaje } from "./personajes";
 import utnLogo from "./utn-logo.jpg";
 import "./login.css";
 import "./loginParchment.css";
@@ -22,6 +23,11 @@ const ENTER_MS = 350;
 const FAIL_MS_POR_NIVEL = [2100, 2700, 3400, 4000, 4600];
 // Lo que grita el estudiante según el nivel de enojo (1 a 5).
 const GRITOS = ["", "¡OTRA VEZ!", "¡¡BASTA!!", "¡NO PUEDE SER!", "¡¡AAAARGH!!"];
+
+// Para fijar siempre el mismo personaje (por ejemplo en una demo) poné su id acá:
+// "el-corto" | "ella-cola" | "ella-larga-pollera" | "el-rulos" | "ella-rulos".
+// En null, cada vez que se entra al login aparece uno distinto al azar.
+const PERSONAJE_FIJO = null;
 
 const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -94,6 +100,9 @@ export default function Login() {
   const [rage, setRage] = useState(1);
   const [dialogo, setDialogo] = useState(null);
   const [dispositivo] = useState(detectarDispositivo);
+  const [personaje] = useState(
+    () => PERSONAJES.find((p) => p.id === PERSONAJE_FIJO) ?? elegirPersonaje()
+  );
   const idDialogo = useRef(0);
   const fallos = useRef(0);
   const failTimer = useRef(null);
@@ -189,7 +198,7 @@ export default function Login() {
           </div>
 
           <div className="sysacad-panel-scene">
-            <LoginScene phase={scenePhase} variant="panel" rage={rage} dialogo={dialogo} dispositivo={dispositivo} />
+            <LoginScene phase={scenePhase} variant="panel" rage={rage} dialogo={dialogo} dispositivo={dispositivo} personaje={personaje} />
           </div>
 
           <div className="sysacad-panel-bottom">
@@ -227,7 +236,7 @@ export default function Login() {
             </div>
 
             <div className="sysacad-mobile-scene">
-              <LoginScene phase={scenePhase} variant="mobile" rage={rage} dialogo={dialogo} dispositivo={dispositivo} />
+              <LoginScene phase={scenePhase} variant="mobile" rage={rage} dialogo={dialogo} dispositivo={dispositivo} personaje={personaje} />
             </div>
 
             <h2 className="sysacad-title">Bienvenido de nuevo</h2>
