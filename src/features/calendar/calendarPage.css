@@ -138,6 +138,17 @@
   color: var(--text-secondary);
 }
 
+.calendar-today-evaluation {
+  margin: 0 0 8px;
+  color: #7c3aed;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .calendar-today-evaluation {
+  color: #c4b5fd;
+}
+
 /* Celular: la agenda del dia usa el scroll de la PAGINA, no uno interno propio (con alto fijo
    la segunda clase quedaba cortada sin ninguna pista de que habia mas). */
 @media (max-width: 767px) {

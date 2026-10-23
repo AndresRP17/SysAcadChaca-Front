@@ -19,7 +19,9 @@ function formatTime(zoned) {
 
 export function AgendaEvent({ calendarEvent }) {
   const { title, location, actionLabel, attendanceTaken, attendanceStatus, attendanceComment, calendarId } = calendarEvent;
-  const time = calendarId === "holiday" ? "" : `${formatTime(calendarEvent.start)} – ${formatTime(calendarEvent.end)}`;
+  // Feriados y parciales son de dia completo: sin horario.
+  const allDay = calendarId === "holiday" || calendarId === "evaluation";
+  const time = allDay ? "" : `${formatTime(calendarEvent.start)} – ${formatTime(calendarEvent.end)}`;
 
   return (
     <div className="cal-event">
