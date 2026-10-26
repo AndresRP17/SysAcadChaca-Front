@@ -36,7 +36,13 @@ export async function getAttendanceRules() {
   return data;
 }
 
-export async function updateAttendanceRules({ lateCredit, leftEarlyCredit }) {
-  const { data } = await api.put("/attendance-rules", { late_credit: lateCredit, left_early_credit: leftEarlyCredit });
+// lateAuditDays: dias de atraso a partir de los cuales cargar la asistencia de una clase queda en la auditoria
+// (cambiar una asistencia ya guardada se audita siempre). Sin el valor, el servidor conserva el actual.
+export async function updateAttendanceRules({ lateCredit, leftEarlyCredit, lateAuditDays }) {
+  const { data } = await api.put("/attendance-rules", {
+    late_credit: lateCredit,
+    left_early_credit: leftEarlyCredit,
+    ...(lateAuditDays === undefined ? {} : { late_audit_days: lateAuditDays }),
+  });
   return data;
 }

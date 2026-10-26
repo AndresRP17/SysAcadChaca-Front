@@ -33,7 +33,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
   const { showToast } = useToast();
   const { user } = useAuth();
   const canEditRules = user?.role === "Administrador"; // Bedel la ve en solo lectura
-  const [rules, setRules] = useState({ late: "1", leftEarly: "1" });
+  const [rules, setRules] = useState({ late: "1", leftEarly: "1", lateAuditDays: "7" });
   const [savedRules, setSavedRules] = useState(null);
   const [rulesError, setRulesError] = useState("");
   const [rulesLoadError, setRulesLoadError] = useState("");
@@ -69,7 +69,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
   const loadRules = useCallback(async () => {
     try {
       const r = await getAttendanceRules();
-      const next = { late: String(r.lateCredit), leftEarly: String(r.leftEarlyCredit) };
+      const next = { late: String(r.lateCredit), leftEarly: String(r.leftEarlyCredit), lateAuditDays: String(r.lateAuditDays ?? 7) };
       setRules(next);
       setSavedRules(next);
       setRulesLoadError("");
@@ -85,10 +85,15 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
   async function submitRules(e) {
     e.preventDefault();
     setRulesError("");
+    const days = Number(rules.lateAuditDays);
+    if (rules.lateAuditDays.trim() === "" || !Number.isInteger(days) || days < 0 || days > 365) {
+      setRulesError("Los días de atraso para auditar tienen que ser un número entero entre 0 y 365.");
+      return;
+    }
     setRulesSaving(true);
     try {
-      const r = await updateAttendanceRules({ lateCredit: Number(rules.late), leftEarlyCredit: Number(rules.leftEarly) });
-      const next = { late: String(r.lateCredit), leftEarly: String(r.leftEarlyCredit) };
+      const r = await updateAttendanceRules({ lateCredit: Number(rules.late), leftEarlyCredit: Number(rules.leftEarly), lateAuditDays: days });
+      const next = { late: String(r.lateCredit), leftEarly: String(r.leftEarlyCredit), lateAuditDays: String(r.lateAuditDays ?? days) };
       setRules(next);
       setSavedRules(next);
       showToast("Reglas de asistencia guardadas.");
@@ -175,7 +180,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
           recalculan.
         </p>
         <LoadError message={rulesLoadError} onRetry={loadRules} />
-        <form className="users-form cal-inline-form" onSubmit={submitRules}>
+        <form className="users-form cal-inline-form" onSubmit={submitRules} noValidate>
           <div className="cal-rules-grid">
             <div className="users-form-field">
               <label className="users-form-label" htmlFor="rule-late">Llegó tarde</label>
@@ -205,6 +210,26 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
                 ))}
               </select>
             </div>
+            <div className="users-form-field">
+              <label className="users-form-label" htmlFor="rule-late-audit">Auditar la carga con más de (días de atraso)</label>
+              <input
+                id="rule-late-audit"
+                type="number"
+                inputMode="numeric"
+                min="0"
+                max="365"
+                step="1"
+                className="users-form-input"
+                value={rules.lateAuditDays}
+                disabled={!canEditRules || rulesSaving || !savedRules}
+                aria-describedby="rule-late-audit-help"
+                onChange={(e) => setRules({ ...rules, lateAuditDays: e.target.value })}
+              />
+              <p className="cal-card-help" id="rule-late-audit-help">
+                Cambiar una asistencia ya guardada se audita siempre. Este valor define desde cuántos días de atraso se
+                audita la primera carga de una clase.
+              </p>
+            </div>
           </div>
           {canEditRules ? (
             <button
@@ -213,7 +238,9 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
               disabled={
                 rulesSaving ||
                 !savedRules ||
-                (rules.late === savedRules.late && rules.leftEarly === savedRules.leftEarly)
+                (rules.late === savedRules.late &&
+                  rules.leftEarly === savedRules.leftEarly &&
+                  rules.lateAuditDays === savedRules.lateAuditDays)
               }
             >
               {rulesSaving ? "Guardando..." : "Guardar reglas"}
