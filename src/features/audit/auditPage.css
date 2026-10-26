@@ -44,3 +44,24 @@
     white-space: nowrap;
   }
 }
+
+/* Lista de alumnos de un registro de asistencia (cambios o cargados con atraso). */
+.audit-details {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.audit-details summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.audit-details ul {
+  margin: 6px 0 0 0;
+  padding-left: 18px;
+}
+
+.audit-details li + li {
+  margin-top: 2px;
+}

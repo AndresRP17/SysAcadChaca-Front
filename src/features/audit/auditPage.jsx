@@ -3,6 +3,7 @@ import { getErrorMessage } from "../../shared/api/api";
 import LoadError from "../../shared/ui/LoadError";
 import { usePageSize } from "../../shared/hooks/usePageSize";
 import Pagination from "../../shared/ui/Pagination";
+import { STATUS_LABELS } from "../attendance/attendanceStatus";
 import { getAuditLogs } from "./services/auditService";
 import "../users/usersPage.css";
 import "./auditPage.css";
@@ -14,11 +15,46 @@ const ACTION_OPTIONS = [
   { value: "ENROLLMENT_OUT_OF_TERM", label: "Inscripción a cursada fuera de término" },
   { value: "EXAM_ENROLLMENT_OUT_OF_TERM", label: "Inscripción a mesa de final fuera de término" },
   { value: "ATTENDANCE_JUSTIFIED", label: "Ausencia justificada" },
+  { value: "ATTENDANCE_CHANGED", label: "Asistencia modificada" },
+  { value: "ATTENDANCE_LATE_LOADED", label: "Asistencia cargada con atraso" },
+  { value: "ATTENDANCE_DELETED", label: "Asistencia eliminada" },
   { value: "ATTENDANCE_RULES_UPDATED", label: "Cambio en reglas de asistencia" },
   { value: "REGULARITY_REVALIDATED", label: "Reválida de regularidad" },
   { value: "ENROLLMENT_RETAKE", label: "Recursada con regularidad vigente" },
   { value: "REGULARITY_RULES_UPDATED", label: "Cambio en reglas de regularidad" },
 ];
+
+// Lista de alumnos de un registro de asistencia: los cambios (de qué estado a cuál) o los alumnos cargados con atraso.
+// Con un solo cambio el resumen ya lo dice todo, así que no se repite.
+function AttendanceDetails({ details }) {
+  const status = (value) => STATUS_LABELS[value] ?? value;
+  let items = [];
+  if (Array.isArray(details?.changes)) {
+    items = details.changes.map((c) => ({
+      key: c.enrollmentId,
+      text: `${c.student}: ${status(c.from?.status)} → ${status(c.to?.status)}`,
+      note: c.to?.comment,
+    }));
+    if (items.length < 2 && !items[0]?.note) return null;
+  } else if (Array.isArray(details?.students)) {
+    items = details.students.map((s) => ({ key: s.enrollmentId, text: `${s.student}: ${status(s.status)}` }));
+  }
+  if (items.length === 0) return null;
+
+  return (
+    <details className="audit-details">
+      <summary>Ver {items.length} {items.length === 1 ? "alumno" : "alumnos"}</summary>
+      <ul>
+        {items.map((item) => (
+          <li key={item.key}>
+            {item.text}
+            {item.note && <span className="audit-reason">Nota: {item.note}</span>}
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
 
 const ROLE_BADGE_CLASS = {
   Administrador: "dash-badge dash-badge--navy",
@@ -171,6 +207,7 @@ export default function AuditPage() {
                         {(log.details?.reason || log.details?.comment) && (
                           <span className="audit-reason">Motivo: {log.details.reason || log.details.comment}</span>
                         )}
+                        <AttendanceDetails details={log.details} />
                       </span>
                     </td>
                   </tr>
