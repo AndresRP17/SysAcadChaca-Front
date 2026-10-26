@@ -5,7 +5,7 @@ import { getPrerequisites, createPrerequisite, updatePrerequisite, deletePrerequ
 import StudyPlanSelector from "./StudyPlanSelector";
 import StudyPlanFormModal from "./StudyPlanFormModal";
 import PrerequisiteFormModal from "./PrerequisiteFormModal";
-import CorrelativesMatrix from "./CorrelativesMatrix";
+import CorrelativesPlanMap, { isStrictlyBefore } from "./CorrelativesPlanMap";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 import { createStudyPlan, updateStudyPlan, deleteStudyPlan } from "../services/studyPlanService";
 
@@ -19,9 +19,9 @@ export default function CorrelativesTab() {
   const [curriculumCourses, setCurriculumCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [selectedCurriculumCourseId, setSelectedCurriculumCourseId] = useState(null);
-  const [prerequisites, setPrerequisites] = useState([]);
+  const [prereqsByCourse, setPrereqsByCourse] = useState({});
+  const [loadingPrereqs, setLoadingPrereqs] = useState(false);
   const [error, setError] = useState("");
-  const [view, setView] = useState("list"); // "list" | "matrix"
 
   const [planFormOpen, setPlanFormOpen] = useState(false);
   const [planFormMode, setPlanFormMode] = useState("create");
@@ -52,21 +52,28 @@ export default function CorrelativesTab() {
     reloadCurriculumCourses(studyPlanId);
   }, [studyPlanId]);
 
-  async function reloadPrerequisites(forCurriculumCourseId) {
-    if (!forCurriculumCourseId) {
-      setPrerequisites([]);
-      return;
-    }
+  // Una sola carga para todo el plan: el mapa necesita saber quién requiere a quién en todas las materias.
+  async function reloadPrerequisites(courses = curriculumCourses) {
+    setLoadingPrereqs(true);
     try {
-      setPrerequisites(await getPrerequisites(forCurriculumCourseId));
+      const results = await Promise.all(
+        courses.map((cc) => getPrerequisites(cc.id).then((list) => [cc.courseId, list])),
+      );
+      setPrereqsByCourse(Object.fromEntries(results));
     } catch (e) {
       setError(e.message);
+    } finally {
+      setLoadingPrereqs(false);
     }
   }
 
   useEffect(() => {
-    reloadPrerequisites(selectedCurriculumCourseId);
-  }, [selectedCurriculumCourseId]);
+    if (curriculumCourses.length === 0) {
+      setPrereqsByCourse({});
+      return;
+    }
+    reloadPrerequisites(curriculumCourses);
+  }, [curriculumCourses]);
 
   function openCreatePlan() {
     setPlanFormMode("create");
@@ -116,26 +123,29 @@ export default function CorrelativesTab() {
       await createPrerequisite({ ...data, curriculum_course_id: selectedCurriculumCourseId });
     }
     setAddOpen(false);
-    await reloadPrerequisites(selectedCurriculumCourseId);
+    await reloadPrerequisites();
   }
 
   async function handleConfirmDeletePrereq() {
     await deletePrerequisite(prereqToDelete.id);
     setPrereqToDelete(null);
-    await reloadPrerequisites(selectedCurriculumCourseId);
+    await reloadPrerequisites();
   }
 
   const selectedCourse = curriculumCourses.find((cc) => cc.id === selectedCurriculumCourseId);
-  // Una materia no puede ser correlativa de si misma, y ya la sacamos por curriculum_course_id de la lista de la izquierda.
-  const availableCourses = curriculumCourses
-    .filter((cc) => cc.id !== selectedCurriculumCourseId)
-    .map((cc) => ({
-      id: cc.courseId,
-      code: cc.courseCode,
-      name: cc.courseName,
-      yearNumber: cc.yearNumber,
-      term: cc.term,
-    }));
+  const prerequisites = selectedCourse ? prereqsByCourse[selectedCourse.courseId] ?? [] : [];
+  const enabledCourses = selectedCourse
+    ? curriculumCourses.filter((cc) =>
+        (prereqsByCourse[cc.courseId] ?? []).some((p) => p.requiredCourseId === selectedCourse.courseId))
+    : [];
+  // Solo se ofrecen materias de un cuatrimestre anterior (la misma regla que valida el backend) y que todavia no esten cargadas.
+  const editingId = addOpen && prereqFormMode === "edit" ? editingPrereq?.id : null;
+  const availableCourses = selectedCourse
+    ? curriculumCourses
+        .filter((cc) => isStrictlyBefore(cc, selectedCourse))
+        .filter((cc) => !prerequisites.some((p) => p.requiredCourseId === cc.courseId && p.id !== editingId))
+        .map((cc) => ({ id: cc.courseId, code: cc.courseCode, name: cc.courseName, yearNumber: cc.yearNumber, term: cc.term }))
+    : [];
 
   return (
     <div>
@@ -163,103 +173,85 @@ export default function CorrelativesTab() {
 
       {studyPlanId && !loadingCourses && curriculumCourses.length > 0 && (
         <>
-          <div className="plans-tabs plans-tabs--secondary">
-            <button
-              type="button"
-              className={`plans-tab ${view === "list" ? "plans-tab--active" : ""}`}
-              onClick={() => setView("list")}
-            >
-              Configurar
-            </button>
-            <button
-              type="button"
-              className={`plans-tab ${view === "matrix" ? "plans-tab--active" : ""}`}
-              onClick={() => setView("matrix")}
-            >
-              Ver matriz
-            </button>
+          <p className="corr-hint">
+            Elegí una materia para ver qué necesita para cursarla y qué materias habilita.
+          </p>
+          <div className="corr-layout" aria-busy={loadingPrereqs}>
+            <CorrelativesPlanMap
+              curriculumCourses={curriculumCourses}
+              prereqsByCourse={prereqsByCourse}
+              selectedId={selectedCurriculumCourseId}
+              onSelect={setSelectedCurriculumCourseId}
+            />
+
+            <aside className="corr-panel" aria-live="polite">
+              {loadingPrereqs && <p className="users-empty">Cargando correlativas...</p>}
+              {!loadingPrereqs && !selectedCourse && <p className="users-empty">Ninguna materia elegida.</p>}
+
+              {!loadingPrereqs && selectedCourse && (
+                <>
+                  <h3 className="corr-panel-title">{selectedCourse.courseName}</h3>
+                  <p className="corr-panel-sub">
+                    {selectedCourse.courseCode} · {selectedCourse.yearNumber}° año ·{" "}
+                    {selectedCourse.term === 0 ? "anual" : `${selectedCourse.term}° cuatrimestre`}
+                  </p>
+
+                  <h4 className="corr-panel-heading">Para cursarla necesitás</h4>
+                  {prerequisites.length === 0 && <p className="corr-panel-empty">Sin correlativas: se puede cursar desde el inicio.</p>}
+                  <ul className="corr-prereq-list">
+                    {prerequisites.map((pr) => (
+                      <li key={pr.id} className="corr-prereq-item corr-prereq-item--editable">
+                        <span className="corr-prereq-name">
+                          <strong>{pr.requiredCourseName}</strong>
+                          <span className={`corr-pill corr-pill--${pr.conditionType === "APROBADA" ? "hard" : "soft"}`}>
+                            {pr.conditionType === "APROBADA" ? "Aprobada" : "Cursada"}
+                          </span>
+                        </span>
+                        <span className="correlatives-prereq-actions">
+                          <button type="button" className="users-action-btn" onClick={() => openEditPrerequisite(pr)}>Editar</button>
+                          <button type="button" className="users-action-btn users-action-btn--danger" onClick={() => setPrereqToDelete(pr)}>Quitar</button>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    className="users-btn users-btn--primary"
+                    disabled={availableCourses.length === 0}
+                    onClick={openAddPrerequisite}
+                  >
+                    + Agregar correlativa
+                  </button>
+                  {availableCourses.length === 0 && (
+                    <p className="corr-panel-empty">No hay más materias anteriores a esta para agregar.</p>
+                  )}
+
+                  <h4 className="corr-panel-heading">Habilita</h4>
+                  {enabledCourses.length === 0 && <p className="corr-panel-empty">Ninguna materia la exige.</p>}
+                  <ul className="corr-prereq-list">
+                    {enabledCourses.map((cc) => {
+                      const cond = prereqsByCourse[cc.courseId].find((p) => p.requiredCourseId === selectedCourse.courseId).conditionType;
+                      return (
+                        <li key={cc.id} className="corr-prereq-item">
+                          <button type="button" className="corr-link" onClick={() => setSelectedCurriculumCourseId(cc.id)}>
+                            {cc.courseName}
+                          </button>
+                          <span className={`corr-pill corr-pill--${cond === "APROBADA" ? "hard" : "soft"}`}>
+                            {cond === "APROBADA" ? "pide aprobada" : "pide cursada"}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+            </aside>
           </div>
 
-          {view === "matrix" && <CorrelativesMatrix curriculumCourses={curriculumCourses} />}
-
-          {view === "list" && (
-            <div className="correlatives-layout">
-              <div className="correlatives-list">
-                {curriculumCourses.map((cc) => (
-                  <button
-                    key={cc.id}
-                    type="button"
-                    className={`correlatives-course-btn ${cc.id === selectedCurriculumCourseId ? "correlatives-course-btn--active" : ""}`}
-                    onClick={() => setSelectedCurriculumCourseId(cc.id)}
-                  >
-                    <span className="correlatives-course-code">{cc.courseCode}</span>
-                    <span>{cc.courseName}</span>
-                    <span className="correlatives-course-year">{cc.yearNumber}° año</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="correlatives-detail">
-                {!selectedCurriculumCourseId && (
-                  <p className="users-empty">Elegí una materia de la izquierda para ver o cargar sus correlativas.</p>
-                )}
-
-                {selectedCurriculumCourseId && (
-                  <>
-                    <div className="plans-toolbar">
-                      <p className="users-subtitle">
-                        Correlativas de <strong>{selectedCourse?.courseName}</strong>
-                        {selectedCourse && ` (${selectedCourse.yearNumber}° año, ${selectedCourse.term}° cuat.)`}
-                      </p>
-                      <button
-                        type="button"
-                        className="users-btn users-btn--primary"
-                        disabled={availableCourses.length === 0}
-                        onClick={openAddPrerequisite}
-                      >
-                        + Agregar correlativa
-                      </button>
-                    </div>
-
-                    {prerequisites.length === 0 && (
-                      <p className="users-empty">Esta materia todavía no tiene correlativas cargadas.</p>
-                    )}
-
-                    {prerequisites.length > 0 && (
-                      <ul className="correlatives-prereq-list">
-                        {prerequisites.map((pr) => (
-                          <li key={pr.id} className="correlatives-prereq-item">
-                            <span>
-                              <strong>{pr.requiredCourseName}</strong> ({pr.requiredCourseCode}) —{" "}
-                              <span className={`users-badge ${pr.conditionType === "APROBADA" ? "users-badge--navy" : "users-badge--gray"}`}>
-                                {pr.conditionType === "APROBADA" ? "Aprobada" : "Cursada"}
-                              </span>
-                            </span>
-                            <span className="correlatives-prereq-actions">
-                              <button
-                                type="button"
-                                className="users-action-btn"
-                                onClick={() => openEditPrerequisite(pr)}
-                              >
-                                Editar
-                              </button>
-                              <button
-                                type="button"
-                                className="users-action-btn users-action-btn--danger"
-                                onClick={() => setPrereqToDelete(pr)}
-                              >
-                                Quitar
-                              </button>
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          )}
+          <p className="corr-legend">
+            <span className="corr-pill corr-pill--soft">Cursada</span> alcanza con regularizar la materia ·{" "}
+            <span className="corr-pill corr-pill--hard">Aprobada</span> hay que tener el final rendido.
+          </p>
         </>
       )}
 
