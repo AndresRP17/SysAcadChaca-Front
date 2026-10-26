@@ -80,6 +80,14 @@ video {
   }
 }
 
+/* Las flechas de mes y día del calendario (Schedule-X) se dibujan dentro de su botón de 48px: con la regla de arriba
+   quedaba en 2px de alto y las flechas se veían como dos rayitas. */
+@media (min-width: 701px) and (pointer: fine) {
+  #root .sx__chevron-wrapper.sx__button {
+    min-height: 48px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

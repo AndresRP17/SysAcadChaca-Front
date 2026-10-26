@@ -610,6 +610,20 @@
   min-width: 220px;
 }
 
+/* Los dos selectores van en su propia grilla: la de las fechas de cursado tiene una primera columna de 110px
+   y el selector (220px como mínimo) se montaba sobre el siguiente. */
+.cal-rules-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .cal-rules-grid {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+}
+
 /* Reglas de regularidad: dos columnas desde tablet, interruptores en lista. */
 .reg-rules-grid {
   display: grid;

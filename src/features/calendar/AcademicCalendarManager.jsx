@@ -176,7 +176,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
         </p>
         <LoadError message={rulesLoadError} onRetry={loadRules} />
         <form className="users-form cal-inline-form" onSubmit={submitRules}>
-          <div className="cal-form-grid">
+          <div className="cal-rules-grid">
             <div className="users-form-field">
               <label className="users-form-label" htmlFor="rule-late">Llegó tarde</label>
               <select

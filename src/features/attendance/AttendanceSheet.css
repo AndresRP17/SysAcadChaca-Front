@@ -1,97 +1,200 @@
-/* Asistencia de una clase: mobile first. El boton de guardar queda fijo abajo para que
-   siempre este a mano, aunque la lista de alumnos sea larga. */
+/* Asistencia de una clase: mobile first. El pie con el botón de guardar queda fijo abajo para que
+   siempre esté a mano, aunque la lista de alumnos sea larga.
+
+   Cada estado tiene su color en tres tonos: --att-X (borde y barra), --att-X-bg (fondo suave) y
+   --att-X-ink (texto sobre ese fondo, con contraste AA). */
+.take-attendance {
+  container-type: inline-size;
+  container-name: attendance;
+  --att-present: #16a34a;
+  --att-present-bg: #dcfce7;
+  --att-present-ink: #14532d;
+  --att-absent: #dc2626;
+  --att-absent-bg: #fee2e2;
+  --att-absent-ink: #7f1d1d;
+  --att-justified: #2563eb;
+  --att-justified-bg: #dbeafe;
+  --att-justified-ink: #1e3a8a;
+  --att-late: #d97706;
+  --att-late-bg: #fef3c7;
+  --att-late-ink: #78350f;
+  --att-left-early: #7c3aed;
+  --att-left-early-bg: #ede9fe;
+  --att-left-early-ink: #4c1d95;
+  /* El borde del tema es casi negro: para lo de adentro (botones, barra, contadores) se usa un gris suave. */
+  --att-line: color-mix(in srgb, var(--text-primary) 24%, var(--surface));
+  --att-track: color-mix(in srgb, var(--text-primary) 12%, var(--surface));
+  --att-unmarked: var(--att-track);
+}
+
+:root[data-theme="dark"] .take-attendance {
+  --att-present: #22c55e;
+  --att-present-bg: #14532d;
+  --att-present-ink: #dcfce7;
+  --att-absent: #ef4444;
+  --att-absent-bg: #7f1d1d;
+  --att-absent-ink: #fee2e2;
+  --att-justified: #3b82f6;
+  --att-justified-bg: #1e3a8a;
+  --att-justified-ink: #dbeafe;
+  --att-late: #f59e0b;
+  --att-late-bg: #78350f;
+  --att-late-ink: #fef3c7;
+  --att-left-early: #8b5cf6;
+  --att-left-early-bg: #4c1d95;
+  --att-left-early-ink: #ede9fe;
+}
+
 .take-attendance-header {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .take-attendance-editing {
+  display: inline-block;
   margin: 8px 0 0 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--att-late-bg);
+  color: var(--att-late-ink);
   font-size: 13px;
-  color: #b45309;
+  font-weight: 600;
 }
 
-.take-attendance-toolbar {
+/* ---------- Resumen: avance, barra por estado y filtros ---------- */
+.attendance-summary {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 4px;
-}
-
-.take-attendance-count {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0;
-}
-
-.take-attendance-pill {
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--surface);
+  padding: 14px 16px;
   border: 1px solid var(--border);
-  font-size: 13px;
-  font-weight: 600;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.attendance-summary-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attendance-progress-text {
+  margin: 0;
+  font-size: 15px;
   color: var(--text-secondary);
 }
 
-.take-attendance-pill--present {
-  background: #dcfce7;
-  border-color: #86efac;
-  color: #14532d;
+.attendance-progress-text strong {
+  color: var(--text-primary);
+  font-size: 18px;
 }
 
-.take-attendance-pill--absent {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  color: #7f1d1d;
+.attendance-link-btn {
+  align-self: flex-start;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  min-height: 32px;
 }
 
-.take-attendance-pill--justified {
-  background: #dbeafe;
-  border-color: #93c5fd;
-  color: #1e3a8a;
+.attendance-link-btn:focus-visible,
+.attendance-note-link:focus-visible,
+.attendance-chip:focus-visible,
+.attendance-choice:focus-visible {
+  outline: 3px solid var(--text-primary);
+  outline-offset: 2px;
 }
 
-.take-attendance-pill--late {
-  background: #fef3c7;
-  border-color: #fcd34d;
-  color: #78350f;
+/* Barra apilada: un tramo por estado, de ancho proporcional a la cantidad. */
+.attendance-bar {
+  display: flex;
+  gap: 2px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--att-track);
 }
 
-.take-attendance-pill--left-early {
-  background: #ede9fe;
-  border-color: #c4b5fd;
-  color: #4c1d95;
+.attendance-bar-seg {
+  flex-basis: 0;
+  min-width: 6px;
+  background: var(--att-unmarked);
+  transition: flex-grow 0.25s ease;
 }
 
-.take-attendance-toolbar .users-btn {
+.attendance-bar-seg--present { background: var(--att-present); }
+.attendance-bar-seg--absent { background: var(--att-absent); }
+.attendance-bar-seg--justified { background: var(--att-justified); }
+.attendance-bar-seg--late { background: var(--att-late); }
+.attendance-bar-seg--left-early { background: var(--att-left-early); }
+
+.attendance-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.attendance-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 12px;
+  border: 1px solid var(--att-line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.attendance-chip-count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--att-track);
+  color: var(--text-primary);
+  font-size: 12px;
+  text-align: center;
+}
+
+.attendance-chip.is-active {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--bg);
+}
+
+.attendance-chip.is-active .attendance-chip-count {
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+.attendance-chip--present:not(.is-active) .attendance-chip-count { background: var(--att-present-bg); color: var(--att-present-ink); }
+.attendance-chip--absent:not(.is-active) .attendance-chip-count { background: var(--att-absent-bg); color: var(--att-absent-ink); }
+.attendance-chip--justified:not(.is-active) .attendance-chip-count { background: var(--att-justified-bg); color: var(--att-justified-ink); }
+.attendance-chip--late:not(.is-active) .attendance-chip-count { background: var(--att-late-bg); color: var(--att-late-ink); }
+.attendance-chip--left-early:not(.is-active) .attendance-chip-count { background: var(--att-left-early-bg); color: var(--att-left-early-ink); }
+
+/* ---------- Buscador ---------- */
+.take-attendance-search {
+  margin-top: 12px;
+}
+
+.take-attendance-search .users-form-input {
   width: 100%;
   min-height: 44px;
+  box-sizing: border-box;
 }
 
-.take-attendance-footer {
-  position: sticky;
-  bottom: 0;
-  padding: 12px 0 16px 0;
-  background: var(--bg);
-}
-
-.take-attendance-hint {
-  margin: 0 0 8px 0;
-  font-size: 13px;
-  color: #b45309;
-}
-
-.take-attendance-footer .users-btn {
-  width: 100%;
-  min-height: 48px;
-}
-
-.take-attendance-footer .users-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
+/* ---------- Lista de alumnos ---------- */
 .attendance-list {
   list-style: none;
   margin: 12px 0 0 0;
@@ -103,30 +206,83 @@
 }
 
 .attendance-list li + li {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--att-line);
 }
 
-/* Una fila por alumno: el nombre arriba y, debajo, dos botones grandes. */
+/* Una fila por alumno. La franja de la izquierda tiene el color de su estado: de un vistazo se ve
+   quién falta marcar (sin franja) y quién ya tiene estado. */
 .attendance-row {
+  --stripe: transparent;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 12px 16px 12px 16px;
+  box-shadow: inset 4px 0 0 var(--stripe);
+}
+
+.attendance-row--present { --stripe: var(--att-present); }
+.attendance-row--absent { --stripe: var(--att-absent); }
+.attendance-row--justified { --stripe: var(--att-justified); }
+.attendance-row--late { --stripe: var(--att-late); }
+.attendance-row--left-early { --stripe: var(--att-left-early); }
+
+.attendance-row:focus-visible {
+  outline: 3px solid var(--text-primary);
+  outline-offset: -3px;
+}
+
+.attendance-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.attendance-avatar {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--att-line);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.attendance-person-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .attendance-row-name {
   color: var(--text-primary);
   font-size: 15px;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
-/* Cursada por equivalencia: fija en Presente, no se puede cambiar. */
-.attendance-choice:disabled {
-  cursor: not-allowed;
+.attendance-row-state {
+  font-size: 12.5px;
+  color: var(--text-secondary);
 }
 
-.attendance-choice:disabled:not(.is-selected) {
-  opacity: 0.45;
+.attendance-row-state--present { color: var(--att-present-ink); }
+.attendance-row-state--absent { color: var(--att-absent-ink); }
+.attendance-row-state--justified { color: var(--att-justified-ink); }
+.attendance-row-state--late { color: var(--att-late-ink); }
+.attendance-row-state--left-early { color: var(--att-left-early-ink); }
+
+:root[data-theme="dark"] .attendance-row-state--present,
+:root[data-theme="dark"] .attendance-row-state--absent,
+:root[data-theme="dark"] .attendance-row-state--justified,
+:root[data-theme="dark"] .attendance-row-state--late,
+:root[data-theme="dark"] .attendance-row-state--left-early {
+  color: var(--text-primary);
 }
 
 .attendance-equivalence-note {
@@ -135,78 +291,95 @@
   font-size: 13px;
 }
 
-/* Celular: Presente y Ausente arriba (grandes) y los otros tres abajo. */
+/* ---------- Los cinco botones de estado ----------
+   Celular: una fila de cinco, con el icono arriba y el nombre corto abajo (como una barra de pestañas).
+   Escritorio: icono y nombre en una línea. */
 .attendance-choices {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
-}
-
-.attendance-choice--present,
-.attendance-choice--absent {
-  grid-column: span 3;
-}
-
-.attendance-choice--justified,
-.attendance-choice--late,
-.attendance-choice--left-early {
-  grid-column: span 2;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
 }
 
 .attendance-choice {
-  min-height: 44px;
-  border: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 54px;
+  padding: 6px 1px;
+  border: 1.5px solid var(--att-line);
   border-radius: 10px;
-  background: var(--surface);
+  background: var(--bg);
   color: var(--text-secondary);
-  font-size: 14px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.1;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.attendance-choice:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+
+.attendance-icon {
+  flex-shrink: 0;
+}
+
+.attendance-choice-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attendance-choice.is-selected {
+  border-width: 2px;
+  font-weight: 700;
+}
+
+.attendance-choice--present.is-selected { background: var(--att-present-bg); border-color: var(--att-present); color: var(--att-present-ink); }
+.attendance-choice--absent.is-selected { background: var(--att-absent-bg); border-color: var(--att-absent); color: var(--att-absent-ink); }
+.attendance-choice--justified.is-selected { background: var(--att-justified-bg); border-color: var(--att-justified); color: var(--att-justified-ink); }
+.attendance-choice--late.is-selected { background: var(--att-late-bg); border-color: var(--att-late); color: var(--att-late-ink); }
+.attendance-choice--left-early.is-selected { background: var(--att-left-early-bg); border-color: var(--att-left-early); color: var(--att-left-early-ink); }
+
+/* ---------- Nota / motivo ---------- */
+.attendance-note-link {
+  align-self: flex-start;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  padding: 4px 6px;
-  line-height: 1.15;
+  min-height: 32px;
 }
 
-.attendance-choice--present.is-selected {
-  background: #16a34a;
-  border-color: #16a34a;
-  color: #fff;
+.attendance-note-link:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
 }
 
-.attendance-choice--absent.is-selected {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: #fff;
-}
-
-.attendance-choice--justified.is-selected {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  color: #fff;
-}
-
-.attendance-choice--late.is-selected {
-  background: #b45309;
-  border-color: #b45309;
-  color: #fff;
-}
-
-.attendance-choice--left-early.is-selected {
-  background: #7c3aed;
-  border-color: #7c3aed;
-  color: #fff;
-}
-
-.attendance-choice:focus-visible {
-  outline: 3px solid var(--text-primary);
-  outline-offset: 2px;
-}
-
-/* Comentario del alumno: ocupa todo el ancho bajo los botones. */
 .attendance-comment {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.attendance-comment-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.attendance-comment-field {
+  position: relative;
 }
 
 .attendance-comment .users-form-input {
@@ -219,7 +392,8 @@
 .attendance-comment-count {
   position: absolute;
   right: 10px;
-  top: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 11px;
   color: var(--text-secondary);
   pointer-events: none;
@@ -235,56 +409,57 @@
   color: var(--error);
 }
 
-@media (min-width: 768px) {
-  .take-attendance {
-    max-width: 760px;
-  }
-
-  .take-attendance-toolbar {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .take-attendance-toolbar .users-btn,
-  .take-attendance-footer .users-btn {
-    width: auto;
-  }
-
-  .attendance-choices {
-    grid-template-columns: repeat(5, 1fr);
-  }
-
-  .attendance-choice--present,
-  .attendance-choice--absent,
-  .attendance-choice--justified,
-  .attendance-choice--late,
-  .attendance-choice--left-early {
-    grid-column: span 1;
-  }
-}
-
-/* Buscador de alumnos (con listas largas) */
-.take-attendance-search {
+/* ---------- Carga (esqueleto) ---------- */
+.attendance-skeleton-row {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 10px;
+  padding: 12px 16px;
 }
 
-.take-attendance-search .users-form-input {
-  width: 100%;
-  min-height: 44px;
-  box-sizing: border-box;
+.attendance-skeleton {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--att-track) 25%, var(--bg) 50%, var(--att-track) 75%);
+  background-size: 200% 100%;
+  animation: attendance-shimmer 1.4s ease-in-out infinite;
 }
 
-.take-attendance-unmarked {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
+.attendance-avatar.attendance-skeleton {
+  border: 0;
+}
+
+.attendance-skeleton--name {
+  width: 140px;
+  height: 16px;
+}
+
+.attendance-skeleton--choices {
+  height: 54px;
+}
+
+@keyframes attendance-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* ---------- Atajos y pie ---------- */
+.attendance-shortcuts {
+  display: none;
+  margin: 12px 0 0 0;
   color: var(--text-secondary);
-  min-height: 32px;
+  font-size: 12.5px;
+}
+
+.attendance-shortcuts kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--att-line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .take-attendance-more {
@@ -293,13 +468,70 @@
   margin-top: 12px;
 }
 
+.take-attendance-footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px 0 16px 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  z-index: 1;
+}
+
+.take-attendance-footer-info p {
+  margin: 0;
+  font-size: 13.5px;
+}
+
+.take-attendance-hint {
+  color: var(--att-late-ink);
+}
+
+:root[data-theme="dark"] .take-attendance-hint {
+  color: #fbbf24;
+}
+
+.take-attendance-ready {
+  color: var(--att-present-ink);
+  font-weight: 600;
+}
+
+:root[data-theme="dark"] .take-attendance-ready {
+  color: #86efac;
+}
+
+.take-attendance-hint .attendance-link-btn {
+  padding: 0;
+  min-height: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+.take-attendance-footer .users-btn {
+  width: 100%;
+  min-height: 48px;
+}
+
+.take-attendance-footer .users-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .take-attendance-footer .form-error {
-  margin: 8px 0 0 0;
+  margin: 0;
   font-size: 14px;
 }
 
+/* ---------- Escritorio y tablet ---------- */
 @media (min-width: 768px) {
-  .take-attendance-search {
+  .take-attendance {
+    max-width: 820px;
+  }
+
+  .attendance-summary-head {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
@@ -309,8 +541,77 @@
     max-width: 320px;
   }
 
+  .attendance-shortcuts {
+    display: block;
+  }
+
   .take-attendance-more {
     width: auto;
+  }
+
+  .take-attendance-footer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .take-attendance-footer .users-btn {
+    width: auto;
+    min-width: 200px;
+  }
+
+  .take-attendance-footer .form-error {
+    flex-basis: 100%;
+  }
+}
+
+/* ---------- La fila según el ancho de la hoja (la pantalla completa y el modal miden distinto) ----------
+   Hasta 519px: nombre arriba y cinco botones iguales con el icono sobre el nombre.
+   De 520px a 779px (el modal): nombre arriba y los cinco botones con icono y nombre en una línea.
+   Desde 780px: nombre a la izquierda y botones a la derecha. */
+@container attendance (min-width: 520px) {
+  .attendance-choice {
+    flex-direction: row;
+    gap: 6px;
+    min-height: 40px;
+    /* En escritorio con mouse una regla global quita el min-height de los botones: el alto sale del padding. */
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  .attendance-choices {
+    gap: 6px;
+  }
+}
+
+@container attendance (min-width: 780px) {
+  .attendance-row {
+    display: grid;
+    grid-template-columns: minmax(170px, 1fr) auto;
+    align-items: center;
+    column-gap: 16px;
+    row-gap: 10px;
+  }
+
+  .attendance-choices {
+    display: flex;
+  }
+
+  .attendance-choice {
+    min-width: 96px;
+    padding: 10px 12px;
+  }
+
+  .attendance-comment,
+  .attendance-note-link,
+  .attendance-equivalence-note {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .attendance-comment {
+    justify-self: stretch;
   }
 }
 
@@ -321,48 +622,17 @@
 
 .modal-box .take-attendance-footer {
   background: var(--surface);
-  border-top: 1px solid var(--border);
   padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px)) 0;
-  margin-top: 12px;
-  z-index: 1;
 }
 
 .modal-box .attendance-list {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
-/* Modo oscuro: los contadores de color claro bajan de brillo para no encandilar. */
-:root[data-theme="dark"] .take-attendance-pill--present {
-  background: #14532d;
-  border-color: #166534;
-  color: #dcfce7;
+.modal-box .attendance-summary {
+  background: var(--bg);
 }
 
-:root[data-theme="dark"] .take-attendance-pill--absent {
-  background: #7f1d1d;
-  border-color: #991b1b;
-  color: #fee2e2;
-}
-
-:root[data-theme="dark"] .take-attendance-editing,
-:root[data-theme="dark"] .take-attendance-hint {
-  color: #fbbf24;
-}
-
-:root[data-theme="dark"] .take-attendance-pill--justified {
-  background: #1e3a8a;
-  border-color: #1d4ed8;
-  color: #dbeafe;
-}
-
-:root[data-theme="dark"] .take-attendance-pill--late {
-  background: #78350f;
-  border-color: #b45309;
-  color: #fef3c7;
-}
-
-:root[data-theme="dark"] .take-attendance-pill--left-early {
-  background: #4c1d95;
-  border-color: #6d28d9;
-  color: #ede9fe;
+.modal-box .attendance-chip:not(.is-active) {
+  background: var(--surface);
 }
