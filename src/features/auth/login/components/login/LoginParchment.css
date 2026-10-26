@@ -1,0 +1,186 @@
+/* Formulario de login con forma de pergamino: papel con bordes irregulares,
+   dos rollos con tapas de madera (arriba y abajo), sello de lacre y una
+   animación en la que el pergamino cae y se desenrolla.
+   Se importa después de login.css y solo pisa el aspecto de la tarjeta
+   (.sysacad-form-box); la lógica del login no cambia. */
+
+.sysacad-form-side {
+  --paper: #f1e4c3;
+  --paper-glow: rgba(255, 255, 255, 0.45);
+  --paper-wear: rgba(120, 85, 30, 0.2);
+  --paper-vignette: rgba(139, 105, 52, 0.38);
+  --roll: linear-gradient(
+    180deg,
+    #8f6d36 0%,
+    #d9bd82 18%,
+    #f6ebcb 42%,
+    #dcc28a 70%,
+    #8b6a34 100%
+  );
+  --wood: linear-gradient(180deg, #4a2f14 0%, #b07a3c 38%, #d19a52 52%, #5b3b1a 100%);
+ --seal: radial-gradient(circle at 35% 30%, #080c10 0%, #06080a 55%, #010306 100%);
+--seal-text: #ebeef3;
+  --unroll-duration: 1.6s;
+  --unroll-ease: cubic-bezier(0.45, 0.05, 0.35, 1);
+}
+
+[data-theme="dark"] .sysacad-form-side {
+  --paper: #2a251c;
+  --paper-glow: rgba(255, 235, 190, 0.06);
+  --paper-wear: rgba(0, 0, 0, 0.3);
+  --paper-vignette: rgba(0, 0, 0, 0.55);
+  --roll: linear-gradient(
+    180deg,
+    #0f0c07 0%,
+    #4a3d28 20%,
+    #6b5a3c 42%,
+    #43371f 70%,
+    #0d0a05 100%
+  );
+  --wood: linear-gradient(180deg, #1d1208 0%, #6a4a24 38%, #84602f 52%, #2a1a0b 100%);
+  --seal: radial-gradient(circle at 35% 30%, #121213 0%, #060708 55%, #010710 100%);
+}
+
+/* La tarjeta queda sin fondo propio: el papel es .sysacad-paper (detrás del contenido)
+   y la sombra sigue la silueta del papel y los rollos. */
+.sysacad-form-side .sysacad-form-box {
+  isolation: isolate;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.22)) drop-shadow(0 22px 28px rgba(0, 0, 0, 0.2));
+  animation: sysacad-unroll var(--unroll-duration) var(--unroll-ease) backwards;
+}
+
+[data-theme="dark"] .sysacad-form-side .sysacad-form-box {
+  box-shadow: none;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.12)) drop-shadow(0 8px 10px rgba(0, 0, 0, 0.45))
+    drop-shadow(0 22px 28px rgba(0, 0, 0, 0.45));
+}
+
+/* Papel con bordes laterales irregulares, grano y bordes envejecidos */
+.sysacad-paper {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(90deg, var(--paper-wear), transparent 8%, transparent 92%, var(--paper-wear)),
+    radial-gradient(ellipse at 50% 40%, var(--paper-glow), rgba(255, 255, 255, 0) 70%),
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .1  0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  box-shadow:
+    inset 0 0 50px var(--paper-vignette),
+    inset 0 0 6px var(--paper-vignette);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 5px) 4.0%, calc(100% - 2px) 8.0%, calc(100% - 2px) 12.0%, calc(100% - 0px) 16.0%, calc(100% - 1px) 20.0%, calc(100% - 3px) 24.0%, calc(100% - 1px) 28.0%, calc(100% - 5px) 32.0%, calc(100% - 0px) 36.0%, calc(100% - 3px) 40.0%, calc(100% - 3px) 44.0%, calc(100% - 0px) 48.0%, calc(100% - 1px) 52.0%, calc(100% - 2px) 56.0%, calc(100% - 2px) 60.0%, calc(100% - 1px) 64.0%, calc(100% - 3px) 68.0%, calc(100% - 1px) 72.0%, calc(100% - 3px) 76.0%, calc(100% - 2px) 80.0%, calc(100% - 0px) 84.0%, calc(100% - 1px) 88.0%, calc(100% - 3px) 92.0%, calc(100% - 0px) 96.0%, 100% 100%, 0 100%, 3px 96.0%, 1px 92.0%, 3px 88.0%, 0px 84.0%, 1px 80.0%, 3px 76.0%, 1px 72.0%, 5px 68.0%, 3px 64.0%, 1px 60.0%, 2px 56.0%, 3px 52.0%, 4px 48.0%, 1px 44.0%, 3px 40.0%, 2px 36.0%, 2px 32.0%, 4px 28.0%, 2px 24.0%, 3px 20.0%, 0px 16.0%, 3px 12.0%, 0px 8.0%, 2px 4.0%);
+}
+
+/* El botón de tema sobre el papel */
+.sysacad-form-side .sysacad-theme-toggle {
+  background-color: transparent;
+}
+
+/* Rollos de arriba y de abajo, con tapas de madera en las puntas */
+.sysacad-form-side .sysacad-form-box::before,
+.sysacad-form-side .sysacad-form-box::after {
+  content: "";
+  position: absolute;
+  left: -20px;
+  right: -20px;
+  height: 30px;
+  border-radius: 15px / 50%;
+  background:
+    var(--wood) left / 18px 100% no-repeat,
+    var(--wood) right / 18px 100% no-repeat,
+    var(--roll);
+  box-shadow: inset 0 0 0 1px rgba(60, 40, 15, 0.4);
+  pointer-events: none;
+}
+
+.sysacad-form-side .sysacad-form-box::before {
+  top: -18px;
+}
+
+.sysacad-form-side .sysacad-form-box::after {
+  bottom: -18px;
+  animation: sysacad-roll-down var(--unroll-duration) var(--unroll-ease) backwards;
+}
+
+/* Sello de lacre sobre el rollo inferior */
+.sysacad-seal {
+  position: absolute;
+  right: 34px;
+  bottom: -26px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 52% 48% 55% 45% / 48% 52% 46% 54%;
+  background: var(--seal);
+  box-shadow:
+    inset 0 0 0 3px rgba(0, 0, 0, 0.12),
+    inset 0 0 0 5px rgba(255, 255, 255, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.35);
+  color: var(--seal-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  animation: sysacad-stamp 0.35s ease-out calc(var(--unroll-duration) - 0.15s) backwards;
+}
+
+/* El pergamino cae y se desenrolla: el borde visible baja junto con el rollo inferior */
+@keyframes sysacad-unroll {
+  0% {
+    clip-path: inset(-80px -80px calc(100% - 24px) -80px);
+    transform: translateY(-34px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  30% {
+    transform: translateY(0);
+  }
+  90% {
+    clip-path: inset(-80px -80px -18px -80px);
+  }
+  100% {
+    clip-path: inset(-80px -80px -80px -80px);
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sysacad-roll-down {
+  0% {
+    bottom: calc(100% - 24px);
+  }
+  90% {
+    bottom: -18px;
+  }
+  100% {
+    bottom: -18px;
+  }
+}
+
+/* El sello "se estampa" al terminar de desenrollar */
+@keyframes sysacad-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sysacad-form-side .sysacad-form-box,
+  .sysacad-form-side .sysacad-form-box::after,
+  .sysacad-seal {
+    animation: none;
+  }
+}

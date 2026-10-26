@@ -88,6 +88,13 @@
   border-left-color: #b45309;
 }
 
+.cal-chip--evaluation {
+  background: #ede9fe;
+  color: #4c1d95;
+  border-left-color: #7c3aed;
+  font-weight: 600;
+}
+
 .cal-chip--action {
   cursor: pointer;
 }

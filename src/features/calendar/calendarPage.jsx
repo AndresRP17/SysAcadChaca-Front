@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { ScheduleXCalendar, useCalendarApp } from "@schedule-x/react";
 import {
   createViewList,
@@ -44,7 +45,47 @@ const CALENDARS = {
     lightColors: { main: "#6b7280", container: "#f3f4f6", onContainer: "#374151" },
     darkColors: { main: "#9ca3af", container: "#374151", onContainer: "#f3f4f6" },
   },
+  evaluation: {
+    colorName: "evaluation",
+    lightColors: { main: "#7c3aed", container: "#ede9fe", onContainer: "#4c1d95" },
+    darkColors: { main: "#c4b5fd", container: "#4c1d95", onContainer: "#ede9fe" },
+  },
 };
+
+const CONDITION_LABELS = { APROBADO: "Aprobado", DESAPROBADO: "Desaprobado", AUSENTE: "Ausente" };
+
+function evaluationEventId(evaluation) {
+  return `evaluation-${evaluation.evaluationId}`;
+}
+
+// Parciales (evaluaciones) de las comisiones del usuario: evento de dia completo.
+function toEvaluationEvents(evaluations) {
+  return evaluations.map((ev) => ({
+    id: evaluationEventId(ev),
+    title: `${ev.name} · ${ev.courseName}`,
+    start: Temporal.PlainDate.from(ev.date),
+    end: Temporal.PlainDate.from(ev.date),
+    calendarId: "evaluation",
+  }));
+}
+
+// El Alumno ve su nota; el Docente, un acceso directo a cargar las notas de ese parcial.
+function evaluationDetail(ev, { isAlumno, isDocente }) {
+  const grade =
+    ev.condition === "AUSENTE"
+      ? "Tu resultado: Ausente"
+      : ev.condition
+        ? `Tu nota: ${String(ev.gradeValue).replace(".", ",")} (${CONDITION_LABELS[ev.condition] ?? ev.condition})`
+        : "Todavía no tiene nota cargada";
+
+  return {
+    title: `${ev.name} · ${ev.courseName}`,
+    lines: [`Comisión ${ev.sectionName}`, formatDate(ev.date), ...(isAlumno ? [grade] : [])],
+    action: isDocente
+      ? { label: "Cargar notas", to: `/comision/${ev.sectionId}?evaluacion=${ev.evaluationId}` }
+      : null,
+  };
+}
 
 
 function formatDate(isoDate) {
@@ -136,7 +177,7 @@ function CalendarContent({ onRetry }) {
   const isDocente = user?.role === "Docente";
   const isAlumno = user?.role === "Alumno";
 
-  const [today, setToday] = useState({ classes: [], loaded: false });
+  const [today, setToday] = useState({ classes: [], evaluations: [], loaded: false });
   const [missingTerms, setMissingTerms] = useState([]);
   const [error, setError] = useState("");
   const [todayError, setTodayError] = useState("");
@@ -145,6 +186,7 @@ function CalendarContent({ onRetry }) {
   const [attendanceTarget, setAttendanceTarget] = useState(null); // { sectionId, date } de la clase cuya asistencia se esta tomando
 
   const classesRef = useRef({}); // clases del rango visible por id de evento, para resolver el clic
+  const evaluationsRef = useRef({}); // parciales del rango visible por id de evento
 
   function takeAttendance(sectionId, date) {
     setAttendanceTarget({ sectionId, date });
@@ -191,9 +233,13 @@ function CalendarContent({ onRetry }) {
           data.events.forEach((c) => {
             classesRef.current[`${c.sectionId}-${c.date}-${c.startTime}`] = c;
           });
+          const evaluations = data.evaluations ?? [];
+          evaluations.forEach((ev) => {
+            evaluationsRef.current[evaluationEventId(ev)] = ev;
+          });
           setMissingTerms((prev) => (JSON.stringify(prev) === JSON.stringify(data.missingTerms) ? prev : data.missingTerms));
           setError("");
-          return toCalendarEvents(data.events, isDocente);
+          return [...toCalendarEvents(data.events, isDocente), ...toEvaluationEvents(evaluations)];
         })
         .catch((err) => {
           rangesRef.current.delete(key);
@@ -220,6 +266,13 @@ function CalendarContent({ onRetry }) {
       callbacks: {
         fetchEvents,
         onEventClick(event) {
+          const evaluation = evaluationsRef.current[event.id];
+
+          if (evaluation) {
+            setDetail(evaluationDetail(evaluation, { isAlumno, isDocente }));
+            return;
+          }
+
           const found = classesRef.current[event.id];
 
           // Feriado (no es una clase): solo se muestra el motivo.
@@ -257,10 +310,10 @@ function CalendarContent({ onRetry }) {
   useEffect(() => {
     const date = todayIso();
     getCalendar(date, date)
-      .then((data) => setToday({ classes: data.events, loaded: true }))
+      .then((data) => setToday({ classes: data.events, evaluations: data.evaluations ?? [], loaded: true }))
       .catch((err) => {
         setTodayError(getErrorMessage(err, "No se pudieron cargar las clases de hoy."));
-        setToday({ classes: [], loaded: true });
+        setToday({ classes: [], evaluations: [], loaded: true });
       });
   }, []);
 
@@ -281,7 +334,9 @@ function CalendarContent({ onRetry }) {
         <div>
           <h1 className="users-title">Calendario</h1>
           <p className="users-subtitle">
-            {isDocente ? "Tus clases. Tocá una para tomar asistencia." : "Tus clases del cuatrimestre y tu asistencia."}
+            {isDocente
+              ? "Tus clases y parciales. Tocá una clase para tomar asistencia."
+              : "Tus clases y parciales del cuatrimestre, y tu asistencia."}
           </p>
         </div>
       </div>
@@ -321,6 +376,11 @@ function CalendarContent({ onRetry }) {
         {today.loaded && todayHoliday && (
           <p className="calendar-today-holiday">Feriado: {todayHoliday.reason}. No hay clases.</p>
         )}
+        {today.evaluations.map((ev) => (
+          <p key={ev.evaluationId} className="calendar-today-evaluation">
+            {isAlumno ? "Tenés" : "Hay"} {ev.name} de {ev.courseName} (comisión {ev.sectionName})
+          </p>
+        ))}
         {today.loaded && !todayHoliday && !todayError && todayClasses.length === 0 && (
           <p className="users-empty">No tenés clases hoy.</p>
         )}
@@ -366,7 +426,16 @@ function CalendarContent({ onRetry }) {
           ))}
         </ul>
         <div className="users-form-actions">
-          <button type="button" className="users-btn users-btn--primary" onClick={() => setDetail(null)}>
+          {detail?.action && (
+            <Link to={detail.action.to} className="users-btn users-btn--primary">
+              {detail.action.label}
+            </Link>
+          )}
+          <button
+            type="button"
+            className={`users-btn ${detail?.action ? "users-btn--ghost" : "users-btn--primary"}`}
+            onClick={() => setDetail(null)}
+          >
             Cerrar
           </button>
         </div>

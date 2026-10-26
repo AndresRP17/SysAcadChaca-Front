@@ -4,6 +4,7 @@ import RequireAuth from "../../features/layout/components/RequireAuth";
 import RequireRole from "../../features/layout/components/RequireRole";
 import NoAccessPage from "../../features/layout/components/NoAccessPage";
 import { getRolesAllowedForLink } from "../../features/layout/roleLinks";
+import LandingPage from "../../features/landing/LandingPage";
 import LoginPage from "../../features/auth/login/loginPage";
 import UsersPage from "../../features/users/usersPage";
 import StudentsPage from "../../features/users/studentsPage";
@@ -180,7 +181,8 @@ export const router = createBrowserRouter([
       { path: "/sin-acceso", element: <NoAccessPage /> },
     ],
   },
-  { path: "/", element: <LoginPage /> },
+  { path: "/", element: <LandingPage /> },
+  { path: "/login", element: <LoginPage /> },
   { path: "/forgot-password", element: <ForgotPasswordPage /> },
   { path: "/reset-password", element: <ResetPasswordPage /> },
   { path: "/verify-email", element: <VerifyEmailPage /> },
