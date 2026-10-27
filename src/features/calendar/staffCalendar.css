@@ -182,10 +182,19 @@
   color: var(--text-secondary);
 }
 
+.cal-badge--evaluations {
+  background: rgba(124, 58, 237, 0.16);
+  color: #4c1d95;
+}
+
 .cal-badge--holiday {
   background: rgba(245, 158, 11, 0.22);
   color: #7c2d12;
   font-size: 10px;
+}
+
+:root[data-theme="dark"] .cal-badge--evaluations {
+  color: #ddd6fe;
 }
 
 :root[data-theme="dark"] .cal-badge--classes {
@@ -668,4 +677,85 @@
 /* En celular el texto largo de las opciones tiene que entrar completo en el selector. */
 .reg-rules-grid select {
   font-size: 13px;
+}
+
+/* Evaluaciones del dia elegido */
+.cal-evals {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.cal-evals-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.cal-evals-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.cal-chip {
+  width: auto;
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--text-muted) 40%, transparent);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cal-chip--active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #ffffff;
+}
+
+.cal-eval-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cal-eval {
+  display: flex;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border-left: 4px solid #7c3aed;
+  background: var(--bg);
+}
+
+.cal-eval-time {
+  flex: 0 0 64px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.cal-eval-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cal-eval-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
 }

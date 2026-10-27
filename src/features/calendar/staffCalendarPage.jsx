@@ -11,6 +11,7 @@ import AcademicCalendarManager from "./AcademicCalendarManager";
 import ClassSheet, { formatDate } from "./ClassSheet";
 import { eventInfo, useCalendarCatalog } from "./useCalendarCatalog";
 import { getCalendarSummary, getFilteredCalendar } from "./services/staffCalendarService";
+import { EVALUATION_TYPES, evaluationTypeLabel } from "../grades/services/evaluationService";
 import "../users/usersPage.css";
 import "./staffCalendar.css";
 
@@ -38,6 +39,76 @@ function buildMonthDays(year, month) {
   return days;
 }
 
+const EVALUATION_FILTERS = [{ value: "", label: "Todas" }, ...EVALUATION_TYPES.map((t) => ({ value: t.value, label: t.label }))];
+
+// Evaluaciones del día elegido. Con muchas se agrupan por materia para que la lista siga siendo legible.
+function DayEvaluations({ evaluations, type, onTypeChange }) {
+  const visible = evaluations
+    .filter((ev) => !type || ev.type === type)
+    .sort((a, b) => (a.startTime ?? "").localeCompare(b.startTime ?? "") || a.courseName.localeCompare(b.courseName, "es"));
+
+  const grouped = visible.length > 8;
+  const byCourse = new Map();
+  if (grouped) {
+    for (const ev of visible) {
+      if (!byCourse.has(ev.courseName)) byCourse.set(ev.courseName, []);
+      byCourse.get(ev.courseName).push(ev);
+    }
+  }
+
+  const row = (ev) => (
+    <li key={ev.evaluationId} className="cal-eval">
+      <span className="cal-eval-time">{ev.startTime ?? "Todo el día"}</span>
+      <span className="cal-eval-body">
+        <span className="cal-eval-title">
+          {ev.name}
+          <span className="users-badge users-badge--gray">{evaluationTypeLabel(ev.type)}</span>
+          {ev.visible === false && <span className="users-badge users-badge--inactive">Oculta</span>}
+        </span>
+        <span className="cal-class-meta">
+          {ev.courseName} · Comisión {ev.sectionName}
+        </span>
+      </span>
+    </li>
+  );
+
+  return (
+    <div className="cal-evals">
+      <h3 className="cal-evals-title">
+        Evaluaciones <span className="cal-group-count">{evaluations.length}</span>
+      </h3>
+      <div className="cal-evals-filters" role="group" aria-label="Filtrar evaluaciones por tipo">
+        {EVALUATION_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            className={`cal-chip ${type === f.value ? "cal-chip--active" : ""}`}
+            aria-pressed={type === f.value}
+            onClick={() => onTypeChange(f.value)}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {visible.length === 0 && <p className="users-empty">No hay evaluaciones de ese tipo este día.</p>}
+
+      {!grouped && <ul className="cal-eval-list">{visible.map(row)}</ul>}
+
+      {grouped &&
+        [...byCourse.entries()].map(([course, items]) => (
+          <details key={course} className="cal-group">
+            <summary className="cal-group-summary">
+              <span>{course}</span>
+              <span className="cal-group-count">{items.length}</span>
+            </summary>
+            <ul className="cal-eval-list">{items.map(row)}</ul>
+          </details>
+        ))}
+    </div>
+  );
+}
+
 export default function StaffCalendarPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -48,7 +119,8 @@ export default function StaffCalendarPage() {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [selectedDate, setSelectedDate] = useState(todayIso());
   const [summary, setSummary] = useState({ days: [], missingTerms: [] });
-  const [dayData, setDayData] = useState({ date: null, events: [], loading: true });
+  const [dayData, setDayData] = useState({ date: null, events: [], evaluations: [], loading: true });
+  const [evaluationType, setEvaluationType] = useState("");
   const [error, setError] = useState("");
   const [sheetItem, setSheetItem] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -82,11 +154,11 @@ export default function StaffCalendarPage() {
     setDayData((prev) => ({ ...prev, loading: true }));
     getFilteredCalendar(selectedDate, selectedDate, filters)
       .then((data) => {
-        if (seq === daySeq.current) setDayData({ date: selectedDate, events: data.events, loading: false });
+        if (seq === daySeq.current) setDayData({ date: selectedDate, events: data.events, evaluations: data.evaluations ?? [], loading: false });
       })
       .catch((e) => {
         if (seq !== daySeq.current) return;
-        setDayData({ date: selectedDate, events: [], loading: false });
+        setDayData({ date: selectedDate, events: [], evaluations: [], loading: false });
         setError(getErrorMessage(e, "No se pudieron cargar las clases del día."));
       });
   }, [selectedDate, filters, reloadKey]);
@@ -298,6 +370,7 @@ export default function StaffCalendarPage() {
               const s = summaryByDate.get(date);
               const classes = s?.classes ?? 0;
               const cancelled = s?.cancelled ?? 0;
+              const evaluations = s?.evaluations ?? 0;
               const classCls = [
                 "cal-day",
                 inMonth ? "" : "cal-day--out",
@@ -311,7 +384,7 @@ export default function StaffCalendarPage() {
                   type="button"
                   className={classCls}
                   onClick={() => selectDate(date)}
-                  aria-label={`${formatDate(date)}${classes ? `, ${classes} clases` : ""}${cancelled ? `, ${cancelled} canceladas` : ""}${s?.holiday ? `, feriado: ${s.holiday}` : ""}`}
+                  aria-label={`${formatDate(date)}${classes ? `, ${classes} clases` : ""}${cancelled ? `, ${cancelled} canceladas` : ""}${evaluations ? `, ${evaluations} ${evaluations === 1 ? "evaluación" : "evaluaciones"}` : ""}${s?.holiday ? `, feriado: ${s.holiday}` : ""}`}
                 >
                   <span className="cal-day-num">{day}</span>
                   {s?.holiday && <span className="cal-badge cal-badge--holiday">Fer<span className="cal-badge-long">iado</span></span>}
@@ -327,6 +400,12 @@ export default function StaffCalendarPage() {
                       <span className="cal-badge-long"> {cancelled === 1 ? "cancelada" : "canceladas"}</span>
                     </span>
                   )}
+                  {evaluations > 0 && (
+                    <span className="cal-badge cal-badge--evaluations">
+                      {evaluations}
+                      <span className="cal-badge-long"> {evaluations === 1 ? "eval." : "evals."}</span>
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -335,6 +414,7 @@ export default function StaffCalendarPage() {
           <p className="cal-legend">
             <span className="cal-badge cal-badge--classes">N</span> clases
             <span className="cal-badge cal-badge--cancelled">N</span> canceladas
+            <span className="cal-badge cal-badge--evaluations">N</span> evaluaciones
             <span className="cal-badge cal-badge--holiday">Feriado</span>
           </p>
         </section>
@@ -396,6 +476,10 @@ export default function StaffCalendarPage() {
                 </ul>
               </details>
             ))}
+
+          {showingDay && dayData.evaluations.length > 0 && (
+            <DayEvaluations evaluations={dayData.evaluations} type={evaluationType} onTypeChange={setEvaluationType} />
+          )}
         </section>
       </div>
 

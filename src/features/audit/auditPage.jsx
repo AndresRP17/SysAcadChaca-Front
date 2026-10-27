@@ -18,6 +18,8 @@ const ACTION_OPTIONS = [
   { value: "ATTENDANCE_CHANGED", label: "Asistencia modificada" },
   { value: "ATTENDANCE_LATE_LOADED", label: "Asistencia cargada con atraso" },
   { value: "ATTENDANCE_DELETED", label: "Asistencia eliminada" },
+  { value: "EVALUATION_DATE_CHANGED", label: "Fecha de evaluación modificada" },
+  { value: "EVALUATION_RULES_UPDATED", label: "Cambio en reglas de evaluaciones" },
   { value: "ATTENDANCE_RULES_UPDATED", label: "Cambio en reglas de asistencia" },
   { value: "REGULARITY_REVALIDATED", label: "Reválida de regularidad" },
   { value: "ENROLLMENT_RETAKE", label: "Recursada con regularidad vigente" },
