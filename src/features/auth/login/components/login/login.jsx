@@ -6,11 +6,11 @@ import { useAuth } from "../../../../../context/AuthContext";
 import { useTheme } from "../../../../../context/ThemeContext";
 import { getDefaultRouteForRole } from "../../../../layout/roleLinks";
 import { getErrorMessage, SESSION_EXPIRED_KEY } from "../../../../../shared/api/api";
-import LoginScene from "./LoginScene";
+import LoginScene from "./loginScene";
 import { PERSONAJES, elegirPersonaje } from "./personajes";
 import utnLogo from "./utn-logo.jpg";
 import "./login.css";
-import "./LoginParchment.css";
+import "./loginParchment.css";
 
 // Tiempos de la animación de login correcto. Se suman a la espera real del
 // servidor: corre a la puerta -> festeja -> entra. Para acortarla, bajá estos
@@ -19,10 +19,27 @@ const RUN_MS = 700;
 const CELEBRATE_MS = 800;
 const ENTER_MS = 350;
 // Cuánto dura el enojo cuando el login falla (vuelve al inicio y patalea).
-// Con cada fallo seguido el enojo sube de nivel (1 a 5) y dura más.
-const FAIL_MS_POR_NIVEL = [2100, 2700, 3400, 4000, 4600];
-// Lo que grita el estudiante según el nivel de enojo (1 a 5).
-const GRITOS = ["", "¡OTRA VEZ!", "¡¡BASTA!!", "¡NO PUEDE SER!", "¡¡AAAARGH!!"];
+// Con cada fallo seguido el enojo sube de nivel (1 a 8) y dura más.
+const FAIL_MS_POR_NIVEL = [2100, 2700, 3400, 4000, 4600, 4800, 5000, 5600];
+// Lo que grita el estudiante según el nivel de enojo (1 a 8).
+const GRITOS = [
+  "",
+  "¡OTRA VEZ!",
+  "¡¡BASTA!!",
+  "¡NO PUEDE SER!",
+  "¡¡AAAARGH!!",
+  "¡ME TIRO AL PISO!",
+  "¡Y ENCIMA UN RAYO!",
+  "¡LLÉVENME DE ACÁ!",
+];
+
+// Del fallo 1 al 8 el enojo sube de a un nivel, con una animación distinta cada vez.
+// Del 9 en adelante se sortea entre los tres últimos (piso, rayo y OVNI) sin repetir el anterior.
+function nivelDeEnojo(fallos, ultimo) {
+  if (fallos <= 8) return fallos;
+  const opciones = [6, 7, 8].filter((n) => n !== ultimo);
+  return opciones[Math.floor(Math.random() * opciones.length)];
+}
 
 // Para fijar siempre el mismo personaje (por ejemplo en una demo) poné su id acá:
 // "el-corto" | "ella-cola" | "ella-larga-pollera" | "el-rulos" | "ella-rulos".
@@ -105,6 +122,7 @@ export default function Login() {
   );
   const idDialogo = useRef(0);
   const fallos = useRef(0);
+  const ultimoNivel = useRef(0);
   const failTimer = useRef(null);
   // El interceptor de la API deja esta marca cuando un 401 cierra la sesión.
   const [expiredNotice] = useState(() => {
@@ -168,7 +186,8 @@ export default function Login() {
     } catch (err) {
       setError(getErrorMessage(err));
       fallos.current += 1;
-      const nivel = Math.min(fallos.current, 5);
+      const nivel = nivelDeEnojo(fallos.current, ultimoNivel.current);
+      ultimoNivel.current = nivel;
       // Vuelve caminando al inicio (~0.7 s) y recién ahí aparece el globo
       mostrarFallo({ texto: globoDeFallo(err), nivel, demora: 0.7, estatico: false });
     } finally {
@@ -198,7 +217,7 @@ export default function Login() {
           </div>
 
           <div className="sysacad-panel-scene">
-            <LoginScene phase={scenePhase} variant="panel" rage={rage} dialogo={dialogo} dispositivo={dispositivo} personaje={personaje} />
+            <LoginScene phase={scenePhase} variant="panel" rage={rage} dialogo={dialogo} dispositivo={dispositivo} personaje={personaje} dia={!darkMode} />
           </div>
 
           <div className="sysacad-panel-bottom">
@@ -236,7 +255,7 @@ export default function Login() {
             </div>
 
             <div className="sysacad-mobile-scene">
-              <LoginScene phase={scenePhase} variant="mobile" rage={rage} dialogo={dialogo} dispositivo={dispositivo} personaje={personaje} />
+              <LoginScene phase={scenePhase} variant="mobile" rage={rage} dialogo={dialogo} dispositivo={dispositivo} personaje={personaje} dia={!darkMode} />
             </div>
 
             <h2 className="sysacad-title">Bienvenido de nuevo</h2>
