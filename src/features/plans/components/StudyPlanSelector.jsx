@@ -9,6 +9,9 @@ export default function StudyPlanSelector({
   onEditPlanClick,
   onDeletePlanClick,
 }) {
+  // El plan elegido en el desplegable es el que se edita o elimina: no hace falta listarlo de nuevo abajo.
+  const selectedPlan = studyPlans.find((sp) => String(sp.id) === String(studyPlanId));
+
   return (
     <>
       <div className="plans-selectors">
@@ -44,41 +47,27 @@ export default function StudyPlanSelector({
           </select>
         </div>
 
-        <button
-          type="button"
-          className="users-btn users-btn--ghost"
-          disabled={!programId}
-          onClick={onNewPlanClick}
-        >
-          + Nuevo plan
-        </button>
-      </div>
-
-      {studyPlans.length > 0 && (
-        <div className="plans-planlist">
-          {studyPlans.map((sp) => (
-            <span key={sp.id} className="plans-plan-chip">
-              Res. {sp.resolutionYear}
-              <button
-                type="button"
-                className="plans-chip-edit"
-                title="Editar plan"
-                onClick={() => onEditPlanClick(sp)}
-              >
-                ✎
+        <div className="plans-plan-actions">
+          <button
+            type="button"
+            className="users-btn users-btn--ghost"
+            disabled={!programId}
+            onClick={onNewPlanClick}
+          >
+            + Nuevo plan
+          </button>
+          {selectedPlan && (
+            <>
+              <button type="button" className="users-action-btn" onClick={() => onEditPlanClick(selectedPlan)}>
+                Editar plan
               </button>
-              <button
-                type="button"
-                className="plans-chip-delete"
-                title="Eliminar plan"
-                onClick={() => onDeletePlanClick(sp)}
-              >
-                ×
+              <button type="button" className="users-action-btn users-action-btn--danger" onClick={() => onDeletePlanClick(selectedPlan)}>
+                Eliminar plan
               </button>
-            </span>
-          ))}
+            </>
+          )}
         </div>
-      )}
+      </div>
 
       <hr className="plans-divider" />
     </>

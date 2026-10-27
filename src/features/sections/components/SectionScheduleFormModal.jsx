@@ -88,19 +88,28 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
   const capacityShort =
     selectedClassroom && sectionCapacity && selectedClassroom.capacity < sectionCapacity ? selectedClassroom : null;
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  // addAnother: guarda este horario y deja el formulario listo para cargar otro (misma aula), sin cerrar el modal.
+  async function handleSubmit(addAnother = false) {
     if (!form.classroom_id || !form.start_time || !form.end_time) {
       setError("Completá todos los campos.");
       return;
     }
     try {
-      await onSubmit({
-        classroom_id: Number(form.classroom_id),
-        weekday: form.weekday,
-        start_time: form.start_time,
-        end_time: form.end_time,
-      });
+      await onSubmit(
+        {
+          classroom_id: Number(form.classroom_id),
+          weekday: form.weekday,
+          start_time: form.start_time,
+          end_time: form.end_time,
+        },
+        { addAnother },
+      );
+      if (addAnother) {
+        setForm({ ...EMPTY_FORM, classroom_id: form.classroom_id });
+        setAvailability(null);
+        setError("");
+        setFieldErrors({});
+      }
     } catch (err) {
       setError(getErrorMessage(err));
       setFieldErrors(getFieldErrors(err));
@@ -111,7 +120,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={lock(handleSubmit)} className="users-form" noValidate>
+      <form onSubmit={lock(() => handleSubmit(false))} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label" htmlFor="sectionScheduleFormModal-1">Aula</label>
           <select id="sectionScheduleFormModal-1"
@@ -190,6 +199,16 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>
             Cancelar
           </button>
+          {mode !== "edit" && (
+            <button
+              type="button"
+              className="users-btn users-btn--ghost"
+              disabled={pending}
+              onClick={lock(() => handleSubmit(true))}
+            >
+              Guardar y agregar otro
+            </button>
+          )}
           <button type="submit" className="users-btn users-btn--primary" disabled={pending} aria-busy={pending}>
             {mode === "edit" ? "Guardar" : "Agregar"}
           </button>

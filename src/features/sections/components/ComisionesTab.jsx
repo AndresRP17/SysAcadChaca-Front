@@ -5,7 +5,7 @@ import { usePrograms } from "../../plans/hooks/usePrograms";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
 import { useClassrooms } from "../hooks/useClassrooms";
-import { getSection, createSection, updateSection, deleteSection } from "../services/sectionService";
+import { getSection, getSectionsPage, createSection, updateSection, deleteSection } from "../services/sectionService";
 import { getSectionSchedules, createSectionSchedule, updateSectionSchedule, deleteSectionSchedule } from "../services/sectionScheduleService";
 import { useSectionsPage } from "../hooks/useSectionsPage";
 import SectionFormModal from "./SectionFormModal";
@@ -14,6 +14,7 @@ import SectionScheduleFormModal, { weekdayLabel, formatTime } from "./SectionSch
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 import ListFilters from "../../../shared/ui/ListFilters";
 import Pagination from "../../../shared/ui/Pagination";
+import "./comisiones.css";
 
 const TERM_OPTIONS = [
   { value: "1", label: "1º cuatrimestre" },
@@ -27,6 +28,11 @@ const STATE_OPTIONS = [
   { value: "closed", label: "Cerrada" },
 ];
 
+const WEEKDAY_ORDER = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
+
+const termShort = (term) => (term === 0 ? "Anual" : `${term}º cuat.`);
+const termFull = (term) => (term === 0 ? "Anual" : `${term}º cuatrimestre`);
+
 // Años ofrecidos en el filtro: del próximo al de hace 5, más el que venga de un enlace directo.
 function yearOptions(extraYear) {
   const current = new Date().getFullYear();
@@ -34,6 +40,15 @@ function yearOptions(extraYear) {
   for (let y = current + 1; y >= current - 5; y--) years.add(y);
   if (extraYear) years.add(Number(extraYear));
   return [...years].sort((x, y) => y - x).map((y) => ({ value: String(y), label: String(y) }));
+}
+
+function StatusBadges({ section }) {
+  return (
+    <>
+      {!section.active && <span className="users-badge users-badge--inactive">Inactiva</span>}
+      {section.closed && <span className="users-badge users-badge--inactive">Cerrada</span>}
+    </>
+  );
 }
 
 export default function ComisionesTab({ deepLink = null }) {
@@ -55,10 +70,12 @@ export default function ComisionesTab({ deepLink = null }) {
   const [selectedKey, setSelectedKey] = useState(0);
   const [deepLinkReady, setDeepLinkReady] = useState(!deepLink?.sectionId);
   const [schedules, setSchedules] = useState([]);
+  const [loadingSchedules, setLoadingSchedules] = useState(false);
 
   const [sectionFormOpen, setSectionFormOpen] = useState(false);
   const [sectionFormMode, setSectionFormMode] = useState("create");
   const [editingSection, setEditingSection] = useState(null);
+  const [existingSections, setExistingSections] = useState([]); // para sugerir el nombre de la comisión nueva
   const [sectionToDelete, setSectionToDelete] = useState(null);
   const [scheduleFormOpen, setScheduleFormOpen] = useState(false);
   const [scheduleFormMode, setScheduleFormMode] = useState("create");
@@ -129,10 +146,13 @@ export default function ComisionesTab({ deepLink = null }) {
       setSchedules([]);
       return;
     }
+    setLoadingSchedules(true);
     try {
       setSchedules(await getSectionSchedules(sectionId));
     } catch (e) {
       setError(e.message);
+    } finally {
+      setLoadingSchedules(false);
     }
   }
 
@@ -151,6 +171,10 @@ export default function ComisionesTab({ deepLink = null }) {
     setSectionFormMode("create");
     setEditingSection(null);
     setSectionFormOpen(true);
+    // Las comisiones del plan, para sugerir la próxima letra libre. Si falla, el nombre se escribe a mano.
+    getSectionsPage({ studyPlanId, size: 1000 })
+      .then(({ items }) => setExistingSections(items))
+      .catch(() => setExistingSections([]));
   }
 
   function openEditSection(section) {
@@ -163,12 +187,26 @@ export default function ComisionesTab({ deepLink = null }) {
     if (sectionFormMode === "edit" && editingSection) {
       await updateSection(editingSection.id, data);
       showToast("Comisión actualizada.");
-    } else {
-      await createSection(data);
-      showToast("Comisión creada.");
+      setSectionFormOpen(false);
+      refreshSections();
+      return;
     }
+
+    const created = await createSection(data);
     setSectionFormOpen(false);
+    // La comisión nueva queda a la vista y elegida, y se pasa directo a cargar sus horarios: sin ellos nadie
+    // puede inscribirse.
+    clearFilters();
+    changeFilter("year", String(created.academicYear));
+    changeFilter("term", String(created.term));
+    setSelectedSectionId(created.id);
     refreshSections();
+    if (classrooms.length > 0) {
+      showToast("Comisión creada. Cargá ahora sus horarios.");
+      openCreateSchedule();
+    } else {
+      showToast("Comisión creada. Cargá aulas para poder asignarle horarios.");
+    }
   }
 
   async function handleConfirmDeleteSection() {
@@ -210,7 +248,7 @@ export default function ComisionesTab({ deepLink = null }) {
     setScheduleFormOpen(true);
   }
 
-  async function handleScheduleFormSubmit(data) {
+  async function handleScheduleFormSubmit(data, { addAnother = false } = {}) {
     if (scheduleFormMode === "edit" && editingSchedule) {
       await updateSectionSchedule(editingSchedule.id, { ...data, section_id: editingSchedule.sectionId });
       showToast("Horario actualizado.");
@@ -218,7 +256,7 @@ export default function ComisionesTab({ deepLink = null }) {
       await createSectionSchedule({ ...data, section_id: selectedSectionId });
       showToast("Horario agregado.");
     }
-    setScheduleFormOpen(false);
+    if (!addAnother) setScheduleFormOpen(false);
     await reloadSchedules(selectedSectionId);
   }
 
@@ -228,6 +266,10 @@ export default function ComisionesTab({ deepLink = null }) {
     setScheduleToDelete(null);
     await reloadSchedules(selectedSectionId);
   }
+
+  const sortedSchedules = [...schedules].sort(
+    (a, b) => WEEKDAY_ORDER.indexOf(a.weekday) - WEEKDAY_ORDER.indexOf(b.weekday) || a.startTime.localeCompare(b.startTime),
+  );
 
   return (
     <div>
@@ -310,31 +352,36 @@ export default function ComisionesTab({ deepLink = null }) {
 
           {curriculumCourses.length > 0 && !loadingSections && !listError && visibleSections.length === 0 && (
             <p className="users-empty">
-              {hasFilters ? "No hay comisiones con esos filtros." : "Este plan todavía no tiene comisiones abiertas."}
+              {hasFilters ? "No hay comisiones con esos filtros." : "Este plan todavía no tiene comisiones abiertas. Creá la primera con \"+ Nueva comisión\"."}
             </p>
           )}
 
           {visibleSections.length > 0 && (
-            <div className="correlatives-layout">
+            <div className="sections-layout">
               <div className={loadingSections ? "users-list--loading" : undefined} aria-busy={loadingSections}>
-                <div className="correlatives-list">
+                <ul className="sections-list" aria-label="Comisiones">
                   {visibleSections.map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      className={`correlatives-course-btn ${s.id === selectedSectionId ? "correlatives-course-btn--active" : ""}`}
-                      onClick={() => setSelectedSectionId(s.id)}
-                    >
-                      <span className="correlatives-course-code">{s.name}</span>
-                      <span>{s.courseName}</span>
-                      <span className="correlatives-course-year">
-                        {s.academicYear} · {s.term === 0 ? "Anual" : `${s.term}º cuat.`} - {s.shift}
-                        {!s.active && <span className="users-badge users-badge--inactive">Inactiva</span>}
-                        {s.closed && <span className="users-badge users-badge--inactive">Cerrada</span>}
-                      </span>
-                    </button>
+                    <li key={s.id}>
+                      <button
+                        type="button"
+                        className={`section-card ${s.id === selectedSectionId ? "section-card--active" : ""}`}
+                        aria-pressed={s.id === selectedSectionId}
+                        onClick={() => setSelectedSectionId(s.id)}
+                      >
+                        <span className="section-card-top">
+                          <span className="section-card-course">{s.courseName}</span>
+                          <StatusBadges section={s} />
+                        </span>
+                        <span className="section-card-line">
+                          <strong>Comisión {s.name}</strong> · {s.academicYear} · {termShort(s.term)} · {s.shift}
+                        </span>
+                        <span className="section-card-line">
+                          {s.teacherLastName}, {s.teacherFirstName} · {s.enrolledCount} de {s.maxCapacity} alumnos
+                        </span>
+                      </button>
+                    </li>
                   ))}
-                </div>
+                </ul>
                 <Pagination
                   page={page}
                   pageSize={pageSize}
@@ -345,89 +392,105 @@ export default function ComisionesTab({ deepLink = null }) {
                 />
               </div>
 
-              <div className="correlatives-detail">
+              <div className="section-detail">
                 {!selectedSection && (
-                  <p className="users-empty">Elegí una comisión de la izquierda para ver o cargar sus horarios.</p>
+                  <p className="users-empty">Elegí una comisión de la lista para ver sus datos y cargar sus horarios.</p>
                 )}
 
                 {selectedSection && (
                   <>
-                    <div className="plans-toolbar">
-                      <p className="users-subtitle">
-                        <strong>{selectedSection.name}</strong> — {selectedSection.courseName} — {selectedSection.teacherFirstName} {selectedSection.teacherLastName} — cupo {selectedSection.maxCapacity}
-                        {" "}
-                        <span className={`users-badge ${selectedSection.active ? "users-badge--active" : "users-badge--inactive"}`}>
-                          {selectedSection.active ? "Activa" : "Inactiva"}
-                        </span>
-                      </p>
+                    <header className="section-detail-header">
                       <div>
-                        <button type="button" className="users-action-btn" onClick={toggleRoster}>
-                          {rosterOpen ? "Ocultar alumnos inscriptos" : "Ver alumnos inscriptos"}
-                        </button>
-                        <button type="button" className="users-action-btn" onClick={() => openEditSection(selectedSection)}>
+                        <h3 className="section-detail-title">{selectedSection.courseName}</h3>
+                        <p className="section-detail-sub">
+                          Comisión {selectedSection.name} · {selectedSection.courseCode}
+                          {" "}
+                          <span className={`users-badge ${selectedSection.active ? "users-badge--active" : "users-badge--inactive"}`}>
+                            {selectedSection.active ? "Activa" : "Inactiva"}
+                          </span>
+                          {selectedSection.closed && <span className="users-badge users-badge--inactive">Cerrada</span>}
+                        </p>
+                      </div>
+                      <div className="section-detail-actions">
+                        <button type="button" className="users-btn users-btn--primary" onClick={() => openEditSection(selectedSection)}>
                           Editar
                         </button>
-                        <button
-                          type="button"
-                          className="users-action-btn"
-                          onClick={() => handleToggleSectionActive(selectedSection)}
-                        >
+                        <button type="button" className="users-action-btn" onClick={toggleRoster}>
+                          {rosterOpen ? "Ocultar alumnos" : "Ver alumnos"}
+                        </button>
+                        <button type="button" className="users-action-btn" onClick={() => handleToggleSectionActive(selectedSection)}>
                           {selectedSection.active ? "Desactivar" : "Activar"}
                         </button>
-                        <button
-                          type="button"
-                          className="users-action-btn users-action-btn--danger"
-                          onClick={() => setSectionToDelete(selectedSection)}
-                        >
+                        <button type="button" className="users-action-btn users-action-btn--danger" onClick={() => setSectionToDelete(selectedSection)}>
                           Eliminar
                         </button>
                       </div>
-                    </div>
+                    </header>
+
+                    <dl className="section-facts">
+                      <div><dt>Docente</dt><dd>{selectedSection.teacherLastName}, {selectedSection.teacherFirstName}</dd></div>
+                      <div><dt>Período</dt><dd>{selectedSection.academicYear} · {termFull(selectedSection.term)}</dd></div>
+                      <div><dt>Turno</dt><dd>{selectedSection.shift}</dd></div>
+                      <div>
+                        <dt>Alumnos</dt>
+                        <dd>
+                          {selectedSection.enrolledCount} de {selectedSection.maxCapacity}
+                          {selectedSection.availableSeats !== null && selectedSection.availableSeats !== undefined && ` · ${selectedSection.availableSeats} lugares`}
+                        </dd>
+                      </div>
+                    </dl>
 
                     {rosterOpen && <SectionRoster sectionId={selectedSection.id} />}
 
                     <div className="plans-toolbar">
-                      <p className="users-subtitle">Horarios</p>
+                      <h4 className="section-detail-subtitle">Horarios</h4>
                       <button
                         type="button"
                         className="users-btn users-btn--primary"
                         disabled={classrooms.length === 0}
+                        title={classrooms.length === 0 ? "Cargá aulas primero" : undefined}
                         onClick={openCreateSchedule}
                       >
                         + Agregar horario
                       </button>
                     </div>
 
-                    {schedules.length === 0 && (
-                      <p className="users-empty">Esta comisión todavía no tiene horarios cargados.</p>
+                    {!loadingSchedules && schedules.length === 0 && (
+                      <p className="section-schedules-empty" role="status">
+                        Esta comisión todavía no tiene horarios. Hasta que los cargues, ningún alumno puede inscribirse.
+                      </p>
                     )}
 
-                    {schedules.length > 0 && (
-                      <ul className="correlatives-prereq-list">
-                        {schedules.map((sch) => (
-                          <li key={sch.id} className="correlatives-prereq-item">
-                            <span>
-                              <strong>{weekdayLabel(sch.weekday)}</strong> {formatTime(sch.startTime)}–{formatTime(sch.endTime)} — {sch.classroomName}
-                            </span>
-                            <span>
-                              <button
-                                type="button"
-                                className="users-action-btn"
-                                onClick={() => openEditSchedule(sch)}
-                              >
-                                Editar
-                              </button>
-                              <button
-                                type="button"
-                                className="users-action-btn users-action-btn--danger"
-                                onClick={() => setScheduleToDelete(sch)}
-                              >
-                                Quitar
-                              </button>
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
+                    {sortedSchedules.length > 0 && (
+                      <div className="users-table-wrapper">
+                        <table className="users-table">
+                          <thead>
+                            <tr>
+                              <th className="users-th">Día</th>
+                              <th className="users-th">Horario</th>
+                              <th className="users-th">Aula</th>
+                              <th className="users-th users-th--actions">Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sortedSchedules.map((sch) => (
+                              <tr key={sch.id}>
+                                <td className="users-td" data-label="Día"><strong>{weekdayLabel(sch.weekday)}</strong></td>
+                                <td className="users-td" data-label="Horario">{formatTime(sch.startTime)} a {formatTime(sch.endTime)}</td>
+                                <td className="users-td" data-label="Aula">{sch.classroomName}</td>
+                                <td className="users-td users-td--actions" data-label="Acciones">
+                                  <button type="button" className="users-action-btn" onClick={() => openEditSchedule(sch)}>
+                                    Editar
+                                  </button>
+                                  <button type="button" className="users-action-btn users-action-btn--danger" onClick={() => setScheduleToDelete(sch)}>
+                                    Quitar
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     )}
                   </>
                 )}
@@ -441,7 +504,14 @@ export default function ComisionesTab({ deepLink = null }) {
         open={sectionFormOpen}
         mode={sectionFormMode}
         initialData={editingSection}
-        curriculumCourseOptions={curriculumCourses.map((cc) => ({ id: cc.id, code: cc.courseCode, name: cc.courseName }))}
+        curriculumCourseOptions={curriculumCourses.map((cc) => ({
+          id: cc.id,
+          code: cc.courseCode,
+          name: cc.courseName,
+          yearNumber: cc.yearNumber,
+          term: cc.term,
+        }))}
+        existingSections={existingSections}
         onClose={() => setSectionFormOpen(false)}
         onSubmit={handleSectionFormSubmit}
       />
