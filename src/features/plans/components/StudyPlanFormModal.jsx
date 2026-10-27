@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
 import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 const EMPTY_FORM = { resolution_year: "", active: true };
 
 export default function StudyPlanFormModal({ open, mode = "create", initialData, programId, onClose, onSubmit }) {
+  const { lock, pending } = useSubmitLock();
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -48,7 +50,7 @@ export default function StudyPlanFormModal({ open, mode = "create", initialData,
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form" noValidate>
+      <form onSubmit={lock(handleSubmit)} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label" htmlFor="studyPlanFormModal-1">Año de resolución</label>
           <input id="studyPlanFormModal-1"
@@ -79,7 +81,7 @@ export default function StudyPlanFormModal({ open, mode = "create", initialData,
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>
             Cancelar
           </button>
-          <button type="submit" className="users-btn users-btn--primary">
+          <button type="submit" className="users-btn users-btn--primary" disabled={pending} aria-busy={pending}>
             Guardar
           </button>
         </div>

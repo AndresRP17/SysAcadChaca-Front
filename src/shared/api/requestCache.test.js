@@ -106,3 +106,37 @@ test("pedidos cancelables no se comparten", async () => {
   await client.get("/sections", { signal });
   assert.equal(calls.length, 2);
 });
+
+test("una escritura idéntica en vuelo comparte un solo pedido (doble click en Guardar)", async () => {
+  const { client, calls } = setup();
+  const body = { name: "Comisión A" };
+  const [a, b] = await Promise.all([client.post("/sections", body), client.post("/sections", { ...body })]);
+  assert.equal(calls.filter(([method]) => method === "post").length, 1);
+  assert.equal(a, b);
+});
+
+test("escrituras distintas en paralelo salen las dos", async () => {
+  const { client, calls } = setup();
+  await Promise.all([client.post("/sections", { name: "A" }), client.post("/sections", { name: "B" }), client.delete("/sections/1")]);
+  assert.equal(calls.length, 3);
+});
+
+test("terminada la escritura, repetirla vuelve a enviarla", async () => {
+  const { client, calls } = setup();
+  await client.post("/sections", { name: "A" });
+  await client.post("/sections", { name: "A" });
+  assert.equal(calls.length, 2);
+});
+
+test("una escritura fallida no deja bloqueado el reintento", async () => {
+  const { client, calls } = setup();
+  let fail = true;
+  const original = client.post;
+  client.post = async (url) => { calls.push(["post", url]); if (fail) throw new Error("409"); return { data: "ok" }; };
+  installRequestCache(client, { getToken: () => "t1", now: () => 0 });
+  await assert.rejects(client.post("/sections", { name: "A" }));
+  fail = false;
+  await client.post("/sections", { name: "A" });
+  assert.equal(calls.length, 2);
+  client.post = original;
+});

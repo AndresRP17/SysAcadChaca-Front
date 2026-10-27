@@ -5,11 +5,13 @@ import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import SearchCombobox from "../../../shared/ui/SearchCombobox";
 import { teacherOption } from "../../../shared/ui/searchOptions";
 import { getTeacher, searchTeachers } from "../../users/services/teacherService";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 const SHIFTS = ["Mañana", "Tarde", "Noche"];
 const EMPTY_FORM = { curriculum_course_id: "", teacher_id: "", name: "", academic_year: "", term: "", max_capacity: "", shift: SHIFTS[0] };
 
 export default function SectionFormModal({ open, mode, initialData, curriculumCourseOptions, onClose, onSubmit }) {
+  const { lock, pending } = useSubmitLock();
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -64,7 +66,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form" noValidate>
+      <form onSubmit={lock(handleSubmit)} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label" htmlFor="sectionFormModal-1">Materia</label>
           <select id="sectionFormModal-1"
@@ -168,7 +170,7 @@ export default function SectionFormModal({ open, mode, initialData, curriculumCo
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>
             Cancelar
           </button>
-          <button type="submit" className="users-btn users-btn--primary">
+          <button type="submit" className="users-btn users-btn--primary" disabled={pending} aria-busy={pending}>
             Guardar
           </button>
         </div>

@@ -216,6 +216,36 @@
   cursor: not-allowed;
 }
 
+/* Enviando: el botón queda deshabilitado y muestra que el pedido está en curso. */
+.users-btn[aria-busy="true"] {
+  cursor: progress;
+}
+
+.users-btn[aria-busy="true"]::before {
+  content: "";
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-right: 8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -0.1em;
+  animation: users-btn-spin 0.7s linear infinite;
+}
+
+@keyframes users-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .users-btn[aria-busy="true"]::before {
+    animation-duration: 2s;
+  }
+}
+
 .users-btn--primary {
   background: var(--navy);
   color: #ffffff;

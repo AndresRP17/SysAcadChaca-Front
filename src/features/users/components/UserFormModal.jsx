@@ -3,6 +3,7 @@ import Modal from "../../../shared/ui/Modal";
 import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 const EMPTY_FORM = {
   email: "",
@@ -21,6 +22,7 @@ const EMPTY_FORM = {
 };
 
 export default function UserFormModal({ open, mode, initialData, onClose, onSubmit, studentsOnly = false }) {
+  const { lock, pending } = useSubmitLock();
   const [form, setForm] = useState(EMPTY_FORM);
   const [studyPlans, setStudyPlans] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -113,7 +115,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form" noValidate>
+      <form onSubmit={lock(handleSubmit)} className="users-form" noValidate>
         {!studentsOnly && (
         <div className="users-form-field">
           <label className="users-form-label" htmlFor="userFormModal-1">Rol</label>
@@ -293,7 +295,7 @@ export default function UserFormModal({ open, mode, initialData, onClose, onSubm
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>
             Cancelar
           </button>
-          <button type="submit" className="users-btn users-btn--primary">
+          <button type="submit" className="users-btn users-btn--primary" disabled={pending} aria-busy={pending}>
             Guardar
           </button>
         </div>

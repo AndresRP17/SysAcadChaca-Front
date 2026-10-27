@@ -2,6 +2,7 @@ import { useState } from "react";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import FieldError from "../../../shared/ui/FieldError";
 import FormError from "../../../shared/ui/FormError";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 const FIELDS = ["phone", "street", "streetNumber", "floor", "apartment", "city", "province", "postalCode"];
 
@@ -13,6 +14,7 @@ function toForm(profile) {
 }
 
 export default function ContactForm({ profile, onSave }) {
+  const { lock, pending } = useSubmitLock();
   const [form, setForm] = useState(() => toForm(profile));
   const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
@@ -65,7 +67,7 @@ export default function ContactForm({ profile, onSave }) {
   return (
     <section className="profile-card" aria-labelledby="profile-contact-title">
       <h2 id="profile-contact-title" className="profile-card-title">Contacto y domicilio</h2>
-      <form onSubmit={handleSubmit} className="users-form" noValidate>
+      <form onSubmit={lock(handleSubmit)} className="users-form" noValidate>
         {textField("phone", "Teléfono", { type: "tel", inputMode: "tel", maxLength: 30, autoComplete: "tel" })}
 
         <div className="users-form-row profile-row">
@@ -87,7 +89,7 @@ export default function ContactForm({ profile, onSave }) {
         <FormError message={error} />
 
         <div className="users-form-actions">
-          <button type="submit" className="users-btn users-btn--primary" disabled={saving}>
+          <button type="submit" aria-busy={pending} className="users-btn users-btn--primary" disabled={pending || (saving)}>
             {saving ? "Guardando..." : "Guardar cambios"}
           </button>
         </div>

@@ -9,6 +9,7 @@ import SearchCombobox from "../../../shared/ui/SearchCombobox";
 import { teacherOption } from "../../../shared/ui/searchOptions";
 import { getTeacher, searchTeachers } from "../../users/services/teacherService";
 import { useClassrooms } from "../../sections/hooks/useClassrooms";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 const EMPTY_FORM = {
   program_id: "",
@@ -32,6 +33,7 @@ async function loadTeacherOption(id) {
 // Alta de una mesa de examen. El acta (libro y folio) se completa después, al
 // cerrarla; acá solo se programa la mesa.
 export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
+  const { lock, pending } = useSubmitLock();
   const { programs } = usePrograms();
   const { classrooms } = useClassrooms();
   const [studyPlans, setStudyPlans] = useState([]);
@@ -112,7 +114,7 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
 
   return (
     <Modal open={open} title="Nueva mesa de examen" onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form" noValidate>
+      <form onSubmit={lock(handleSubmit)} className="users-form" noValidate>
         <div className="users-form-row">
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="xb-program">Carrera</label>
@@ -222,7 +224,7 @@ export default function ExamBoardFormModal({ open, onClose, onSubmit }) {
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>
             Cancelar
           </button>
-          <button type="submit" className="users-btn users-btn--primary" disabled={saving}>
+          <button type="submit" aria-busy={pending} className="users-btn users-btn--primary" disabled={pending || (saving)}>
             {saving ? "Guardando..." : "Crear mesa"}
           </button>
         </div>

@@ -3,10 +3,12 @@ import Modal from "../../../shared/ui/Modal";
 import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { PERIOD_TYPES } from "../services/enrollmentPeriodService";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 const EMPTY_FORM = { type: "CURSADA", academic_year: "", term: "", start_date: "", end_date: "", active: true };
 
 export default function EnrollmentPeriodFormModal({ open, mode, initialData, onClose, onSubmit }) {
+  const { lock, pending } = useSubmitLock();
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -73,7 +75,7 @@ export default function EnrollmentPeriodFormModal({ open, mode, initialData, onC
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form" noValidate>
+      <form onSubmit={lock(handleSubmit)} className="users-form" noValidate>
         <div className="users-form-row">
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="ep-type">Tipo</label>
@@ -158,7 +160,7 @@ export default function EnrollmentPeriodFormModal({ open, mode, initialData, onC
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>
             Cancelar
           </button>
-          <button type="submit" className="users-btn users-btn--primary" disabled={saving}>
+          <button type="submit" aria-busy={pending} className="users-btn users-btn--primary" disabled={pending || (saving)}>
             {saving ? "Guardando..." : "Guardar"}
           </button>
         </div>

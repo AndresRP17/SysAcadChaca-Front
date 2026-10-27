@@ -3,6 +3,7 @@ import Modal from "../../../shared/ui/Modal";
 import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { getAvailability } from "../services/sectionScheduleService";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 const WEEKDAYS = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
 const WEEKDAY_LABELS = { LUNES: "Lunes", MARTES: "Martes", MIERCOLES: "Miércoles", JUEVES: "Jueves", VIERNES: "Viernes", SABADO: "Sábado" };
@@ -18,6 +19,7 @@ export function formatTime(time) {
 }
 
 export default function SectionScheduleFormModal({ open, mode = "create", initialData, classroomOptions, teacherId, sectionCapacity, onClose, onSubmit }) {
+  const { lock, pending } = useSubmitLock();
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -109,7 +111,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form" noValidate>
+      <form onSubmit={lock(handleSubmit)} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label" htmlFor="sectionScheduleFormModal-1">Aula</label>
           <select id="sectionScheduleFormModal-1"
@@ -188,7 +190,7 @@ export default function SectionScheduleFormModal({ open, mode = "create", initia
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>
             Cancelar
           </button>
-          <button type="submit" className="users-btn users-btn--primary">
+          <button type="submit" className="users-btn users-btn--primary" disabled={pending} aria-busy={pending}>
             {mode === "edit" ? "Guardar" : "Agregar"}
           </button>
         </div>

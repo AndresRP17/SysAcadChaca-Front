@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
 import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 const EMPTY_FORM = { name: "", address: "" };
 
 export default function BuildingFormModal({ open, mode, initialData, onClose, onSubmit }) {
+  const { lock, pending } = useSubmitLock();
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -44,7 +46,7 @@ export default function BuildingFormModal({ open, mode, initialData, onClose, on
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form" noValidate>
+      <form onSubmit={lock(handleSubmit)} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label" htmlFor="buildingFormModal-1">Nombre</label>
           <input id="buildingFormModal-1"
@@ -73,7 +75,7 @@ export default function BuildingFormModal({ open, mode, initialData, onClose, on
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>
             Cancelar
           </button>
-          <button type="submit" className="users-btn users-btn--primary">
+          <button type="submit" className="users-btn users-btn--primary" disabled={pending} aria-busy={pending}>
             Guardar
           </button>
         </div>
