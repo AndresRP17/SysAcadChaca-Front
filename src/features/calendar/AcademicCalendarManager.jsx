@@ -7,6 +7,7 @@ import { getErrorMessage } from "../../shared/api/api";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
 import { formatDate } from "./ClassSheet";
 import RegularityRulesCard from "../regularity/RegularityRulesCard";
+import EvaluationRulesCard from "./EvaluationRulesCard";
 import { getAttendanceRules, updateAttendanceRules } from "../grades/services/attendanceService";
 import {
   createAcademicTerm,
@@ -17,6 +18,7 @@ import {
   getNonTeachingDays,
 } from "./services/staffCalendarService";
 import "./staffCalendar.css";
+import { useSubmitLock } from "../../shared/hooks/useSubmitLock";
 
 const currentYear = new Date().getFullYear();
 
@@ -30,6 +32,7 @@ const CREDIT_OPTIONS = [
 // Calendario academico: fechas de cursado de cada cuatrimestre y feriados. Sin esas
 // fechas el calendario no puede mostrar las clases de las comisiones.
 export default function AcademicCalendarManager({ onBack, onChanged }) {
+  const { lock, pending } = useSubmitLock();
   const { showToast } = useToast();
   const { user } = useAuth();
   const canEditRules = user?.role === "Administrador"; // Bedel la ve en solo lectura
@@ -180,7 +183,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
           recalculan.
         </p>
         <LoadError message={rulesLoadError} onRetry={loadRules} />
-        <form className="users-form cal-inline-form" onSubmit={submitRules} noValidate>
+        <form className="users-form cal-inline-form" onSubmit={lock(submitRules)} noValidate>
           <div className="cal-rules-grid">
             <div className="users-form-field">
               <label className="users-form-label" htmlFor="rule-late">Llegó tarde</label>
@@ -233,15 +236,15 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
           </div>
           {canEditRules ? (
             <button
-              type="submit"
+              type="submit" aria-busy={pending}
               className="users-btn users-btn--primary"
-              disabled={
+              disabled={pending || (
                 rulesSaving ||
                 !savedRules ||
                 (rules.late === savedRules.late &&
                   rules.leftEarly === savedRules.leftEarly &&
                   rules.lateAuditDays === savedRules.lateAuditDays)
-              }
+              )}
             >
               {rulesSaving ? "Guardando..." : "Guardar reglas"}
             </button>
@@ -254,13 +257,15 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
 
       <RegularityRulesCard canEdit={canEditRules} />
 
+      <EvaluationRulesCard canEdit={canEditRules} />
+
       <section className="cal-card">
         <h2 className="cal-card-title">Fechas de cursado</h2>
         <p className="cal-card-help">
           Las comisiones de un cuatrimestre aparecen en el calendario solo dentro de estas fechas.
         </p>
 
-        <form className="users-form cal-inline-form" onSubmit={submitTerm}>
+        <form className="users-form cal-inline-form" onSubmit={lock(submitTerm)}>
           <div className="cal-form-grid">
             <div className="users-form-field">
               <label className="users-form-label" htmlFor="term-year">Año</label>
@@ -306,7 +311,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
               />
             </div>
           </div>
-          <button type="submit" className="users-btn users-btn--primary">Agregar cuatrimestre</button>
+          <button type="submit" className="users-btn users-btn--primary" disabled={pending} aria-busy={pending}>Agregar cuatrimestre</button>
           <FormError message={termError} />
         </form>
 
@@ -334,7 +339,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
         <h2 className="cal-card-title">Feriados y días sin clases</h2>
         <p className="cal-card-help">Ese día no se dicta ninguna comisión y se muestra con su motivo.</p>
 
-        <form className="users-form cal-inline-form" onSubmit={submitHoliday}>
+        <form className="users-form cal-inline-form" onSubmit={lock(submitHoliday)}>
           <div className="cal-form-grid">
             <div className="users-form-field">
               <label className="users-form-label" htmlFor="holiday-date">Fecha</label>
@@ -358,7 +363,7 @@ export default function AcademicCalendarManager({ onBack, onChanged }) {
               />
             </div>
           </div>
-          <button type="submit" className="users-btn users-btn--primary">Agregar feriado</button>
+          <button type="submit" className="users-btn users-btn--primary" disabled={pending} aria-busy={pending}>Agregar feriado</button>
           <FormError message={holidayError} />
         </form>
 

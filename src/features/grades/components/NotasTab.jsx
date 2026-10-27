@@ -1,12 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getErrorMessage } from "../../../shared/api/api";
 import { useToast } from "../../../context/ToastContext";
 import LoadError from "../../../shared/ui/LoadError";
 import FormError from "../../../shared/ui/FormError";
-import { getEvaluationsBySection, createEvaluation } from "../services/evaluationService";
+import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
+import {
+  getEvaluationsBySection,
+  createEvaluation,
+  updateEvaluation,
+  deleteEvaluation,
+  evaluationTypeLabel,
+} from "../services/evaluationService";
 import { getGradesByEvaluation, createGrade, updateGrade } from "../services/evaluationGradeService";
 import { isByEquivalence } from "../services/enrollmentService";
+import EvaluationFormModal from "./EvaluationFormModal";
+import "./evaluations.css";
 
 // "" = Sin cargar: nadie arranca aprobado, la condición la elige el docente al cargar la nota.
 const CONDITIONS = [
@@ -16,20 +25,37 @@ const CONDITIONS = [
 ];
 const NEEDS_GRADE = new Set(["APROBADO", "DESAPROBADO"]);
 
+function formatDate(isoDate) {
+  const [y, m, d] = isoDate.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function formatWhen(evaluation) {
+  const day = formatDate(evaluation.date);
+  return evaluation.startTime
+    ? `${day}, ${evaluation.startTime}${evaluation.endTime ? ` a ${evaluation.endTime}` : ""}`
+    : day;
+}
+
+// Evaluaciones de la comisión (parciales, recuperatorios, trabajos prácticos): una lista con alta, edición y baja
+// y, al entrar a una, la planilla para cargar las notas de sus alumnos.
 export default function NotasTab({ sectionId, enrollments }) {
   const [evaluations, setEvaluations] = useState([]);
-  const [evaluationId, setEvaluationId] = useState("");
-  const [newName, setNewName] = useState("");
-  const [newDate, setNewDate] = useState("");
+  const [loadingList, setLoadingList] = useState(true);
+  const [evaluationId, setEvaluationId] = useState(""); // "" = lista; con valor = planilla de esa evaluación
   const [rows, setRows] = useState([]); // { enrollmentId, studentName, gradeId, gradeValue, condition }
   const { showToast } = useToast();
   const [loadError, setLoadError] = useState("");
-  const [createError, setCreateError] = useState("");
   const [saveError, setSaveError] = useState("");
   const [saving, setSaving] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [searchParams] = useSearchParams();
   const requestedEvaluationId = searchParams.get("evaluacion");
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState("create");
+  const [editing, setEditing] = useState(null);
+  const [toDelete, setToDelete] = useState(null);
 
   useEffect(() => {
     // Si no se resetea acá, al cambiar de comisión queda seleccionada la
@@ -40,19 +66,40 @@ export default function NotasTab({ sectionId, enrollments }) {
     setEvaluations([]);
     setRows([]);
     setLoadError("");
+  }, [sectionId]);
 
+  useEffect(() => {
     if (!sectionId) return;
+
+    let cancelled = false;
+    setLoadingList(true);
 
     getEvaluationsBySection(sectionId)
       .then((data) => {
+        if (cancelled) return;
         setEvaluations(data);
-        // Desde el calendario se llega con ?evaluacion=ID: queda elegida esa evaluacion.
+        // Desde el calendario se llega con ?evaluacion=ID: se abre directo la planilla de esa evaluación.
         const requested = data.find((ev) => String(ev.id) === requestedEvaluationId);
-        if (requested) setEvaluationId(String(requested.id));
-        else if (data.length > 0) setEvaluationId(String(data[0].id));
+        if (requested) setEvaluationId((current) => current || String(requested.id));
       })
-      .catch((err) => setLoadError(getErrorMessage(err, "No se pudieron cargar las evaluaciones.")));
+      .catch((err) => {
+        if (!cancelled) setLoadError(getErrorMessage(err, "No se pudieron cargar las evaluaciones."));
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingList(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [sectionId, reloadKey, requestedEvaluationId]);
+
+  // De la más próxima a la más lejana, como se leen en un calendario.
+  const sortedEvaluations = useMemo(
+    () => [...evaluations].sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id),
+    [evaluations],
+  );
+  const selectedEvaluation = evaluations.find((ev) => String(ev.id) === evaluationId);
 
   useEffect(() => {
     async function load() {
@@ -91,25 +138,35 @@ export default function NotasTab({ sectionId, enrollments }) {
     load();
   }, [evaluationId, enrollments, reloadKey]);
 
-  async function handleCreateEvaluation(e) {
-    e.preventDefault();
-    setCreateError("");
+  function openCreate() {
+    setFormMode("create");
+    setEditing(null);
+    setFormOpen(true);
+  }
 
-    if (!newName.trim() || !newDate) {
-      setCreateError("Completá nombre y fecha de la evaluación.");
-      return;
-    }
+  function openEdit(evaluation) {
+    setFormMode("edit");
+    setEditing(evaluation);
+    setFormOpen(true);
+  }
 
-    try {
-      const created = await createEvaluation({ section_id: sectionId, name: newName, date: newDate });
-      setEvaluations((prev) => [created, ...prev]);
-      setEvaluationId(String(created.id));
-      setNewName("");
-      setNewDate("");
+  async function handleFormSubmit(data) {
+    if (formMode === "edit" && editing) {
+      await updateEvaluation(editing.id, data);
+      showToast("Evaluación actualizada.");
+    } else {
+      await createEvaluation(data);
       showToast("Evaluación creada.");
-    } catch (err) {
-      setCreateError(getErrorMessage(err, "No se pudo crear la evaluación."));
     }
+    setFormOpen(false);
+    setReloadKey((k) => k + 1);
+  }
+
+  async function handleConfirmDelete() {
+    await deleteEvaluation(toDelete.id);
+    showToast("Evaluación eliminada.");
+    setToDelete(null);
+    setReloadKey((k) => k + 1);
   }
 
   function updateRow(enrollmentId, field, value) {
@@ -169,8 +226,9 @@ export default function NotasTab({ sectionId, enrollments }) {
         );
       }
       showToast(`Notas guardadas (${saved} ${saved === 1 ? "alumno" : "alumnos"}).`);
-      // Cierra la planilla de notas y vuelve al selector de evaluacion.
+      // Vuelve a la lista de evaluaciones, con el avance de carga actualizado.
       setEvaluationId("");
+      setReloadKey((k) => k + 1);
     } catch (err) {
       const prefix = saved > 0 ? `Se guardaron ${saved} notas, pero hubo un problema: ` : "";
       setSaveError(prefix + getErrorMessage(err, "No se pudieron guardar las notas."));
@@ -179,128 +237,210 @@ export default function NotasTab({ sectionId, enrollments }) {
     }
   }
 
+  const formModals = (
+    <>
+      <EvaluationFormModal
+        open={formOpen}
+        mode={formMode}
+        sectionId={sectionId}
+        initialData={editing}
+        onClose={() => setFormOpen(false)}
+        onSubmit={handleFormSubmit}
+      />
+      <ConfirmModal
+        open={!!toDelete}
+        title="Eliminar evaluación"
+        note={DELETE_NOTE}
+        message={toDelete ? `¿Seguro que querés eliminar "${toDelete.name}"? Esta acción no se puede deshacer.` : ""}
+        onCancel={() => setToDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
+    </>
+  );
+
+  // ---- Planilla de notas de una evaluación
+  if (evaluationId) {
+    return (
+      <div>
+        <button type="button" className="users-action-btn eval-back" onClick={() => setEvaluationId("")}>
+          ‹ Volver a las evaluaciones
+        </button>
+
+        {selectedEvaluation && (
+          <div className="eval-header">
+            <h3>{selectedEvaluation.name}</h3>
+            <span className="users-badge users-badge--gray">{evaluationTypeLabel(selectedEvaluation.type)}</span>
+            <p>{formatWhen(selectedEvaluation)}</p>
+          </div>
+        )}
+
+        <LoadError message={loadError} onRetry={() => setReloadKey((k) => k + 1)} />
+
+        {rows.length > 0 && (
+          <>
+            <div className="users-table-wrapper">
+              <table className="users-table notas-table">
+                <thead>
+                  <tr>
+                    <th className="users-th">Alumno</th>
+                    <th className="users-th users-th--center">Nota</th>
+                    <th className="users-th users-th--center">Condición</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.enrollmentId}>
+                      <td className="users-td notas-name">
+                        {row.studentName}
+                        {row.byEquivalence && <span className="users-badge users-badge--navy">Por equivalencia</span>}
+                      </td>
+                      <td className="users-td users-td--center notas-cell" data-label="Nota">
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.5"
+                          value={row.gradeValue}
+                          onChange={(e) => updateRow(row.enrollmentId, "gradeValue", e.target.value)}
+                          className="users-form-input"
+                          aria-label={`Nota de ${row.studentName}`}
+                          disabled={row.byEquivalence}
+                          title={row.byEquivalence ? "Nota de la equivalencia: la completa el sistema" : undefined}
+                        />
+                      </td>
+                      <td className="users-td users-td--center notas-cell" data-label="Condición">
+                        <select
+                          value={row.condition}
+                          onChange={(e) => updateRow(row.enrollmentId, "condition", e.target.value)}
+                          className="users-form-input"
+                          aria-label={`Condición de ${row.studentName}`}
+                          disabled={row.byEquivalence}
+                        >
+                          <option value="" disabled={Boolean(row.gradeId)}>
+                            Sin cargar
+                          </option>
+                          {CONDITIONS.map((c) => (
+                            <option key={c.value} value={c.value}>
+                              {c.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="users-subtitle notas-missing" aria-live="polite">
+              {missingCount === 0
+                ? "Todos los alumnos tienen nota cargada."
+                : `Falta cargar ${missingCount} de ${rows.length} ${rows.length === 1 ? "alumno" : "alumnos"}. Solo se guardan los que tengan condición elegida.`}
+            </p>
+
+            <div className="users-form-actions notas-actions">
+              <button
+                type="button"
+                className="users-btn users-btn--primary"
+                onClick={handleSave}
+                disabled={saving}
+                aria-busy={saving}
+              >
+                {saving ? "Guardando..." : "Guardar notas"}
+              </button>
+            </div>
+            <FormError message={saveError} />
+          </>
+        )}
+
+        {rows.length === 0 && !loadError && <p className="users-empty">Esta comisión no tiene alumnos inscriptos para cargar notas.</p>}
+      </div>
+    );
+  }
+
+  // ---- Lista de evaluaciones
   return (
     <div>
-      <form onSubmit={handleCreateEvaluation} className="users-form-row notas-new-form">
-        <div className="users-form-field">
-          <label className="users-form-label">Nueva evaluación</label>
-          <input
-            type="text"
-            placeholder="Ej: Primer Parcial"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="users-form-input"
-            aria-label="Nombre de la evaluación"
-          />
-        </div>
-        <div className="users-form-field">
-          <label className="users-form-label">Fecha</label>
-          <input
-            type="date"
-            value={newDate}
-            onChange={(e) => setNewDate(e.target.value)}
-            className="users-form-input"
-          />
-        </div>
-        <button type="submit" className="users-btn users-btn--primary">
-          Crear evaluación
+      <div className="eval-toolbar">
+        <p className="users-subtitle">
+          {evaluations.length} {evaluations.length === 1 ? "evaluación" : "evaluaciones"}
+        </p>
+        <button type="button" className="users-btn users-btn--primary" onClick={openCreate}>
+          + Nueva evaluación
         </button>
-      </form>
-      <FormError message={createError} />
-
-      <div className="users-form-field notas-select">
-        <label className="users-form-label">Evaluación</label>
-        <select
-          value={evaluationId}
-          onChange={(e) => setEvaluationId(e.target.value)}
-          className="users-form-input"
-        >
-          <option value="">Seleccioná una evaluación...</option>
-          {evaluations.map((ev) => (
-            <option key={ev.id} value={ev.id}>
-              {ev.name} ({ev.date})
-            </option>
-          ))}
-        </select>
       </div>
 
       <LoadError message={loadError} onRetry={() => setReloadKey((k) => k + 1)} />
 
-      {evaluationId && rows.length > 0 && (
-        <>
-          <div className="users-table-wrapper">
-            <table className="users-table notas-table">
-              <thead>
-                <tr>
-                  <th className="users-th">Alumno</th>
-                  <th className="users-th users-th--center">Nota</th>
-                  <th className="users-th users-th--center">Condición</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.enrollmentId}>
-                    <td className="users-td notas-name">
-                      {row.studentName}
-                      {row.byEquivalence && <span className="users-badge users-badge--navy">Por equivalencia</span>}
+      {loadingList && evaluations.length === 0 && !loadError && <p className="users-empty">Cargando...</p>}
+
+      {!loadingList && evaluations.length === 0 && !loadError && (
+        <p className="users-empty">Esta comisión todavía no tiene evaluaciones. Creá la primera con "+ Nueva evaluación".</p>
+      )}
+
+      {sortedEvaluations.length > 0 && (
+        <div className="users-table-wrapper">
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th className="users-th">Evaluación</th>
+                <th className="users-th">Tipo</th>
+                <th className="users-th">Fecha</th>
+                <th className="users-th">Notas cargadas</th>
+                <th className="users-th">Visibilidad</th>
+                <th className="users-th users-th--actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedEvaluations.map((ev) => {
+                const percent = ev.studentsCount > 0 ? Math.round((ev.gradedCount / ev.studentsCount) * 100) : 0;
+                return (
+                  <tr key={ev.id}>
+                    <td className="users-td" data-label="Evaluación">
+                      <span className="eval-name">
+                        <strong>{ev.name}</strong>
+                        {ev.description && <small>{ev.description}</small>}
+                      </span>
                     </td>
-                    <td className="users-td users-td--center notas-cell" data-label="Nota">
-                      <input
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="0.5"
-                        value={row.gradeValue}
-                        onChange={(e) => updateRow(row.enrollmentId, "gradeValue", e.target.value)}
-                        className="users-form-input"
-                        aria-label={`Nota de ${row.studentName}`}
-                        disabled={row.byEquivalence}
-                        title={row.byEquivalence ? "Nota de la equivalencia: la completa el sistema" : undefined}
-                      />
+                    <td className="users-td" data-label="Tipo">
+                      <span className="users-badge users-badge--gray">{evaluationTypeLabel(ev.type)}</span>
                     </td>
-                    <td className="users-td users-td--center notas-cell" data-label="Condición">
-                      <select
-                        value={row.condition}
-                        onChange={(e) => updateRow(row.enrollmentId, "condition", e.target.value)}
-                        className="users-form-input"
-                        aria-label={`Condición de ${row.studentName}`}
-                        disabled={row.byEquivalence}
-                      >
-                        <option value="" disabled={Boolean(row.gradeId)}>
-                          Sin cargar
-                        </option>
-                        {CONDITIONS.map((c) => (
-                          <option key={c.value} value={c.value}>
-                            {c.label}
-                          </option>
-                        ))}
-                      </select>
+                    <td className="users-td" data-label="Fecha">{formatWhen(ev)}</td>
+                    <td className="users-td" data-label="Notas cargadas">
+                      <span className="eval-progress">
+                        <span>{ev.gradedCount} de {ev.studentsCount}</span>
+                        <span className="eval-progress-bar" aria-hidden="true">
+                          <span style={{ width: `${percent}%` }} />
+                        </span>
+                      </span>
+                    </td>
+                    <td className="users-td" data-label="Visibilidad">
+                      <span className={`users-badge ${ev.visible ? "users-badge--active" : "users-badge--inactive"}`}>
+                        {ev.visible ? "Visible" : "Oculta"}
+                      </span>
+                    </td>
+                    <td className="users-td users-td--actions" data-label="Acciones">
+                      <span className="eval-actions">
+                        <button type="button" className="users-btn users-btn--primary" onClick={() => setEvaluationId(String(ev.id))}>
+                          Cargar notas
+                        </button>
+                        <button type="button" className="users-action-btn" onClick={() => openEdit(ev)}>
+                          Editar
+                        </button>
+                        <button type="button" className="users-action-btn users-action-btn--danger" onClick={() => setToDelete(ev)}>
+                          Quitar
+                        </button>
+                      </span>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <p className="users-subtitle notas-missing" aria-live="polite">
-            {missingCount === 0
-              ? "Todos los alumnos tienen nota cargada."
-              : `Falta cargar ${missingCount} de ${rows.length} ${rows.length === 1 ? "alumno" : "alumnos"}. Solo se guardan los que tengan condición elegida.`}
-          </p>
-
-          <div className="users-form-actions notas-actions">
-            <button
-              type="button"
-              className="users-btn users-btn--primary"
-              onClick={handleSave}
-              disabled={saving}
-            >
-              {saving ? "Guardando..." : "Guardar notas"}
-            </button>
-          </div>
-          <FormError message={saveError} />
-        </>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
+
+      {formModals}
     </div>
   );
 }

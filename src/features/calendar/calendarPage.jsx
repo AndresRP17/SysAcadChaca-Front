@@ -17,6 +17,7 @@ import { getAttendanceRules } from "../grades/services/attendanceService";
 import { DEFAULT_RULES, STUDENT_STATUS_LABELS, attendanceSummary } from "../attendance/attendanceStatus";
 import { getCalendar } from "./services/calendarService";
 import { AgendaEvent, GridEvent, StudentStatusBadge } from "./calendarEventViews";
+import { evaluationTypeLabel } from "../grades/services/evaluationService";
 import Modal from "../../shared/ui/Modal";
 import AttendanceModal from "../attendance/AttendanceModal";
 import LoadError from "../../shared/ui/LoadError";
@@ -80,7 +81,13 @@ function evaluationDetail(ev, { isAlumno, isDocente }) {
 
   return {
     title: `${ev.name} · ${ev.courseName}`,
-    lines: [`Comisión ${ev.sectionName}`, formatDate(ev.date), ...(isAlumno ? [grade] : [])],
+    lines: [
+      evaluationTypeLabel(ev.type),
+      `Comisión ${ev.sectionName}`,
+      ev.startTime ? `${formatDate(ev.date)}, ${ev.startTime}${ev.endTime ? ` a ${ev.endTime}` : ""}` : formatDate(ev.date),
+      ...(ev.visible === false ? ["Oculta: los alumnos todavía no la ven"] : []),
+      ...(isAlumno ? [grade] : []),
+    ],
     action: isDocente
       ? { label: "Cargar notas", to: `/comision/${ev.sectionId}?evaluacion=${ev.evaluationId}` }
       : null,

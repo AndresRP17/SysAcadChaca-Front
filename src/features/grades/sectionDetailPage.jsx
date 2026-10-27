@@ -108,7 +108,7 @@ export default function SectionDetailPage() {
       </section>
 
       <section className="section-detail-block">
-        <h2 className="section-detail-title">Notas</h2>
+        <h2 className="section-detail-title">Evaluaciones y notas</h2>
         {section.closed ? (
           <p className="users-empty">
             Esta comisión está cerrada desde el {formatDateTime(section.closedAt)}. Ya no se pueden cargar notas.
