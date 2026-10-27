@@ -6,21 +6,25 @@
 //   "celebrating" -> llegó: salta con los brazos en alto y sale confeti
 //   "inside"      -> entra por la puerta
 //   "failed"      -> login incorrecto: se enoja, vuelve al inicio y patalea
-// `rage` (1 a 5) sube el enojo con cada intento fallido seguido:
+// `rage` (1 a 8) sube el enojo con cada intento fallido seguido:
 //   1 -> enojado, 2 -> furioso (más humo, venita, pataleo fuerte),
 //   3 -> berrinche (cara roja oscura, tormenta con rayos sobre la cabeza),
 //   4 -> tira su celular o su notebook contra la facultad (rebota y cae al piso)
 //        y el cielo se ilumina con relámpagos,
-//   5 -> explota de furia: fuego en la cabeza, todo tiembla y además tira la mochila
+//   5 -> explota de furia: fuego en la cabeza, todo tiembla y además tira la mochila,
+//   6 -> se tira al piso a patalear y a golpear el suelo, levantando polvo,
+//   7 -> le cae un rayo: queda chamuscado, con el pelo parado y ojos de "x",
+//   8 -> un OVNI lo abduce con su rayo tractor.
 // `dispositivo` ("movil" | "notebook") decide qué tira en el nivel 4 y 5.
 // `personaje` (ver personajes.js) define quién camina: colores y peinado.
 // `dialogo` ({ id, texto, grito, demora, estatico }) muestra un globo de diálogo
 // con lo que salió mal cuando phase === "failed". `estatico` = no camina de vuelta
 // (se usa cuando el error es de validación y el estudiante ya está en el inicio).
-// La escena transcurre de noche: cielo estrellado, luna, farol y ventanas prendidas.
+// `dia` (true | false): de día hay sol, nubes blancas y pájaros; de noche, cielo estrellado,
+// luna, farol y ventanas prendidas. La página lo conecta con el modo claro / oscuro.
 // Todo el movimiento está en loginScene.css (SVG + CSS, sin librerías).
 import { PERSONAJES } from "./personajes";
-import "./LoginScene.css";
+import "./loginScene.css";
 
 const COLORES_CONFETI = ["#f2a900", "#ffffff", "#66c994", "#9fc2f2", "#ff9a82"];
 
@@ -100,7 +104,16 @@ const ENOJO_CARA = {
   3: { fill: "#b32218", opacity: 0.95 },
   4: { fill: "#9a1d14", opacity: 0.97 },
   5: { fill: "#6b0f0a", opacity: 0.98 },
+  6: { fill: "#8f1810", opacity: 0.97 },
+  7: { fill: "#9a1d14", opacity: 0.9 },
+  8: { fill: "#b32218", opacity: 0.95 },
 };
+
+// Rayos del sol (de día)
+const RAYOS_SOL = Array.from({ length: 12 }, (_, i) => {
+  const a = (i * 30 * Math.PI) / 180;
+  return [292 + Math.cos(a) * 15, 26 + Math.sin(a) * 15, 292 + Math.cos(a) * 21, 26 + Math.sin(a) * 21];
+});
 
 export default function LoginScene({
   phase = "idle",
@@ -109,40 +122,74 @@ export default function LoginScene({
   dialogo = null,
   dispositivo = "notebook",
   personaje = PERSONAJES[0],
+  dia = false,
 }) {
   const enojado = phase === "failed";
-  const nivel = Math.min(Math.max(rage, 1), 5);
+  const nivel = Math.min(Math.max(rage, 1), 8);
   const cara = ENOJO_CARA[nivel];
+  // Qué efectos lleva cada nivel de enojo
+  const conTormenta = enojado && ((nivel >= 3 && nivel <= 5) || nivel === 7);
+  const conDispositivo = enojado && (nivel === 4 || nivel === 5);
+  const conFuego = enojado && nivel === 5;
+  const conRelampagos = enojado && (nivel === 4 || nivel === 5 || nivel === 7);
 
   return (
     <div
       className={`login-scene login-scene--${variant}`}
       data-phase={phase}
       data-rage={nivel}
+      data-time={dia ? "day" : "night"}
       data-still={dialogo?.estatico ? "true" : "false"}
       aria-hidden="true"
     >
       <svg className="login-scene__svg" viewBox="0 0 400 170" focusable="false">
-        {/* Estrellas */}
-        {ESTRELLAS.map(([x, y, r, demora]) => (
-          <circle
-            key={`${x}-${y}`}
-            className="login-scene__star"
-            cx={x}
-            cy={y}
-            r={r}
-            style={{ animationDelay: `${demora}s` }}
-          />
-        ))}
+        {dia ? (
+          <>
+            {/* Sol */}
+            <circle cx="292" cy="26" r="26" fill="rgba(255,236,150,0.3)" />
+            <g className="login-scene__sun-rays" stroke="#ffd23f" strokeWidth="2" strokeLinecap="round">
+              {RAYOS_SOL.map(([x1, y1, x2, y2], i) => (
+                <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
+              ))}
+            </g>
+            <circle cx="292" cy="26" r="11" fill="#ffd23f" />
 
-        {/* Luna */}
-        <circle cx="292" cy="26" r="22" fill="rgba(255,245,200,0.09)" />
-        <circle cx="292" cy="26" r="10" fill="#f7f1d6" />
-        <circle cx="289" cy="23" r="2.2" fill="rgba(120,110,70,0.18)" />
-        <circle cx="296" cy="30" r="1.6" fill="rgba(120,110,70,0.18)" />
-        <circle cx="295" cy="21" r="1.2" fill="rgba(120,110,70,0.18)" />
+            {/* Pájaros */}
+            <g transform="translate(0 44)">
+              <g className="login-scene__bird">
+                <path className="login-scene__wings" d="M0 0 Q3 -4 6 0 Q9 -4 12 0" fill="none" stroke="#2a3a5c" strokeWidth="1.3" strokeLinecap="round" />
+              </g>
+            </g>
+            <g transform="translate(0 62)">
+              <g className="login-scene__bird login-scene__bird--b">
+                <path className="login-scene__wings" d="M0 0 Q3 -4 6 0 Q9 -4 12 0" fill="none" stroke="#2a3a5c" strokeWidth="1.3" strokeLinecap="round" />
+              </g>
+            </g>
+          </>
+        ) : (
+          <>
+            {/* Estrellas */}
+            {ESTRELLAS.map(([x, y, r, demora]) => (
+              <circle
+                key={`${x}-${y}`}
+                className="login-scene__star"
+                cx={x}
+                cy={y}
+                r={r}
+                style={{ animationDelay: `${demora}s` }}
+              />
+            ))}
 
-        {/* Nubes iluminadas por la luna */}
+            {/* Luna */}
+            <circle cx="292" cy="26" r="22" fill="rgba(255,245,200,0.09)" />
+            <circle cx="292" cy="26" r="10" fill="#f7f1d6" />
+            <circle cx="289" cy="23" r="2.2" fill="rgba(120,110,70,0.18)" />
+            <circle cx="296" cy="30" r="1.6" fill="rgba(120,110,70,0.18)" />
+            <circle cx="295" cy="21" r="1.2" fill="rgba(120,110,70,0.18)" />
+          </>
+        )}
+
+        {/* Nubes */}
         <g transform="translate(0 30)">
           <g className="login-scene__cloud login-scene__cloud--a">
             <ellipse cx="0" cy="0" rx="24" ry="7" />
@@ -159,23 +206,24 @@ export default function LoginScene({
         </g>
 
         {/* Piso */}
-        <rect x="0" y="140" width="400" height="30" fill="rgba(0,0,0,0.35)" />
-        <line x1="0" y1="140" x2="400" y2="140" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" />
+        <rect className="login-scene__suelo" x="0" y="140" width="400" height="30" fill="rgba(0,0,0,0.35)" />
+        <line className="login-scene__suelo-linea" x1="0" y1="140" x2="400" y2="140" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" />
 
-        {/* Farol: cono de luz sobre el camino */}
-        <polygon points="176,86 144,140 208,140" fill="rgba(255,214,130,0.13)" />
-        <circle cx="176" cy="84" r="15" fill="rgba(255,214,130,0.2)" />
-        <rect x="174.5" y="88" width="3" height="52" fill="#101830" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
-        <path d="M169 86 Q176 77 183 86 Z" fill="#101830" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
-        <circle cx="176" cy="87" r="2.6" fill="#ffe3a0" />
+        {/* Farol: de noche, con cono de luz sobre el camino */}
+        <polygon className="login-scene__farol-luz" points="176,86 144,140 208,140" fill="rgba(255,214,130,0.13)" />
+        <circle className="login-scene__farol-luz" cx="176" cy="84" r="15" fill="rgba(255,214,130,0.2)" />
+        <rect className="login-scene__poste" x="174.5" y="88" width="3" height="52" fill="#101830" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
+        <path className="login-scene__poste" d="M169 86 Q176 77 183 86 Z" fill="#101830" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
+        <circle className="login-scene__foco" cx="176" cy="87" r="2.6" fill="#ffe3a0" />
 
-        {/* Facultad de noche: ventanas y puerta con luz */}
+        {/* Facultad: de noche con ventanas y puerta iluminadas */}
         <g className="login-scene__faculty">
-          <rect x="276" y="132" width="96" height="8" fill="#22325a" />
-          <rect x="282" y="126" width="84" height="6" fill="#2b3d68" />
-          <rect x="286" y="68" width="76" height="58" fill="#26375f" />
-          <polygon points="280,68 324,40 368,68" fill="#31457a" />
+          <rect className="login-scene__b-escalon1" x="276" y="132" width="96" height="8" fill="#22325a" />
+          <rect className="login-scene__b-escalon2" x="282" y="126" width="84" height="6" fill="#2b3d68" />
+          <rect className="login-scene__b-cuerpo" x="286" y="68" width="76" height="58" fill="#26375f" />
+          <polygon className="login-scene__b-frontis" points="280,68 324,40 368,68" fill="#31457a" />
           <text
+            className="login-scene__b-texto"
             x="324"
             y="63"
             textAnchor="middle"
@@ -186,19 +234,19 @@ export default function LoginScene({
           >
             UTN
           </text>
-          <rect x="290" y="68" width="6" height="58" fill="#3d548c" />
-          <rect x="352" y="68" width="6" height="58" fill="#3d548c" />
+          <rect className="login-scene__b-columna" x="290" y="68" width="6" height="58" fill="#3d548c" />
+          <rect className="login-scene__b-columna" x="352" y="68" width="6" height="58" fill="#3d548c" />
           <rect className="login-scene__window" x="299" y="76" width="10" height="10" fill="#ffd27a" />
           <rect className="login-scene__window login-scene__window--b" x="339" y="76" width="10" height="10" fill="#ffd27a" />
-          {/* Puerta: interior iluminado + hoja que se abre */}
-          <rect x="312" y="92" width="24" height="34" fill="#ffd27a" />
+          {/* Puerta: interior + hoja que se abre */}
+          <rect className="login-scene__puerta-int" x="312" y="92" width="24" height="34" fill="#ffd27a" />
           <rect className="login-scene__door-leaf" x="312" y="92" width="24" height="34" fill="#9a6a2b" />
         </g>
 
         {/* Estudiante: el origen (0,0) son los pies */}
         <g transform="translate(48 140)">
           <g className="login-scene__walker">
-            <ellipse cx="0" cy="0.5" rx="14" ry="2.6" fill="rgba(0,0,0,0.4)" />
+            <ellipse className="login-scene__sombra" cx="0" cy="0.5" rx="14" ry="2.6" fill="rgba(0,0,0,0.4)" />
             <g transform={enojado ? "scale(-1 1)" : undefined}>
               <g className="login-scene__person">
                 {/* Piernas */}
@@ -267,7 +315,7 @@ export default function LoginScene({
                     </>
                   )}
                   {/* Nivel 5: fuego en la cabeza */}
-                  {enojado && nivel >= 5 && (
+                  {conFuego && (
                     <g className="login-scene__fire">
                       <path
                         d="M-6.5 -71 C-10 -77 -5 -80 -4.5 -86 C-1.5 -82 0.5 -80 -0.5 -75 C1.5 -78 4 -80 5 -85 C8.5 -80 8.5 -74 6.5 -71 Z"
@@ -277,8 +325,8 @@ export default function LoginScene({
                     </g>
                   )}
 
-                  {/* Berrinche total: tormenta con rayos sobre la cabeza */}
-                  {enojado && nivel >= 3 && (
+                  {/* Niveles 3 a 5 y 7: tormenta con rayos sobre la cabeza */}
+                  {conTormenta && (
                     <g className="login-scene__storm">
                       <ellipse cx="1" cy="-92" rx="20" ry="6" />
                       <ellipse cx="-9" cy="-97" rx="10" ry="7" />
@@ -288,6 +336,25 @@ export default function LoginScene({
                         points="2,-88 -3,-78 1,-78 -2,-70 7,-82 2,-82 5,-88"
                       />
                     </g>
+                  )}
+
+                  {/* Nivel 7: le cae un rayo (pelo parado y ojos de "x" después del golpe) */}
+                  {enojado && nivel === 7 && (
+                    <>
+                      <polygon className="login-scene__bolt-big" points="4,-88 -4,-72 0,-72 -6,-56 6,-70 1,-70 7,-88" />
+                      <path
+                        className="login-scene__frizz"
+                        d="M-6 -70 L-9 -79 L-3 -73 L-2 -82 L1 -74 L4 -82 L5 -73 L9 -78 L7 -68 Z"
+                        fill={personaje.pelo}
+                      />
+                      <path
+                        className="login-scene__xeyes"
+                        d="M3.4 -63.6 L6.6 -60.4 M6.6 -63.6 L3.4 -60.4"
+                        stroke="#f4f4f4"
+                        strokeWidth="1.1"
+                        strokeLinecap="round"
+                      />
+                    </>
                   )}
 
                   <g className="login-scene__arm login-scene__arm--a">
@@ -307,8 +374,36 @@ export default function LoginScene({
               </g>
             </g>
 
-            {/* Nivel 4 o más: tira su celular / notebook contra la facultad */}
-            {enojado && nivel >= 4 && (
+            {/* Nivel 6: polvo que levanta al patalear en el piso */}
+            {enojado && nivel === 6 && (
+              <g>
+                {[0, 1, 2].map((i) => (
+                  <circle
+                    key={i}
+                    className="login-scene__dust-puff"
+                    cx={-4 + i * 9}
+                    cy="-3"
+                    r="3"
+                    style={{ animationDelay: `calc(var(--shake-delay) + ${0.4 + i * 0.22}s)` }}
+                  />
+                ))}
+              </g>
+            )}
+
+            {/* Nivel 8: un OVNI lo abduce con su rayo tractor */}
+            {enojado && nivel === 8 && (
+              <g className="login-scene__ufo">
+                <polygon className="login-scene__beam" points="-9,-84 9,-84 28,0 -28,0" />
+                <ellipse cx="0" cy="-90" rx="23" ry="6" fill="#aab6d1" stroke="#7f8cab" strokeWidth="0.8" />
+                <path d="M-11 -92 Q0 -108 11 -92 Z" fill="#bfe6ff" opacity="0.9" />
+                <circle className="login-scene__ufo-light" cx="-14" cy="-89" r="1.6" />
+                <circle className="login-scene__ufo-light login-scene__ufo-light--b" cx="0" cy="-87.5" r="1.6" />
+                <circle className="login-scene__ufo-light" cx="14" cy="-89" r="1.6" />
+              </g>
+            )}
+
+            {/* Niveles 4 y 5: tira su celular / notebook contra la facultad */}
+            {conDispositivo && (
               <g className="login-scene__thrown">
                 {/* La mano del estudiante está a 34 unidades sobre los pies */}
                 <g transform="translate(0 -34)">
@@ -355,8 +450,8 @@ export default function LoginScene({
         </g>
       </svg>
 
-      {/* Relámpagos que iluminan el cielo (nivel 4 o más) */}
-      {enojado && nivel >= 4 && <div className="login-scene__flash" />}
+      {/* Relámpagos que iluminan el cielo (niveles 4, 5 y 7) */}
+      {conRelampagos && <div className="login-scene__flash" />}
 
       {/* Globo de diálogo: dice qué salió mal cuando falla el login */}
       {enojado && dialogo && (
