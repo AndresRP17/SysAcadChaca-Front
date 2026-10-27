@@ -2,11 +2,13 @@ import { useState } from "react";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import FieldError from "../../../shared/ui/FieldError";
 import FormError from "../../../shared/ui/FormError";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 const MIN_LENGTH = 8;
 const EMPTY = { currentPassword: "", newPassword: "", confirmPassword: "" };
 
 export default function ChangePasswordForm({ onChange }) {
+  const { lock, pending } = useSubmitLock();
   const [form, setForm] = useState(EMPTY);
   const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
@@ -46,7 +48,7 @@ export default function ChangePasswordForm({ onChange }) {
     <section className="profile-card" aria-labelledby="profile-password-title">
       <h2 id="profile-password-title" className="profile-card-title">Cambiar contraseña</h2>
       <p className="profile-hint">Al cambiarla se cierra tu sesión y tenés que ingresar de nuevo.</p>
-      <form onSubmit={handleSubmit} className="users-form" noValidate>
+      <form onSubmit={lock(handleSubmit)} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label" htmlFor="profile-current-password">Contraseña actual</label>
           <input
@@ -91,9 +93,9 @@ export default function ChangePasswordForm({ onChange }) {
 
         <div className="users-form-actions">
           <button
-            type="submit"
+            type="submit" aria-busy={pending}
             className="users-btn users-btn--primary"
-            disabled={saving || !form.currentPassword || !form.newPassword}
+            disabled={pending || (saving || !form.currentPassword || !form.newPassword)}
           >
             {saving ? "Cambiando..." : "Cambiar contraseña"}
           </button>

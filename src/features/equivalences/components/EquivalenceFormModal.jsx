@@ -8,10 +8,12 @@ import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
 import { createEquivalence, updateEquivalence } from "../services/equivalenceService";
 import { TYPE_HELP, TYPE_LABELS } from "../equivalenceLabels";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 // Alta y edicion (solo PENDING). Alumno: pide para si mismo (planId = el de su legajo).
 // Bedel/Administrador: eligen alumno (busqueda en el servidor) y la materia sale del plan de ese alumno.
 export default function EquivalenceFormModal({ open, editing, isStaff = false, studentPlanId, blockedCourseIds = [], onClose, onSaved }) {
+  const { lock, pending } = useSubmitLock();
   const [selectedStudent, setSelectedStudent] = useState(null);
   const studentId = selectedStudent ? selectedStudent.id : editing ? editing.studentId : "";
   const [type, setType] = useState("EXTERNAL");
@@ -126,7 +128,7 @@ export default function EquivalenceFormModal({ open, editing, isStaff = false, s
 
   return (
     <Modal open={open} title={editing ? "Editar solicitud" : "Nueva solicitud de equivalencia"} onClose={onClose}>
-      <form className="users-form" onSubmit={handleSubmit} noValidate>
+      <form className="users-form" onSubmit={lock(handleSubmit)} noValidate>
         {isStaff && (
           <div className="users-form-field">
             <label className="users-form-label">Alumno</label>
@@ -214,7 +216,7 @@ export default function EquivalenceFormModal({ open, editing, isStaff = false, s
         {error && <p className="users-form-error" role="alert">{error}</p>}
         <div className="users-form-actions">
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>Cancelar</button>
-          <button type="submit" className="users-btn users-btn--primary" disabled={busy}>
+          <button type="submit" aria-busy={pending} className="users-btn users-btn--primary" disabled={pending || (busy)}>
             {editing ? "Guardar cambios" : "Enviar solicitud"}
           </button>
         </div>

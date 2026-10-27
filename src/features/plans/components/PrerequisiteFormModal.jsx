@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import Modal from "../../../shared/ui/Modal";
 import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 export default function PrerequisiteFormModal({ open, mode = "create", initialData, courseOptions, onClose, onSubmit }) {
+  const { lock, pending } = useSubmitLock();
   const [requiredCourseId, setRequiredCourseId] = useState("");
   const [conditionType, setConditionType] = useState("CURSADA");
   const [error, setError] = useState("");
@@ -36,7 +38,7 @@ export default function PrerequisiteFormModal({ open, mode = "create", initialDa
 
   return (
     <Modal open={open} title={title} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="users-form" noValidate>
+      <form onSubmit={lock(handleSubmit)} className="users-form" noValidate>
         <div className="users-form-field">
           <label className="users-form-label" htmlFor="prerequisiteFormModal-1">Materia requerida</label>
           <select id="prerequisiteFormModal-1"
@@ -75,7 +77,7 @@ export default function PrerequisiteFormModal({ open, mode = "create", initialDa
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>
             Cancelar
           </button>
-          <button type="submit" className="users-btn users-btn--primary">
+          <button type="submit" className="users-btn users-btn--primary" disabled={pending} aria-busy={pending}>
             {mode === "edit" ? "Guardar" : "Agregar"}
           </button>
         </div>

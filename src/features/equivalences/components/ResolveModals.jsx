@@ -6,9 +6,11 @@ import { getTeacher, searchTeachers } from "../../users/services/teacherService"
 import { getErrorMessage } from "../../../shared/api/api";
 import { approveEquivalence, assignEvaluator } from "../services/equivalenceService";
 import { TYPE_LABELS } from "../equivalenceLabels";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 // Detalle de la solicitud + nota para aprobar (por defecto la de origen).
 export function ApproveModal({ item, onClose, onDone }) {
+  const { lock, pending } = useSubmitLock();
   const [grade, setGrade] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -39,7 +41,7 @@ export function ApproveModal({ item, onClose, onDone }) {
 
   return (
     <Modal open title="Aprobar equivalencia" onClose={onClose}>
-      <form className="users-form" onSubmit={submit} noValidate>
+      <form className="users-form" onSubmit={lock(submit)} noValidate>
         <dl className="equiv-detail">
           <dt>Alumno</dt>
           <dd>{item.studentLastName}, {item.studentFirstName} (legajo {item.enrollmentNumber})</dd>
@@ -68,7 +70,7 @@ export function ApproveModal({ item, onClose, onDone }) {
         {error && <p className="users-form-error" role="alert">{error}</p>}
         <div className="users-form-actions">
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>Cancelar</button>
-          <button type="submit" className="users-btn users-btn--success" disabled={busy}>Aprobar</button>
+          <button type="submit" aria-busy={pending} className="users-btn users-btn--success" disabled={pending || (busy)}>Aprobar</button>
         </div>
       </form>
     </Modal>
@@ -76,6 +78,7 @@ export function ApproveModal({ item, onClose, onDone }) {
 }
 
 export function EvaluatorModal({ item, onClose, onDone }) {
+  const { lock, pending } = useSubmitLock();
   const [teacherId, setTeacherId] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -104,7 +107,7 @@ export function EvaluatorModal({ item, onClose, onDone }) {
 
   return (
     <Modal open title="Asignar docente evaluador" onClose={onClose}>
-      <form className="users-form" onSubmit={submit} noValidate>
+      <form className="users-form" onSubmit={lock(submit)} noValidate>
         <p className="users-confirm-text">
           {item.courseName} — {item.studentLastName}, {item.studentFirstName}. Solo el docente asignado (o un Administrador) podrá resolverla.
         </p>
@@ -126,7 +129,7 @@ export function EvaluatorModal({ item, onClose, onDone }) {
         {error && <p className="users-form-error" role="alert">{error}</p>}
         <div className="users-form-actions">
           <button type="button" className="users-btn users-btn--ghost" onClick={onClose}>Cancelar</button>
-          <button type="submit" className="users-btn users-btn--primary" disabled={busy}>Asignar</button>
+          <button type="submit" aria-busy={pending} className="users-btn users-btn--primary" disabled={pending || (busy)}>Asignar</button>
         </div>
       </form>
     </Modal>

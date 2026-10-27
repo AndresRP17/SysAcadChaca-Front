@@ -41,7 +41,7 @@ export default function ConfirmModal({ open, title, message, note, confirmLabel 
         <button type="button" className="users-btn users-btn--ghost" onClick={onCancel}>
           Cancelar
         </button>
-        <button type="button" className={`users-btn users-btn--${confirmVariant}`} onClick={handleConfirm} disabled={busy}>
+        <button type="button" className={`users-btn users-btn--${confirmVariant}`} onClick={handleConfirm} disabled={busy} aria-busy={busy}>
           {confirmLabel}
         </button>
       </div>

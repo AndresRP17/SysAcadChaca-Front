@@ -5,6 +5,7 @@ import FormError from "../../shared/ui/FormError";
 import FieldError from "../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../shared/api/api";
 import { getRegularityRules, updateRegularityRules } from "./services/regularityService";
+import { useSubmitLock } from "../../shared/hooks/useSubmitLock";
 import {
   FAILED_FINALS_RANGE,
   MONTHS_RANGE,
@@ -26,6 +27,7 @@ const SWITCHES = [
 
 // Reglas de regularidad de la institución. El Administrador las edita; Bedelía las ve en solo lectura.
 export default function RegularityRulesCard({ canEdit }) {
+  const { lock, pending } = useSubmitLock();
   const { showToast } = useToast();
   const [form, setForm] = useState(null);
   const [saved, setSaved] = useState(null);
@@ -88,7 +90,7 @@ export default function RegularityRulesCard({ canEdit }) {
         cambios no recalculan nada guardado: se evalúan en el momento de consultar.
       </p>
       <LoadError message={loadError} onRetry={load} />
-      <form className="users-form cal-inline-form" onSubmit={submit} noValidate>
+      <form className="users-form cal-inline-form" onSubmit={lock(submit)} noValidate>
         <div className="reg-rules-grid">
           <div className="users-form-field">
             <label className="users-form-label" htmlFor="reg-expiry-mode">Vencimiento por tiempo</label>
@@ -193,9 +195,9 @@ export default function RegularityRulesCard({ canEdit }) {
 
         {canEdit ? (
           <button
-            type="submit"
+            type="submit" aria-busy={pending}
             className="users-btn users-btn--primary"
-            disabled={saving || !ready || sameRulesForm(form, saved)}
+            disabled={pending || (saving || !ready || sameRulesForm(form, saved))}
           >
             {saving ? "Guardando..." : "Guardar reglas"}
           </button>
