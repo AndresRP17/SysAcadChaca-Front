@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ScheduleXCalendar, useCalendarApp } from "@schedule-x/react";
 import {
   createViewList,
@@ -11,6 +11,7 @@ import {
 import "temporal-polyfill/global";
 import "@schedule-x/theme-default/dist/index.css";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 import { getErrorMessage } from "../../shared/api/api";
 import { todayIso } from "../../shared/utils/formatters";
 import { getAttendanceRules } from "../grades/services/attendanceService";
@@ -51,7 +52,120 @@ const CALENDARS = {
     lightColors: { main: "#7c3aed", container: "#ede9fe", onContainer: "#4c1d95" },
     darkColors: { main: "#c4b5fd", container: "#4c1d95", onContainer: "#ede9fe" },
   },
+  exam: {
+    colorName: "exam",
+    lightColors: { main: "#b91c1c", container: "#fee2e2", onContainer: "#7f1d1d" },
+    darkColors: { main: "#fca5a5", container: "#7f1d1d", onContainer: "#fee2e2" },
+  },
 };
+
+// Una mesa de final no tiene hora de fin: se dibuja con esta duracion.
+const EXAM_DURATION_HOURS = 2;
+
+// Periodos de inscripcion: no son eventos, se pinta el fondo de cada dia del periodo
+// (verde las cursadas, azul los finales; si se superponen, mitad y mitad).
+// Los mismos colores se usan en las casillas y en las referencias de arriba.
+const PERIOD_COLORS = {
+  CURSADA: { light: "#dcfce7", dark: "#1d4d32" },
+  FINAL: { light: "#dbeafe", dark: "#1e3a6b" },
+};
+
+// Texto corto que va dentro de cada casilla pintada.
+const PERIOD_DAY_LABELS = { CURSADA: "Inscripción a cursada", FINAL: "Inscripción a examen" };
+
+function periodTitle(period) {
+  if (period.type === "FINAL") return "Inscripción a examen";
+  return period.term ? `Inscripción a cursada (${period.term}° cuat.)` : "Inscripción a cursada";
+}
+
+function periodLink(period) {
+  return period.type === "FINAL" ? "/finales" : "/mis-cursadas";
+}
+
+// fecha (YYYY-MM-DD) -> tipos de periodo abiertos ese dia
+function periodDays(periods) {
+  const days = new Map();
+  for (const p of periods) {
+    const end = Temporal.PlainDate.from(p.endDate);
+    for (let d = Temporal.PlainDate.from(p.startDate); Temporal.PlainDate.compare(d, end) <= 0; d = d.add({ days: 1 })) {
+      const key = d.toString();
+      if (!days.has(key)) days.set(key, new Set());
+      days.get(key).add(p.type);
+    }
+  }
+  return days;
+}
+
+function dayBackground(types, theme) {
+  const colors = ["CURSADA", "FINAL"].filter((t) => types.has(t)).map((t) => PERIOD_COLORS[t][theme]);
+  return colors.length === 1 ? colors[0] : `linear-gradient(135deg, ${colors[0]} 50%, ${colors[1]} 50%)`;
+}
+
+// Reglas CSS por fecha: la casilla del mes (data-date) y la cabecera del dia en la vista semanal.
+// En la casilla del mes va ademas el texto de cada periodo: cursada en ::after y examen en ::before,
+// cada uno con su color (estilos base en .calendar-wrapper, calendarPage.css). Con los dos, cursada
+// queda arriba de examen.
+function periodStyles(periods) {
+  const rules = [];
+  for (const [date, types] of periodDays(periods)) {
+    const day = `.calendar-wrapper .sx__month-grid-day[data-date="${date}"]`;
+    const selector = (prefix) => `${prefix} ${day}, ${prefix} .calendar-wrapper .sx__week-grid__date[data-date="${date}"]`;
+    rules.push(`${selector("")} { background: ${dayBackground(types, "light")}; }`);
+    rules.push(`${selector('[data-theme="dark"]')} { background: ${dayBackground(types, "dark")}; }`);
+    rules.push(`${day} { cursor: pointer; }`);
+    if (types.has("CURSADA")) {
+      rules.push(`${day}::after { content: "${PERIOD_DAY_LABELS.CURSADA}"; bottom: ${types.has("FINAL") ? 17 : 3}px; }`);
+    }
+    if (types.has("FINAL")) {
+      rules.push(`${day}::before { content: "${PERIOD_DAY_LABELS.FINAL}"; }`);
+    }
+  }
+  return rules.join("\n");
+}
+
+// Tipos de periodo abiertos en una fecha (YYYY-MM-DD).
+function periodTypesOn(periods, date) {
+  return periods.filter((p) => p.startDate <= date && date <= p.endDate).map((p) => p.type);
+}
+
+function examEventId(exam) {
+  return `exam-${exam.examEnrollmentId}`;
+}
+
+// Mesas de final a las que el Alumno esta inscripto.
+function toExamEvents(exams) {
+  return exams.map((x) => {
+    const start = Temporal.ZonedDateTime.from(`${x.date}T${x.time}:00[${TIMEZONE}]`);
+    return {
+      id: examEventId(x),
+      title: `Final · ${x.courseName}`,
+      start,
+      end: start.add({ hours: EXAM_DURATION_HOURS }),
+      location: x.classroomName ?? undefined,
+      calendarId: "exam",
+    };
+  });
+}
+
+function examResult(exam) {
+  if (exam.status === "absent") return "Resultado: Ausente";
+  if (exam.status === "present" && exam.finalGrade !== null) {
+    return `Resultado: ${exam.finalGrade} (${exam.finalGrade >= 6 ? "Aprobado" : "Desaprobado"})`;
+  }
+  return "Estás inscripto. Todavía no rendiste.";
+}
+
+function examDetail(exam) {
+  return {
+    title: `Final · ${exam.courseName}`,
+    lines: [
+      `${formatDate(exam.date)}, ${exam.time} hs`,
+      ...(exam.classroomName ? [`Aula: ${exam.classroomName}`] : []),
+      examResult(exam),
+    ],
+    action: { label: "Ver mis finales", to: "/finales" },
+  };
+}
 
 const CONDITION_LABELS = { APROBADO: "Aprobado", DESAPROBADO: "Desaprobado", AUSENTE: "Ausente" };
 
@@ -183,8 +297,9 @@ function CalendarContent({ onRetry }) {
   const { user } = useAuth();
   const isDocente = user?.role === "Docente";
   const isAlumno = user?.role === "Alumno";
+  const { darkMode } = useTheme();
 
-  const [today, setToday] = useState({ classes: [], evaluations: [], loaded: false });
+  const [today, setToday] = useState({ classes: [], evaluations: [], periods: [], exams: [], loaded: false });
   const [missingTerms, setMissingTerms] = useState([]);
   const [error, setError] = useState("");
   const [todayError, setTodayError] = useState("");
@@ -194,6 +309,15 @@ function CalendarContent({ onRetry }) {
 
   const classesRef = useRef({}); // clases del rango visible por id de evento, para resolver el clic
   const evaluationsRef = useRef({}); // parciales del rango visible por id de evento
+  const [periods, setPeriods] = useState([]); // periodos de inscripcion abiertos o por abrir (solo Alumno)
+  const periodCss = useMemo(() => periodStyles(periods), [periods]);
+  // Schedule-X guarda los callbacks al crearse: leen los periodos de aca para no quedar viejos.
+  const periodsRef = useRef([]);
+  useEffect(() => {
+    periodsRef.current = periods;
+  }, [periods]);
+  const navigate = useNavigate();
+  const examsRef = useRef({}); // finales del Alumno por id de evento
 
   function takeAttendance(sectionId, date) {
     setAttendanceTarget({ sectionId, date });
@@ -244,9 +368,27 @@ function CalendarContent({ onRetry }) {
           evaluations.forEach((ev) => {
             evaluationsRef.current[evaluationEventId(ev)] = ev;
           });
+          // Periodos de inscripcion y finales: solo los ve el Alumno (es quien se inscribe).
+          // Los periodos no son eventos: se juntan (sin repetir entre rangos) para pintar los dias.
+          const exams = isAlumno ? data.examEnrollments ?? [] : [];
+          exams.forEach((x) => {
+            examsRef.current[examEventId(x)] = x;
+          });
+          if (isAlumno) {
+            const incoming = data.enrollmentPeriods ?? [];
+            setPeriods((prev) => {
+              const known = new Set(prev.map((p) => p.enrollmentPeriodId));
+              const added = incoming.filter((p) => !known.has(p.enrollmentPeriodId));
+              return added.length ? [...prev, ...added] : prev;
+            });
+          }
           setMissingTerms((prev) => (JSON.stringify(prev) === JSON.stringify(data.missingTerms) ? prev : data.missingTerms));
           setError("");
-          return [...toCalendarEvents(data.events, isDocente), ...toEvaluationEvents(evaluations)];
+          return [
+            ...toCalendarEvents(data.events, isDocente),
+            ...toEvaluationEvents(evaluations),
+            ...toExamEvents(exams),
+          ];
         })
         .catch((err) => {
           rangesRef.current.delete(key);
@@ -265,6 +407,7 @@ function CalendarContent({ onRetry }) {
   const calendarApp = useCalendarApp(
     {
       locale: "es-ES",
+      isDark: darkMode,
       timezone: TIMEZONE,
       firstDayOfWeek: MONDAY,
       defaultView: isNarrow ? "month-agenda" : "month-grid",
@@ -272,11 +415,41 @@ function CalendarContent({ onRetry }) {
       calendars: CALENDARS,
       callbacks: {
         fetchEvents,
+        // Tocar un dia pintado lleva a la inscripcion. Si el clic fue sobre un evento (clase,
+        // parcial, final) o "+ N mas", lo resuelve ese elemento.
+        onClickDate(date, e) {
+          if (!isAlumno || e?.target?.closest?.(".sx__month-grid-event, .sx__month-grid-day__events-more")) return;
+
+          const types = periodTypesOn(periodsRef.current, date.toString());
+
+          if (types.length === 0) return;
+
+          if (types.length === 1) {
+            navigate(types[0] === "FINAL" ? "/finales" : "/mis-cursadas");
+            return;
+          }
+
+          setDetail({
+            title: `Inscripciones abiertas · ${formatDate(date.toString())}`,
+            lines: ["Ese día podés inscribirte a cursadas y a exámenes."],
+            actions: [
+              { label: "Inscribirme a cursadas", to: "/mis-cursadas" },
+              { label: "Inscribirme a un examen", to: "/finales" },
+            ],
+          });
+        },
         onEventClick(event) {
           const evaluation = evaluationsRef.current[event.id];
 
           if (evaluation) {
             setDetail(evaluationDetail(evaluation, { isAlumno, isDocente }));
+            return;
+          }
+
+          const exam = examsRef.current[event.id];
+
+          if (exam) {
+            setDetail(examDetail(exam));
             return;
           }
 
@@ -314,13 +487,26 @@ function CalendarContent({ onRetry }) {
     },
   );
 
+  // El calendario sigue al modo claro / oscuro de la app (sin esto quedaba siempre claro).
+  useEffect(() => {
+    calendarApp?.setTheme(darkMode ? "dark" : "light");
+  }, [calendarApp, darkMode]);
+
   useEffect(() => {
     const date = todayIso();
     getCalendar(date, date)
-      .then((data) => setToday({ classes: data.events, evaluations: data.evaluations ?? [], loaded: true }))
+      .then((data) =>
+        setToday({
+          classes: data.events,
+          evaluations: data.evaluations ?? [],
+          periods: data.enrollmentPeriods ?? [],
+          exams: data.examEnrollments ?? [],
+          loaded: true,
+        }),
+      )
       .catch((err) => {
         setTodayError(getErrorMessage(err, "No se pudieron cargar las clases de hoy."));
-        setToday({ classes: [], evaluations: [], loaded: true });
+        setToday({ classes: [], evaluations: [], periods: [], exams: [], loaded: true });
       });
   }, []);
 
@@ -334,6 +520,8 @@ function CalendarContent({ onRetry }) {
   // Se listan las clases de hoy aunque haya un feriado cargado: el feriado se avisa aparte.
   const todayClasses = today.classes.filter((c) => c.status === "SCHEDULED" || c.status === "CANCELLED");
   const todayHoliday = today.classes.find((c) => c.status === "HOLIDAY");
+  // Botones del detalle: uno (parcial, final) o varios (dia con las dos inscripciones abiertas).
+  const detailActions = detail?.actions ?? (detail?.action ? [detail.action] : []);
 
   return (
     <div className="users-page">
@@ -343,7 +531,7 @@ function CalendarContent({ onRetry }) {
           <p className="users-subtitle">
             {isDocente
               ? "Tus clases y parciales. Tocá una clase para tomar asistencia."
-              : "Tus clases y parciales del cuatrimestre, y tu asistencia."}
+              : "Tus clases, parciales, finales y períodos de inscripción, y tu asistencia."}
           </p>
         </div>
       </div>
@@ -383,6 +571,20 @@ function CalendarContent({ onRetry }) {
         {today.loaded && todayHoliday && (
           <p className="calendar-today-holiday">Feriado: {todayHoliday.reason}. No hay clases.</p>
         )}
+        {isAlumno &&
+          today.exams.map((x) => (
+            <p key={`exam-${x.examEnrollmentId}`} className="calendar-today-exam">
+              Hoy tenés el final de {x.courseName} a las {x.time}
+              {x.classroomName ? ` (${x.classroomName})` : ""}
+            </p>
+          ))}
+        {isAlumno &&
+          today.periods.map((p) => (
+            <p key={`period-${p.enrollmentPeriodId}`} className="calendar-today-period">
+              {periodTitle(p)} abierta hasta el {formatDate(p.endDate)}.{" "}
+              <Link to={periodLink(p)}>Inscribirme</Link>
+            </p>
+          ))}
         {today.evaluations.map((ev) => (
           <p key={ev.evaluationId} className="calendar-today-evaluation">
             {isAlumno ? "Tenés" : "Hay"} {ev.name} de {ev.courseName} (comisión {ev.sectionName})
@@ -433,20 +635,43 @@ function CalendarContent({ onRetry }) {
           ))}
         </ul>
         <div className="users-form-actions">
-          {detail?.action && (
-            <Link to={detail.action.to} className="users-btn users-btn--primary">
-              {detail.action.label}
+          {detailActions.map((action) => (
+            <Link key={action.to} to={action.to} className="users-btn users-btn--primary">
+              {action.label}
             </Link>
-          )}
+          ))}
           <button
             type="button"
-            className={`users-btn ${detail?.action ? "users-btn--ghost" : "users-btn--primary"}`}
+            className={`users-btn ${detailActions.length ? "users-btn--ghost" : "users-btn--primary"}`}
             onClick={() => setDetail(null)}
           >
             Cerrar
           </button>
         </div>
       </Modal>
+
+      {isAlumno && periods.length > 0 && (
+        <section className="calendar-periods" aria-label="Períodos de inscripción">
+          <style>{periodCss}</style>
+          <ul className="calendar-periods-list">
+            {[...periods]
+              .sort((a, b) => a.startDate.localeCompare(b.startDate))
+              .map((p) => (
+                <li key={p.enrollmentPeriodId}>
+                  <span
+                    className="calendar-period-swatch"
+                    style={{ background: PERIOD_COLORS[p.type === "FINAL" ? "FINAL" : "CURSADA"][darkMode ? "dark" : "light"] }}
+                    aria-hidden="true"
+                  />
+                  <span>
+                    <strong>{periodTitle(p)}</strong>: del {formatDate(p.startDate)} al {formatDate(p.endDate)}.{" "}
+                    <Link to={periodLink(p)}>Inscribirme</Link>
+                  </span>
+                </li>
+              ))}
+          </ul>
+        </section>
+      )}
 
       <div className="calendar-wrapper">
         <ScheduleXCalendar

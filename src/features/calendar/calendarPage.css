@@ -149,6 +149,100 @@
   color: #c4b5fd;
 }
 
+.calendar-today-exam {
+  margin: 0 0 8px;
+  color: #b91c1c;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.calendar-today-period {
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Que ningun evento se salga de la casilla del dia en la grilla del mes. */
+.calendar-wrapper .sx__month-grid-day {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Texto de cada periodo de inscripcion dentro de la casilla (el content y la altura los pone
+   calendarPage.jsx solo en los dias del periodo): cursada en ::after (verde) y examen en ::before
+   (azul), abajo, en negrita y sin salirse ni tapar los clics. */
+.calendar-wrapper .sx__month-grid-day::before,
+.calendar-wrapper .sx__month-grid-day::after {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  left: 4px;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 14px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.calendar-wrapper .sx__month-grid-day::after {
+  color: #166534;
+}
+
+.calendar-wrapper .sx__month-grid-day::before {
+  color: #1e40af;
+}
+
+[data-theme="dark"] .calendar-wrapper .sx__month-grid-day::after {
+  color: #86efac;
+}
+
+[data-theme="dark"] .calendar-wrapper .sx__month-grid-day::before {
+  color: #93c5fd;
+}
+
+.calendar-wrapper .sx__month-grid-event {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Periodos de inscripcion: referencias de color (los dias se pintan desde calendarPage.jsx). */
+.calendar-periods {
+  margin-bottom: 16px;
+}
+
+.calendar-periods-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.calendar-periods-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* El color lo pone calendarPage.jsx con el mismo valor que las casillas (PERIOD_COLORS). */
+.calendar-period-swatch {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+[data-theme="dark"] .calendar-today-exam {
+  color: #fca5a5;
+}
+
 /* Celular: la agenda del dia usa el scroll de la PAGINA, no uno interno propio (con alto fijo
    la segunda clase quedaba cortada sin ninguna pista de que habia mas). */
 @media (max-width: 767px) {
