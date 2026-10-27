@@ -50,46 +50,11 @@
   min-width: 0;
 }
 
-.plans-planlist {
+.plans-plan-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.plans-plan-chip {
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 6px 4px 12px;
-  border-radius: 14px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.plans-chip-edit,
-.plans-chip-delete {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-muted);
-  font-size: 13px;
-  line-height: 1;
-  padding: 2px 4px;
-}
-
-.plans-chip-delete {
-  font-size: 15px;
-}
-
-.plans-chip-edit:hover {
-  color: var(--accent);
-}
-
-.plans-chip-delete:hover {
-  color: var(--error);
+  gap: 8px;
 }
 
 .plans-divider {
