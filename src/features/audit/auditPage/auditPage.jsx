@@ -5,7 +5,7 @@ import { usePageSize } from "../../../shared/hooks/usePageSize";
 import Pagination from "../../../shared/ui/Pagination/Pagination";
 import { STATUS_LABELS } from "../../attendance/attendanceStatus";
 import { getAuditLogs } from "../services/auditService";
-import "../../users/usersPage.css";
+import "../../users/usersPage/usersPage.css";
 import "./auditPage.css";
 
 

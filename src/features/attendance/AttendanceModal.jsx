@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Modal from "../../shared/ui/Modal";
+import Modal from "../../shared/ui/Modal/Modal";
 import AttendanceSheet from "./AttendanceSheet/AttendanceSheet";
 
 // Toma de asistencia como modal sobre el calendario: el docente no pierde de vista la agenda.

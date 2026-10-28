@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import Notice from "../../shared/ui/Notice/Notice";
-import { getErrorMessage } from "../../shared/api/api";
-import { getStudentSummary } from "./services/studentSummaryService";
-import { useStudentSections } from "../enrollments/hooks/useStudentSections";
-import { useStudentExamBoards } from "../exams/hooks/useStudentExamBoards";
-import { isPast } from "../../shared/utils/formatters";
-import ProfileCard from "./components/ProfileCard";
-import StatsRow from "./components/StatsRow";
-import CourseList from "./components/CourseList";
-import WeeklyAgenda from "./components/WeeklyAgenda";
-import UpcomingExamBoards from "./components/UpcomingExamBoards";
-import LoadError from "../../shared/ui/LoadError/LoadError";
-import "../users/usersPage.css";
+import Notice from "../../../shared/ui/Notice/Notice";
+import { getErrorMessage } from "../../../shared/api/api";
+import { getStudentSummary } from "../services/studentSummaryService";
+import { useStudentSections } from "../../enrollments/hooks/useStudentSections";
+import { useStudentExamBoards } from "../../exams/hooks/useStudentExamBoards";
+import { isPast } from "../../../shared/utils/formatters";
+import ProfileCard from "../components/ProfileCard";
+import StatsRow from "../components/StatsRow";
+import CourseList from "../components/CourseList";
+import WeeklyAgenda from "../components/WeeklyAgenda";
+import UpcomingExamBoards from "../components/UpcomingExamBoards";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import "../../users/usersPage/usersPage.css";
 import "./studentDashboardPage.css";
 
 export default function StudentDashboard() {

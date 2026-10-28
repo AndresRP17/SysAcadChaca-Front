@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useToast } from "../../context/ToastContext";
-import { getErrorMessage } from "../../shared/api/api";
-import ListFilters from "../../shared/ui/ListFilters/ListFilters";
-import LoadError from "../../shared/ui/LoadError/LoadError";
-import Pagination from "../../shared/ui/Pagination/Pagination";
-import { useUsers } from "./hooks/useUsers";
-import UserTable from "./components/UserTable";
-import UserFormModal from "./components/UserFormModal";
-import ConfirmDeleteModal from "./components/ConfirmDeleteModal";
+import { useToast } from "../../../context/ToastContext";
+import { getErrorMessage } from "../../../shared/api/api";
+import ListFilters from "../../../shared/ui/ListFilters/ListFilters";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import Pagination from "../../../shared/ui/Pagination/Pagination";
+import { useUsers } from "../hooks/useUsers";
+import UserTable from "../components/UserTable";
+import UserFormModal from "../components/UserFormModal";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import "./usersPage.css";
 
 const STATUS_OPTIONS = [

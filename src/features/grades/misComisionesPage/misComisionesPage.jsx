@@ -4,7 +4,7 @@ import { getErrorMessage } from "../../../shared/api/api";
 import { getMyTeacherProfile } from "../../users/services/teacherService";
 import { getMySections } from "../../sections/services/sectionService";
 import LoadError from "../../../shared/ui/LoadError/LoadError";
-import "../../users/usersPage.css";
+import "../../users/usersPage/usersPage.css";
 import "./misComisionesPage.css";
 
 function periodKey(section) {

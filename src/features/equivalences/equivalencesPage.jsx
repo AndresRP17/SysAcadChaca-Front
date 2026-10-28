@@ -18,7 +18,7 @@ import EquivalenceFormModal from "./components/EquivalenceFormModal";
 import WithoutSectionsPanel from "./components/WithoutSectionsPanel";
 import { ApproveModal, EvaluatorModal } from "./components/ResolveModals";
 import { STATUS_LABELS, TYPE_HELP, TYPE_LABELS } from "./equivalenceLabels";
-import "../users/usersPage.css";
+import "../users/usersPage/usersPage.css";
 import "./equivalences.css";
 
 const SEARCH_DELAY_MS = 300;

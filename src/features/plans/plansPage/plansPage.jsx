@@ -1,9 +1,9 @@
 import { useState } from "react";
-import ProgramsTab from "./components/ProgramsTab";
-import CoursesTab from "./components/CoursesTab";
-import CurriculumTab from "./components/CurriculumTab";
-import CorrelativesTab from "./components/CorrelativesTab";
-import "../users/usersPage.css";
+import ProgramsTab from "../components/ProgramsTab";
+import CoursesTab from "../components/CoursesTab";
+import CurriculumTab from "../components/CurriculumTab";
+import CorrelativesTab from "../components/CorrelativesTab";
+import "../../users/usersPage/usersPage.css";
 import "./plansPage.css";
 
 const TABS = [

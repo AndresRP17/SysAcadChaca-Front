@@ -10,19 +10,19 @@ import {
 // Schedule-X lee Temporal del scope global: hay que cargarlo así y usar esa misma instancia.
 import "temporal-polyfill/global";
 import "@schedule-x/theme-default/dist/index.css";
-import { useAuth } from "../../context/AuthContext";
-import { useTheme } from "../../context/ThemeContext";
-import { getErrorMessage } from "../../shared/api/api";
-import { todayIso } from "../../shared/utils/formatters";
-import { getAttendanceRules } from "../grades/services/attendanceService";
-import { DEFAULT_RULES, STUDENT_STATUS_LABELS, attendanceSummary } from "../attendance/attendanceStatus";
-import { getCalendar } from "./services/calendarService";
-import { AgendaEvent, GridEvent, StudentStatusBadge } from "./calendarEventViews";
-import { evaluationTypeLabel } from "../grades/services/evaluationService";
-import Modal from "../../shared/ui/Modal";
-import AttendanceModal from "../attendance/AttendanceModal";
-import LoadError from "../../shared/ui/LoadError/LoadError";
-import "../users/usersPage.css";
+import { useAuth } from "../../../context/AuthContext";
+import { useTheme } from "../../../context/ThemeContext";
+import { getErrorMessage } from "../../../shared/api/api";
+import { todayIso } from "../../../shared/utils/formatters";
+import { getAttendanceRules } from "../../grades/services/attendanceService";
+import { DEFAULT_RULES, STUDENT_STATUS_LABELS, attendanceSummary } from "../../attendance/attendanceStatus";
+import { getCalendar } from "../services/calendarService";
+import { AgendaEvent, GridEvent, StudentStatusBadge } from "../calendarEventViews";
+import { evaluationTypeLabel } from "../../grades/services/evaluationService";
+import Modal from "../../../shared/ui/Modal/Modal";
+import AttendanceModal from "../../attendance/AttendanceModal";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import "../../users/usersPage/usersPage.css";
 import "./calendarPage.css";
 import "./calendarEvents.css";
 

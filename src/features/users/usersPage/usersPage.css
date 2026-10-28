@@ -1,6 +1,6 @@
 /* La paleta de colores (--navy, --bg, --surface, etc.) vive en
    src/styles/theme.css, compartida por toda la app. */
-@import "../../shared/ui/badges.css";
+@import "../../../shared/ui/badges.css";
 
 .users-page {
   max-width: 1100px;

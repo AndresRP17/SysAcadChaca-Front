@@ -5,8 +5,8 @@ import ComisionesTab from "../components/ComisionesTab";
 import GrillaHorariaTab from "../components/GrillaHorariaTab";
 import EdificiosTab from "../components/EdificiosTab";
 import PeriodosTab from "../components/PeriodosTab";
-import "../../users/usersPage.css";
-import "../../plans/plansPage.css";
+import "../../users/usersPage/usersPage.css";
+import "../../plans/plansPage/plansPage.css";
 import "./cursadasPage.css";
 
 const TABS = [

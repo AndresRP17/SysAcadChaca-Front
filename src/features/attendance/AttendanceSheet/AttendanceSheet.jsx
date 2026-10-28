@@ -18,7 +18,7 @@ import {
   STATUS_LABELS,
   justifiedCommentMissing,
 } from "../attendanceStatus";
-import "../../users/usersPage.css";
+import "../../users/usersPage/usersPage.css";
 import "./AttendanceSheet.css";
 
 // Con cientos de alumnos no se dibujan todos a la vez: se muestran de a PAGE_SIZE y el buscador

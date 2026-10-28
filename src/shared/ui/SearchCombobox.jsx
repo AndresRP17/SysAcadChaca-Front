@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { createLatestGuard, SEARCH_DEBOUNCE_MS } from "./searchOptions";
-import "./Combobox.css";
+import "./Combobox/Combobox.css";
 
 // Combo con busqueda en el servidor: espera SEARCH_DEBOUNCE_MS sin teclear y llama a loadOptions(q), que
 // devuelve { items: [{ value, label, data }], total } (o directamente el array de opciones). Asi no se baja

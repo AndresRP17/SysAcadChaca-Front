@@ -1,4 +1,4 @@
-import UsersPage from "./usersPage";
+import UsersPage from "./usersPage/usersPage";
 
 export default function StudentsPage() {
   return <UsersPage studentsOnly />;

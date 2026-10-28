@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Modal from "./Modal";
+import Modal from "./Modal/Modal";
 import { getErrorMessage } from "../api/api";
 
 // Aviso estandar para los borrados: el backend rechaza (409) eliminar algo que

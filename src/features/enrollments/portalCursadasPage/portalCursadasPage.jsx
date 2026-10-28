@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { getCurrentStudent } from "../../shared/api/currentStudent";
-import { useToast } from "../../context/ToastContext";
-import { useStudentSections } from "./hooks/useStudentSections";
-import { getErrorMessage } from "../../shared/api/api";
-import AvailableSectionsList from "./components/AvailableSectionsList";
-import EnrolledSectionsList from "./components/EnrolledSectionsList";
-import EnrollmentPeriodBanner from "./components/EnrollmentPeriodBanner";
-import { useOpenEnrollmentPeriods } from "./hooks/useOpenEnrollmentPeriods";
-import ConfirmModal from "../../shared/ui/ConfirmModal";
-import LoadError from "../../shared/ui/LoadError/LoadError";
-import "../users/usersPage.css";
-import "../plans/plansPage.css";
+import { useAuth } from "../../../context/AuthContext";
+import { getCurrentStudent } from "../../../shared/api/currentStudent";
+import { useToast } from "../../../context/ToastContext";
+import { useStudentSections } from "../hooks/useStudentSections";
+import { getErrorMessage } from "../../../shared/api/api";
+import AvailableSectionsList from "../components/AvailableSectionsList";
+import EnrolledSectionsList from "../components/EnrolledSectionsList";
+import EnrollmentPeriodBanner from "../components/EnrollmentPeriodBanner";
+import { useOpenEnrollmentPeriods } from "../hooks/useOpenEnrollmentPeriods";
+import ConfirmModal from "../../../shared/ui/ConfirmModal";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import "../../users/usersPage/usersPage.css";
+import "../../plans/plansPage/plansPage.css";
 import "./portalCursadasPage.css";
 
 export default function PortalCursadasPage() {

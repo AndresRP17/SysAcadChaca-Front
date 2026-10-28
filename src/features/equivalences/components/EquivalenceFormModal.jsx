@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import Modal from "../../../shared/ui/Modal";
-import Combobox from "../../../shared/ui/Combobox";
+import Modal from "../../../shared/ui/Modal/Modal";
+import Combobox from "../../../shared/ui/Combobox/Combobox";
 import SearchCombobox from "../../../shared/ui/SearchCombobox";
 import { studentOption } from "../../../shared/ui/searchOptions";
 import { searchStudents } from "../../users/services/studentService";

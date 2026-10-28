@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getErrorMessage } from "../../shared/api/api";
 import { todayIso } from "../../shared/utils/formatters";
-import Combobox from "../../shared/ui/Combobox";
+import Combobox from "../../shared/ui/Combobox/Combobox";
 import SearchCombobox from "../../shared/ui/SearchCombobox";
 import { teacherOption } from "../../shared/ui/searchOptions";
 import { getTeacher, searchTeachers } from "../users/services/teacherService";
@@ -12,7 +12,7 @@ import ClassSheet, { formatDate } from "./ClassSheet";
 import { eventInfo, useCalendarCatalog } from "./useCalendarCatalog";
 import { getCalendarSummary, getFilteredCalendar } from "./services/staffCalendarService";
 import { EVALUATION_TYPES, evaluationTypeLabel } from "../grades/services/evaluationService";
-import "../users/usersPage.css";
+import "../users/usersPage/usersPage.css";
 import "./staffCalendar.css";
 
 const MONTHS = [

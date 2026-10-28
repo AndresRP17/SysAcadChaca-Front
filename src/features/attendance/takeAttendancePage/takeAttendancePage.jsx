@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import AttendanceSheet from "../AttendanceSheet/AttendanceSheet";
-import "../../users/usersPage.css";
+import "../../users/usersPage/usersPage.css";
 import "./takeAttendancePage.css";
 
 // Ruta /asistencia?section=&date=: la misma hoja de asistencia que el modal del calendario,

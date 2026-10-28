@@ -19,7 +19,7 @@ import { usePagedList } from "../../../shared/hooks/usePagedList";
 import SearchCombobox from "../../../shared/ui/SearchCombobox";
 import { studentOption } from "../../../shared/ui/searchOptions";
 import { searchStudents } from "../../users/services/studentService";
-import "../../users/usersPage.css";
+import "../../users/usersPage/usersPage.css";
 import "./certificatesPage.css";
 
 const TYPES = [

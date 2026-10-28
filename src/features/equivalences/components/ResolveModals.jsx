@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Modal from "../../../shared/ui/Modal";
+import Modal from "../../../shared/ui/Modal/Modal";
 import SearchCombobox from "../../../shared/ui/SearchCombobox";
 import { teacherOption } from "../../../shared/ui/searchOptions";
 import { getTeacher, searchTeachers } from "../../users/services/teacherService";

@@ -1,4 +1,4 @@
-import Modal from "../../../shared/ui/Modal";
+import Modal from "../../../shared/ui/Modal/Modal";
 import { weekdayLabel, formatTime } from "../../sections/components/SectionScheduleFormModal";
 
 // La superposición de horarios es un bloqueo duro: el backend rechaza la

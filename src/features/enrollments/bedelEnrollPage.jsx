@@ -17,9 +17,9 @@ import RetakeModal from "../regularity/RetakeModal";
 import StudentRegularityPanel from "../regularity/StudentRegularityPanel";
 import { sectionOverrides } from "../regularity/regularityStatus";
 import ExamBoardCard from "../exams/components/ExamBoardCard";
-import "../users/usersPage.css";
-import "../plans/plansPage.css";
-import "./portalCursadasPage.css";
+import "../users/usersPage/usersPage.css";
+import "../plans/plansPage/plansPage.css";
+import "./portalCursadasPage/portalCursadasPage.css";
 
 function badgeForEnrollment(enrollment) {
   const result = getResultStatus(enrollment);

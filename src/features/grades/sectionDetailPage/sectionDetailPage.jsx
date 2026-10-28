@@ -8,7 +8,7 @@ import { getEnrollmentsBySection, isByEquivalence } from "../services/enrollment
 import NotasTab from "../components/NotasTab";
 import CloseSectionModal from "../components/CloseSectionModal";
 import LoadError from "../../../shared/ui/LoadError/LoadError";
-import "../../users/usersPage.css";
+import "../../users/usersPage/usersPage.css";
 import "./sectionDetailPage.css";
 
 export default function SectionDetailPage() {

@@ -1,5 +1,5 @@
 import { useAuth } from "../../context/AuthContext";
-import CalendarPage from "./calendarPage";
+import CalendarPage from "./calendarPage/calendarPage";
 import StaffCalendarPage from "./staffCalendarPage";
 
 // /calendario: el Docente ve sus clases (y toma asistencia) y el Alumno las suyas (solo lectura,

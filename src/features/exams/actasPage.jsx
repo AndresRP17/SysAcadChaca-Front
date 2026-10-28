@@ -15,9 +15,9 @@ import GradeModal from "./components/GradeModal";
 import CloseActaModal from "./components/CloseActaModal";
 import CancelActaModal from "./components/CancelActaModal";
 import ExamBoardFormModal from "./components/ExamBoardFormModal";
-import "../users/usersPage.css";
-import "../plans/plansPage.css";
-import "../enrollments/portalCursadasPage.css";
+import "../users/usersPage/usersPage.css";
+import "../plans/plansPage/plansPage.css";
+import "../enrollments/portalCursadasPage/portalCursadasPage.css";
 
 const STATUS_OPTIONS = [
   { value: "open", label: "Abiertas" },
