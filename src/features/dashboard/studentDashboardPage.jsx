@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import Notice from "../../shared/ui/Notice";
+import Notice from "../../shared/ui/Notice/Notice";
 import { getErrorMessage } from "../../shared/api/api";
 import { getStudentSummary } from "./services/studentSummaryService";
 import { useStudentSections } from "../enrollments/hooks/useStudentSections";
@@ -11,7 +11,7 @@ import StatsRow from "./components/StatsRow";
 import CourseList from "./components/CourseList";
 import WeeklyAgenda from "./components/WeeklyAgenda";
 import UpcomingExamBoards from "./components/UpcomingExamBoards";
-import LoadError from "../../shared/ui/LoadError";
+import LoadError from "../../shared/ui/LoadError/LoadError";
 import "../users/usersPage.css";
 import "./studentDashboardPage.css";
 

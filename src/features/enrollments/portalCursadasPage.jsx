@@ -9,7 +9,7 @@ import EnrolledSectionsList from "./components/EnrolledSectionsList";
 import EnrollmentPeriodBanner from "./components/EnrollmentPeriodBanner";
 import { useOpenEnrollmentPeriods } from "./hooks/useOpenEnrollmentPeriods";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
-import LoadError from "../../shared/ui/LoadError";
+import LoadError from "../../shared/ui/LoadError/LoadError";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
 import "./portalCursadasPage.css";

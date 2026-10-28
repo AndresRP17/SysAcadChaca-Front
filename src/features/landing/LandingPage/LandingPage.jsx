@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import ThemeToggle from "../../shared/ui/ThemeToggle";
-import TeamCarousel from "./components/TeamCarousel";
-import utnLogo from "../auth/login/components/login/utn-logo.jpg";
+import ThemeToggle from "../../../shared/ui/ThemeToggle/ThemeToggle";
+import TeamCarousel from "../components/TeamCarousel";
+import utnLogo from "../../auth/login/components/login/utn-logo.jpg";
 import "./LandingPage.css";
 
 const LOGIN_PATH = "/login";

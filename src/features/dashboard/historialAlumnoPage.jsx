@@ -5,7 +5,7 @@ import ProfileCard from "./components/ProfileCard";
 import HistoryProgress from "./components/HistoryProgress";
 import HistoryCourseList from "./components/HistoryCourseList";
 import HistoryExamList from "./components/HistoryExamList";
-import LoadError from "../../shared/ui/LoadError";
+import LoadError from "../../shared/ui/LoadError/LoadError";
 import "../users/usersPage.css";
 import "./studentDashboardPage.css";
 

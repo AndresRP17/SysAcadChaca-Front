@@ -11,7 +11,7 @@ import { useLostRegularity } from "../regularity/useLostRegularity";
 import { lostReasonText } from "../regularity/regularityStatus";
 import { REGULARITY_LOST } from "../regularity/services/regularityService";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
-import LoadError from "../../shared/ui/LoadError";
+import LoadError from "../../shared/ui/LoadError/LoadError";
 import "../users/usersPage.css";
 import "../plans/plansPage.css";
 import "../enrollments/portalCursadasPage.css";

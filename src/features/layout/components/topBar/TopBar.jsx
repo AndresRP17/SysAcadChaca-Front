@@ -2,7 +2,7 @@ import { LogOut, Menu, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
 import { UserProfile } from "../../../../shared/ui/userProfile/UserProfile";
-import ThemeToggle from "../../../../shared/ui/ThemeToggle";
+import ThemeToggle from "../../../../shared/ui/ThemeToggle/ThemeToggle";
 import "./TopBar.css";
 
 import { pageTitleFor } from "../../pageTitles";

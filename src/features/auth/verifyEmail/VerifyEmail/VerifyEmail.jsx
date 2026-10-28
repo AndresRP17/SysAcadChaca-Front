@@ -7,7 +7,7 @@ import {
     XCircle,
     Loader2,
 } from 'lucide-react';
-import { useVerifyEmail } from './hook/useVerifyEmail';
+import { useVerifyEmail } from '../hook/useVerifyEmail';
 import './VerifyEmail.css';
 
 export const VerifyEmailPage = () => {

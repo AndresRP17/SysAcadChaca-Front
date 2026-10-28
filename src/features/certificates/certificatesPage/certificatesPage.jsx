@@ -1,25 +1,25 @@
 import { useMemo, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { getErrorMessage } from "../../shared/api/api";
+import { useAuth } from "../../../context/AuthContext";
+import { getErrorMessage } from "../../../shared/api/api";
 import {
   getCertificatesPage,
   requestCertificate,
   issueCertificate,
   rejectCertificate,
   getCertificateReport,
-} from "./services/certificateService";
-import CertificateReportView from "./components/CertificateReportView";
-import { useToast } from "../../context/ToastContext";
-import ConfirmModal from "../../shared/ui/ConfirmModal";
-import LoadError from "../../shared/ui/LoadError";
-import ListFilters from "../../shared/ui/ListFilters";
-import Pagination from "../../shared/ui/Pagination";
-import { useDebouncedValue } from "../../shared/hooks/useDebouncedValue";
-import { usePagedList } from "../../shared/hooks/usePagedList";
-import SearchCombobox from "../../shared/ui/SearchCombobox";
-import { studentOption } from "../../shared/ui/searchOptions";
-import { searchStudents } from "../users/services/studentService";
-import "../users/usersPage.css";
+} from "../services/certificateService";
+import CertificateReportView from "../components/CertificateReportView";
+import { useToast } from "../../../context/ToastContext";
+import ConfirmModal from "../../../shared/ui/ConfirmModal";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import ListFilters from "../../../shared/ui/ListFilters/ListFilters";
+import Pagination from "../../../shared/ui/Pagination/Pagination";
+import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
+import { usePagedList } from "../../../shared/hooks/usePagedList";
+import SearchCombobox from "../../../shared/ui/SearchCombobox";
+import { studentOption } from "../../../shared/ui/searchOptions";
+import { searchStudents } from "../../users/services/studentService";
+import "../../users/usersPage.css";
 import "./certificatesPage.css";
 
 const TYPES = [

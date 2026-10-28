@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { getErrorMessage } from "../../shared/api/api";
-import ListFilters from "../../shared/ui/ListFilters";
-import LoadError from "../../shared/ui/LoadError";
-import Pagination from "../../shared/ui/Pagination";
+import ListFilters from "../../shared/ui/ListFilters/ListFilters";
+import LoadError from "../../shared/ui/LoadError/LoadError";
+import Pagination from "../../shared/ui/Pagination/Pagination";
 import { useUsers } from "./hooks/useUsers";
 import UserTable from "./components/UserTable";
 import UserFormModal from "./components/UserFormModal";

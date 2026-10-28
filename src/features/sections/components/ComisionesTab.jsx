@@ -1,4 +1,4 @@
-import LoadError from "../../../shared/ui/LoadError";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../../../context/ToastContext";
 import { usePrograms } from "../../plans/hooks/usePrograms";
@@ -12,8 +12,8 @@ import SectionFormModal from "./SectionFormModal";
 import SectionRoster from "./SectionRoster";
 import SectionScheduleFormModal, { weekdayLabel, formatTime } from "./SectionScheduleFormModal";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
-import ListFilters from "../../../shared/ui/ListFilters";
-import Pagination from "../../../shared/ui/Pagination";
+import ListFilters from "../../../shared/ui/ListFilters/ListFilters";
+import Pagination from "../../../shared/ui/Pagination/Pagination";
 import "./comisiones.css";
 
 const TERM_OPTIONS = [

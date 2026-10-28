@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { getErrorMessage } from "../../shared/api/api";
-import LoadError from "../../shared/ui/LoadError";
-import { usePageSize } from "../../shared/hooks/usePageSize";
-import Pagination from "../../shared/ui/Pagination";
-import { STATUS_LABELS } from "../attendance/attendanceStatus";
-import { getAuditLogs } from "./services/auditService";
-import "../users/usersPage.css";
+import { getErrorMessage } from "../../../shared/api/api";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import { usePageSize } from "../../../shared/hooks/usePageSize";
+import Pagination from "../../../shared/ui/Pagination/Pagination";
+import { STATUS_LABELS } from "../../attendance/attendanceStatus";
+import { getAuditLogs } from "../services/auditService";
+import "../../users/usersPage.css";
 import "./auditPage.css";
 
 

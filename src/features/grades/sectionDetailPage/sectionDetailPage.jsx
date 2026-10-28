@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getErrorMessage } from "../../shared/api/api";
-import { formatDateTime } from "../../shared/utils/formatters";
-import { getMyTeacherProfile } from "../users/services/teacherService";
-import { getMySections, closeSection } from "../sections/services/sectionService";
-import { getEnrollmentsBySection, isByEquivalence } from "./services/enrollmentService";
-import NotasTab from "./components/NotasTab";
-import CloseSectionModal from "./components/CloseSectionModal";
-import LoadError from "../../shared/ui/LoadError";
-import "../users/usersPage.css";
+import { getErrorMessage } from "../../../shared/api/api";
+import { formatDateTime } from "../../../shared/utils/formatters";
+import { getMyTeacherProfile } from "../../users/services/teacherService";
+import { getMySections, closeSection } from "../../sections/services/sectionService";
+import { getEnrollmentsBySection, isByEquivalence } from "../services/enrollmentService";
+import NotasTab from "../components/NotasTab";
+import CloseSectionModal from "../components/CloseSectionModal";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import "../../users/usersPage.css";
 import "./sectionDetailPage.css";
 
 export default function SectionDetailPage() {

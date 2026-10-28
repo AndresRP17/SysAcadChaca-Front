@@ -3,7 +3,7 @@
 @import "../../shared/ui/badges.css";
 /* Clases .grilla-horaria* para la Agenda semanal (WeeklyAgenda), las mismas
    que usa Cursadas > Grilla horaria — no se duplican acá. */
-@import "../sections/cursadasPage.css";
+@import "../sections/cursadasPage/cursadasPage.css";
 
 .dash-page {
   max-width: 1000px;

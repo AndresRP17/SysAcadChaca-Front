@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { useAuth } from "../../context/AuthContext";
-import LoadError from "../../shared/ui/LoadError";
+import LoadError from "../../shared/ui/LoadError/LoadError";
 import FormError from "../../shared/ui/FormError";
 import { getErrorMessage } from "../../shared/api/api";
 import ConfirmModal from "../../shared/ui/ConfirmModal";

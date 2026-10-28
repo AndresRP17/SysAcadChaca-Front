@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { SetNewPasswordModal } from '../setNewPassword/SetNewPasswordModal';
+import { SetNewPasswordModal } from '../../setNewPassword/SetNewPasswordModal';
 import { AlertTriangle } from 'lucide-react';
 import "./ResetPasswordPage.css";
 

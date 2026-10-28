@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useToast } from "../../../context/ToastContext";
-import LoadError from "../../../shared/ui/LoadError";
-import ListFilters from "../../../shared/ui/ListFilters";
-import Pagination from "../../../shared/ui/Pagination";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import ListFilters from "../../../shared/ui/ListFilters/ListFilters";
+import Pagination from "../../../shared/ui/Pagination/Pagination";
 import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
 import { usePagedList } from "../../../shared/hooks/usePagedList";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";

@@ -1,5 +1,5 @@
 import { ArrowLeft, CheckCircle, Mail, Send, RefreshCw } from 'lucide-react';
-import { useForgotPassword } from './hook/UseForgotPassword';
+import { useForgotPassword } from '../hook/UseForgotPassword';
 import './ResetPasswordModal.css';
 
 export const ResetPasswordModal = ({ onBack, onClose }) => {

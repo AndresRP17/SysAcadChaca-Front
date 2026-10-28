@@ -6,7 +6,7 @@ import Combobox from "../../shared/ui/Combobox";
 import SearchCombobox from "../../shared/ui/SearchCombobox";
 import { teacherOption } from "../../shared/ui/searchOptions";
 import { getTeacher, searchTeachers } from "../users/services/teacherService";
-import LoadError from "../../shared/ui/LoadError";
+import LoadError from "../../shared/ui/LoadError/LoadError";
 import AcademicCalendarManager from "./AcademicCalendarManager";
 import ClassSheet, { formatDate } from "./ClassSheet";
 import { eventInfo, useCalendarCatalog } from "./useCalendarCatalog";

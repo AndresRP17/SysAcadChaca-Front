@@ -1,24 +1,24 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getErrorMessage } from "../../shared/api/api";
-import { useToast } from "../../context/ToastContext";
-import LoadError from "../../shared/ui/LoadError";
-import FormError from "../../shared/ui/FormError";
-import { getCalendar } from "../calendar/services/calendarService";
-import { getEnrollmentsBySection, isByEquivalence } from "../grades/services/enrollmentService";
+import { getErrorMessage } from "../../../shared/api/api";
+import { useToast } from "../../../context/ToastContext";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import FormError from "../../../shared/ui/FormError";
+import { getCalendar } from "../../calendar/services/calendarService";
+import { getEnrollmentsBySection, isByEquivalence } from "../../grades/services/enrollmentService";
 import {
   getAttendancesBySectionAndDate,
   createAttendance,
   updateAttendance,
   saveAttendanceBatch,
-} from "../grades/services/attendanceService";
+} from "../../grades/services/attendanceService";
 import {
   COMMENT_MAX,
   JUSTIFIED_COMMENT_MIN,
   STATUSES,
   STATUS_LABELS,
   justifiedCommentMissing,
-} from "./attendanceStatus";
-import "../users/usersPage.css";
+} from "../attendanceStatus";
+import "../../users/usersPage.css";
 import "./AttendanceSheet.css";
 
 // Con cientos de alumnos no se dibujan todos a la vez: se muestran de a PAGE_SIZE y el buscador

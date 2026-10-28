@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
-import LoadError from "../../shared/ui/LoadError";
+import LoadError from "../../shared/ui/LoadError/LoadError";
 import { getErrorCode, getErrorMessage } from "../../shared/api/api";
 import { getRegularityRules, getStudentRegularity, revalidateRegularity } from "./services/regularityService";
 import { REGULARITY_BADGE, regularityLabel, staffRegularityLines } from "./regularityStatus";

@@ -4,7 +4,7 @@ import { ENROLLMENT_PERIOD_CLOSED, getErrorCode, getErrorMessage } from "../../s
 import SearchCombobox from "../../shared/ui/SearchCombobox";
 import { studentOption } from "../../shared/ui/searchOptions";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
-import LoadError from "../../shared/ui/LoadError";
+import LoadError from "../../shared/ui/LoadError/LoadError";
 import { getStudent, searchStudents } from "../users/services/studentService";
 import { useStudentSections } from "./hooks/useStudentSections";
 import { useStudentExamBoards } from "../exams/hooks/useStudentExamBoards";

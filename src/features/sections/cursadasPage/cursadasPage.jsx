@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import AulasTab from "./components/AulasTab";
-import ComisionesTab from "./components/ComisionesTab";
-import GrillaHorariaTab from "./components/GrillaHorariaTab";
-import EdificiosTab from "./components/EdificiosTab";
-import PeriodosTab from "./components/PeriodosTab";
-import "../users/usersPage.css";
-import "../plans/plansPage.css";
+import AulasTab from "../components/AulasTab";
+import ComisionesTab from "../components/ComisionesTab";
+import GrillaHorariaTab from "../components/GrillaHorariaTab";
+import EdificiosTab from "../components/EdificiosTab";
+import PeriodosTab from "../components/PeriodosTab";
+import "../../users/usersPage.css";
+import "../../plans/plansPage.css";
 import "./cursadasPage.css";
 
 const TABS = [

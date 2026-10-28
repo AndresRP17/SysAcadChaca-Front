@@ -21,7 +21,7 @@ import { AgendaEvent, GridEvent, StudentStatusBadge } from "./calendarEventViews
 import { evaluationTypeLabel } from "../grades/services/evaluationService";
 import Modal from "../../shared/ui/Modal";
 import AttendanceModal from "../attendance/AttendanceModal";
-import LoadError from "../../shared/ui/LoadError";
+import LoadError from "../../shared/ui/LoadError/LoadError";
 import "../users/usersPage.css";
 import "./calendarPage.css";
 import "./calendarEvents.css";

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getErrorMessage } from "../../../shared/api/api";
 import { useToast } from "../../../context/ToastContext";
-import LoadError from "../../../shared/ui/LoadError";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
 import FormError from "../../../shared/ui/FormError";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
 import {

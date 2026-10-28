@@ -1,4 +1,4 @@
-import LoadError from "../../../shared/ui/LoadError";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
 import { useState } from "react";
 import { useClassrooms } from "../hooks/useClassrooms";
 import ClassroomFormModal from "./ClassroomFormModal";

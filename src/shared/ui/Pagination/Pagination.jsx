@@ -1,4 +1,4 @@
-import { PAGE_SIZE_OPTIONS } from "../hooks/usePageSize";
+import { PAGE_SIZE_OPTIONS } from "../../hooks/usePageSize";
 import "./Pagination.css";
 
 // Paginación de listas del servidor: "Página X de Y · N <sustantivo>" + Anterior/Siguiente.

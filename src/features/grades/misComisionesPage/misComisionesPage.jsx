@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getErrorMessage } from "../../shared/api/api";
-import { getMyTeacherProfile } from "../users/services/teacherService";
-import { getMySections } from "../sections/services/sectionService";
-import LoadError from "../../shared/ui/LoadError";
-import "../users/usersPage.css";
+import { getErrorMessage } from "../../../shared/api/api";
+import { getMyTeacherProfile } from "../../users/services/teacherService";
+import { getMySections } from "../../sections/services/sectionService";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import "../../users/usersPage.css";
 import "./misComisionesPage.css";
 
 function periodKey(section) {

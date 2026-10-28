@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { useToast } from "../../context/ToastContext";
-import LoadError from "../../shared/ui/LoadError";
-import { useProfile } from "./hooks/useProfile";
-import { changeMyPassword } from "./services/profileService";
-import ProfileDataCard from "./components/ProfileDataCard";
-import ContactForm from "./components/ContactForm";
-import ChangePasswordForm from "./components/ChangePasswordForm";
+import { useAuth } from "../../../context/AuthContext";
+import { useToast } from "../../../context/ToastContext";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import { useProfile } from "../hooks/useProfile";
+import { changeMyPassword } from "../services/profileService";
+import ProfileDataCard from "../components/ProfileDataCard";
+import ContactForm from "../components/ContactForm";
+import ChangePasswordForm from "../components/ChangePasswordForm";
 import "./profilePage.css";
 
 export default function ProfilePage() {
