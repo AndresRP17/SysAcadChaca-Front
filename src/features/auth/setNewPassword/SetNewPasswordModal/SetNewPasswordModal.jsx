@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Lock, KeyRound, CheckCircle, Save } from 'lucide-react';
-import { api } from '../../../shared/api/api';
-import './SetNewPassword.css';
+import { api } from '../../../../shared/api/api';
+import './SetNewPasswordModal.css';
 
 export const SetNewPasswordModal = ({ token, onSuccessRedirect }) => {
     const [password, setPassword] = useState('');

@@ -1,4 +1,4 @@
-import "./Toast.css";
+import "./ToastContainer.css";
 
 // La región aria-live se renderiza SIEMPRE (vacía): los lectores de pantalla solo anuncian
 // cambios dentro de una región que ya existía. Los errores usan role="alert" (asertivo).

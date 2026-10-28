@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import Modal from "../../../shared/ui/Modal/Modal";
-import FieldError from "../../../shared/ui/FieldError";
-import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
-import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
-import SearchCombobox from "../../../shared/ui/SearchCombobox";
-import { teacherOption } from "../../../shared/ui/searchOptions";
-import { getTeacher, searchTeachers } from "../../users/services/teacherService";
-import { suggestSectionName } from "../sectionNames";
-import "./sectionForm.css";
+import Modal from "../../../../shared/ui/Modal/Modal";
+import FieldError from "../../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../../shared/api/api";
+import { useSubmitLock } from "../../../../shared/hooks/useSubmitLock";
+import SearchCombobox from "../../../../shared/ui/SearchCombobox";
+import { teacherOption } from "../../../../shared/ui/searchOptions";
+import { getTeacher, searchTeachers } from "../../../users/services/teacherService";
+import { suggestSectionName } from "../../sectionNames";
+import "./SectionFormModal.css";
 
 const SHIFTS = ["Mañana", "Tarde", "Noche"];
 const ANNUAL = 0;

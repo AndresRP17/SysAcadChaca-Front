@@ -15,7 +15,7 @@ import HistorialAlumnoPage from "../../features/dashboard/historialAlumnoPage";
 import CertificatesPage from "../../features/certificates/certificatesPage/certificatesPage";
 import PortalCursadasPage from "../../features/enrollments/portalCursadasPage/portalCursadasPage";
 import AuditPage from "../../features/audit/auditPage/auditPage";
-import EquivalencesPage from "../../features/equivalences/equivalencesPage";
+import EquivalencesPage from "../../features/equivalences/equivalencesPage/equivalencesPage";
 import BedelEnrollPage from "../../features/enrollments/bedelEnrollPage";
 import PortalFinalesPage from "../../features/exams/portalFinalesPage";
 import ActasPage from "../../features/exams/actasPage";

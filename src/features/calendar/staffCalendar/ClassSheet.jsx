@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { getErrorMessage } from "../../shared/api/api";
-import ConfirmModal from "../../shared/ui/ConfirmModal";
-import FormError from "../../shared/ui/FormError";
-import { useToast } from "../../context/ToastContext";
-import { getSection } from "../sections/services/sectionService";
-import { createCancelledClass, deleteCancelledClass, getCancelledClasses } from "./services/staffCalendarService";
+import { getErrorMessage } from "../../../shared/api/api";
+import ConfirmModal from "../../../shared/ui/ConfirmModal";
+import FormError from "../../../shared/ui/FormError";
+import { useToast } from "../../../context/ToastContext";
+import { getSection } from "../../sections/services/sectionService";
+import { createCancelledClass, deleteCancelledClass, getCancelledClasses } from "../services/staffCalendarService";
 import "./staffCalendar.css";
 
 const DEFAULT_REASON = "Falta del docente";

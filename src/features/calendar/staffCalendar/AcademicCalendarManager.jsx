@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import { useToast } from "../../context/ToastContext";
-import { useAuth } from "../../context/AuthContext";
-import LoadError from "../../shared/ui/LoadError/LoadError";
-import FormError from "../../shared/ui/FormError";
-import { getErrorMessage } from "../../shared/api/api";
-import ConfirmModal from "../../shared/ui/ConfirmModal";
+import { useToast } from "../../../context/ToastContext";
+import { useAuth } from "../../../context/AuthContext";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import FormError from "../../../shared/ui/FormError";
+import { getErrorMessage } from "../../../shared/api/api";
+import ConfirmModal from "../../../shared/ui/ConfirmModal";
 import { formatDate } from "./ClassSheet";
-import RegularityRulesCard from "../regularity/RegularityRulesCard";
-import EvaluationRulesCard from "./EvaluationRulesCard";
-import { getAttendanceRules, updateAttendanceRules } from "../grades/services/attendanceService";
+import RegularityRulesCard from "../../regularity/RegularityRulesCard";
+import EvaluationRulesCard from "../EvaluationRulesCard";
+import { getAttendanceRules, updateAttendanceRules } from "../../grades/services/attendanceService";
 import {
   createAcademicTerm,
   createNonTeachingDay,
@@ -16,9 +16,9 @@ import {
   deleteNonTeachingDay,
   getAcademicTerms,
   getNonTeachingDays,
-} from "./services/staffCalendarService";
+} from "../services/staffCalendarService";
 import "./staffCalendar.css";
-import { useSubmitLock } from "../../shared/hooks/useSubmitLock";
+import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 
 const currentYear = new Date().getFullYear();
 

@@ -1,6 +1,6 @@
 import { useAuth } from "../../context/AuthContext";
 import CalendarPage from "./calendarPage/calendarPage";
-import StaffCalendarPage from "./staffCalendarPage";
+import StaffCalendarPage from "./staffCalendar/staffCalendarPage";
 
 // /calendario: el Docente ve sus clases (y toma asistencia) y el Alumno las suyas (solo lectura,
 // con su asistencia); Bedel y Administrador ven el calendario de todas las comisiones, con

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import AulasTab from "../components/AulasTab";
-import ComisionesTab from "../components/ComisionesTab";
+import ComisionesTab from "../components/ComisionesTab/ComisionesTab";
 import GrillaHorariaTab from "../components/GrillaHorariaTab";
 import EdificiosTab from "../components/EdificiosTab";
 import PeriodosTab from "../components/PeriodosTab";

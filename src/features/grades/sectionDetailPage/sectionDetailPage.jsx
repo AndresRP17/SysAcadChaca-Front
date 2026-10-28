@@ -5,7 +5,7 @@ import { formatDateTime } from "../../../shared/utils/formatters";
 import { getMyTeacherProfile } from "../../users/services/teacherService";
 import { getMySections, closeSection } from "../../sections/services/sectionService";
 import { getEnrollmentsBySection, isByEquivalence } from "../services/enrollmentService";
-import NotasTab from "../components/NotasTab";
+import NotasTab from "../components/evaluations/NotasTab";
 import CloseSectionModal from "../components/CloseSectionModal";
 import LoadError from "../../../shared/ui/LoadError/LoadError";
 import "../../users/usersPage/usersPage.css";

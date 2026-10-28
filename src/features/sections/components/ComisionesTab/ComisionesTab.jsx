@@ -1,20 +1,20 @@
-import LoadError from "../../../shared/ui/LoadError/LoadError";
+import LoadError from "../../../../shared/ui/LoadError/LoadError";
 import { useEffect, useRef, useState } from "react";
-import { useToast } from "../../../context/ToastContext";
-import { usePrograms } from "../../plans/hooks/usePrograms";
-import { getStudyPlans } from "../../plans/services/studyPlanService";
-import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
-import { useClassrooms } from "../hooks/useClassrooms";
-import { getSection, getSectionsPage, createSection, updateSection, deleteSection } from "../services/sectionService";
-import { getSectionSchedules, createSectionSchedule, updateSectionSchedule, deleteSectionSchedule } from "../services/sectionScheduleService";
-import { useSectionsPage } from "../hooks/useSectionsPage";
-import SectionFormModal from "./SectionFormModal";
-import SectionRoster from "./SectionRoster";
-import SectionScheduleFormModal, { weekdayLabel, formatTime } from "./SectionScheduleFormModal";
-import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
-import ListFilters from "../../../shared/ui/ListFilters/ListFilters";
-import Pagination from "../../../shared/ui/Pagination/Pagination";
-import "./comisiones.css";
+import { useToast } from "../../../../context/ToastContext";
+import { usePrograms } from "../../../plans/hooks/usePrograms";
+import { getStudyPlans } from "../../../plans/services/studyPlanService";
+import { getCurriculumCourses } from "../../../plans/services/curriculumCourseService";
+import { useClassrooms } from "../../hooks/useClassrooms";
+import { getSection, getSectionsPage, createSection, updateSection, deleteSection } from "../../services/sectionService";
+import { getSectionSchedules, createSectionSchedule, updateSectionSchedule, deleteSectionSchedule } from "../../services/sectionScheduleService";
+import { useSectionsPage } from "../../hooks/useSectionsPage";
+import SectionFormModal from "../SectionFormModal/SectionFormModal";
+import SectionRoster from "../SectionRoster";
+import SectionScheduleFormModal, { weekdayLabel, formatTime } from "../SectionScheduleFormModal";
+import ConfirmModal, { DELETE_NOTE } from "../../../../shared/ui/ConfirmModal";
+import ListFilters from "../../../../shared/ui/ListFilters/ListFilters";
+import Pagination from "../../../../shared/ui/Pagination/Pagination";
+import "./ComisionesTab.css";
 
 const TERM_OPTIONS = [
   { value: "1", label: "1º cuatrimestre" },

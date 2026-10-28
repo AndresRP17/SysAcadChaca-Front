@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import Modal from "../../../shared/ui/Modal/Modal";
-import FieldError from "../../../shared/ui/FieldError";
-import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
-import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
-import { EVALUATION_TYPES, checkEvaluation, evaluationTypeLabel } from "../services/evaluationService";
+import Modal from "../../../../shared/ui/Modal/Modal";
+import FieldError from "../../../../shared/ui/FieldError";
+import { getErrorMessage, getFieldErrors } from "../../../../shared/api/api";
+import { useSubmitLock } from "../../../../shared/hooks/useSubmitLock";
+import { EVALUATION_TYPES, checkEvaluation, evaluationTypeLabel } from "../../services/evaluationService";
 import "./evaluations.css";
 
 const EMPTY_FORM = { type: "PARCIAL", name: "", date: "", start_time: "", end_time: "", description: "", visible: true };
