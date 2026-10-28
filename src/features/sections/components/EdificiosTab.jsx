@@ -1,4 +1,4 @@
-import LoadError from "../../../shared/ui/LoadError";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
 import { useState } from "react";
 import { useBuildings } from "../hooks/useBuildings";
 import BuildingFormModal from "./BuildingFormModal";

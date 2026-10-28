@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useToast } from "../../context/ToastContext";
-import LoadError from "../../shared/ui/LoadError";
+import LoadError from "../../shared/ui/LoadError/LoadError";
 import FormError from "../../shared/ui/FormError";
 import FieldError from "../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../shared/api/api";

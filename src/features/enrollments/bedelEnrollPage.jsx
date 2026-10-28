@@ -4,7 +4,7 @@ import { ENROLLMENT_PERIOD_CLOSED, getErrorCode, getErrorMessage } from "../../s
 import SearchCombobox from "../../shared/ui/SearchCombobox";
 import { studentOption } from "../../shared/ui/searchOptions";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
-import LoadError from "../../shared/ui/LoadError";
+import LoadError from "../../shared/ui/LoadError/LoadError";
 import { getStudent, searchStudents } from "../users/services/studentService";
 import { useStudentSections } from "./hooks/useStudentSections";
 import { useStudentExamBoards } from "../exams/hooks/useStudentExamBoards";
@@ -17,9 +17,9 @@ import RetakeModal from "../regularity/RetakeModal";
 import StudentRegularityPanel from "../regularity/StudentRegularityPanel";
 import { sectionOverrides } from "../regularity/regularityStatus";
 import ExamBoardCard from "../exams/components/ExamBoardCard";
-import "../users/usersPage.css";
-import "../plans/plansPage.css";
-import "./portalCursadasPage.css";
+import "../users/usersPage/usersPage.css";
+import "../plans/plansPage/plansPage.css";
+import "./portalCursadasPage/portalCursadasPage.css";
 
 function badgeForEnrollment(enrollment) {
   const result = getResultStatus(enrollment);

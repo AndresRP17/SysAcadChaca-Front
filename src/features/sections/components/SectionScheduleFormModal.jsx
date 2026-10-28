@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Modal from "../../../shared/ui/Modal";
+import Modal from "../../../shared/ui/Modal/Modal";
 import FieldError from "../../../shared/ui/FieldError";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { getAvailability } from "../services/sectionScheduleService";

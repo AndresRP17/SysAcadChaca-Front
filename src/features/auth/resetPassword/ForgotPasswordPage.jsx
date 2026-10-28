@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ResetPasswordModal } from './ResetPasswordModal';
+import { ResetPasswordModal } from './ResetPasswordModal/ResetPasswordModal';
 
 export const ForgotPasswordPage = () => {
     const navigate = useNavigate();

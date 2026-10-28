@@ -1,7 +1,7 @@
 import { classroomLabel, formatDateTime, isPast } from "../../../shared/utils/formatters";
-import ListFilters from "../../../shared/ui/ListFilters";
-import LoadError from "../../../shared/ui/LoadError";
-import Pagination from "../../../shared/ui/Pagination";
+import ListFilters from "../../../shared/ui/ListFilters/ListFilters";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import Pagination from "../../../shared/ui/Pagination/Pagination";
 import { getResultStatus, getResultLabel } from "../services/examEnrollmentService";
 
 const RESULT_OPTIONS = [

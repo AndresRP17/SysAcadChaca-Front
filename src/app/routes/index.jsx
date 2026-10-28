@@ -4,30 +4,30 @@ import RequireAuth from "../../features/layout/components/RequireAuth";
 import RequireRole from "../../features/layout/components/RequireRole";
 import NoAccessPage from "../../features/layout/components/NoAccessPage";
 import { getRolesAllowedForLink } from "../../features/layout/roleLinks";
-import LandingPage from "../../features/landing/LandingPage";
+import LandingPage from "../../features/landing/LandingPage/LandingPage";
 import LoginPage from "../../features/auth/login/loginPage";
-import UsersPage from "../../features/users/usersPage";
+import UsersPage from "../../features/users/usersPage/usersPage";
 import StudentsPage from "../../features/users/studentsPage";
-import PlansPage from "../../features/plans/plansPage";
-import CursadasPage from "../../features/sections/cursadasPage";
-import StudentDashboardPage from "../../features/dashboard/studentDashboardPage";
+import PlansPage from "../../features/plans/plansPage/plansPage";
+import CursadasPage from "../../features/sections/cursadasPage/cursadasPage";
+import StudentDashboardPage from "../../features/dashboard/studentDashboardPage/studentDashboardPage";
 import HistorialAlumnoPage from "../../features/dashboard/historialAlumnoPage";
-import CertificatesPage from "../../features/certificates/certificatesPage";
-import PortalCursadasPage from "../../features/enrollments/portalCursadasPage";
-import AuditPage from "../../features/audit/auditPage";
-import EquivalencesPage from "../../features/equivalences/equivalencesPage";
+import CertificatesPage from "../../features/certificates/certificatesPage/certificatesPage";
+import PortalCursadasPage from "../../features/enrollments/portalCursadasPage/portalCursadasPage";
+import AuditPage from "../../features/audit/auditPage/auditPage";
+import EquivalencesPage from "../../features/equivalences/equivalencesPage/equivalencesPage";
 import BedelEnrollPage from "../../features/enrollments/bedelEnrollPage";
 import PortalFinalesPage from "../../features/exams/portalFinalesPage";
 import ActasPage from "../../features/exams/actasPage";
-import SectionDetailPage from "../../features/grades/sectionDetailPage";
+import SectionDetailPage from "../../features/grades/sectionDetailPage/sectionDetailPage";
 import CalendarRoutePage from "../../features/calendar/calendarRoutePage";
-import TakeAttendancePage from "../../features/attendance/takeAttendancePage";
-import MisComisionesPage from "../../features/grades/misComisionesPage";
-import ProfilePage from "../../features/profile/profilePage";
+import TakeAttendancePage from "../../features/attendance/takeAttendancePage/takeAttendancePage";
+import MisComisionesPage from "../../features/grades/misComisionesPage/misComisionesPage";
+import ProfilePage from "../../features/profile/profilePage/profilePage";
 
 
-import { ResetPasswordPage } from '../../features/auth/resetPasswordPage/ResetPasswordPage';
-import { VerifyEmailPage } from '../../features/auth/verifyEmail/VerifyEmail';
+import { ResetPasswordPage } from '../../features/auth/resetPasswordPage/ResetPasswordPage/ResetPasswordPage';
+import { VerifyEmailPage } from '../../features/auth/verifyEmail/VerifyEmail/VerifyEmail';
 import { ForgotPasswordPage } from '../../features/auth/resetPassword/ForgotPasswordPage';
 
 

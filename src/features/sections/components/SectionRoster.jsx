@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { getErrorMessage } from "../../../shared/api/api";
 import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
 import { usePageSize } from "../../../shared/hooks/usePageSize";
-import ListFilters from "../../../shared/ui/ListFilters";
-import LoadError from "../../../shared/ui/LoadError";
-import Pagination from "../../../shared/ui/Pagination";
+import ListFilters from "../../../shared/ui/ListFilters/ListFilters";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import Pagination from "../../../shared/ui/Pagination/Pagination";
 import { getEnrollmentsPage } from "../../enrollments/services/enrollmentService";
 
 const SEARCH_DELAY_MS = 300;

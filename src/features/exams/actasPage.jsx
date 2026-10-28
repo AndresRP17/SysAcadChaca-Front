@@ -3,9 +3,9 @@ import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { formatDateTime, isPast } from "../../shared/utils/formatters";
 import ConfirmModal, { DELETE_NOTE } from "../../shared/ui/ConfirmModal";
-import ListFilters from "../../shared/ui/ListFilters";
-import LoadError from "../../shared/ui/LoadError";
-import Pagination from "../../shared/ui/Pagination";
+import ListFilters from "../../shared/ui/ListFilters/ListFilters";
+import LoadError from "../../shared/ui/LoadError/LoadError";
+import Pagination from "../../shared/ui/Pagination/Pagination";
 import { getExamBoard, createExamBoard, closeExamBoard, deleteExamBoard, cancelExamBoard } from "./services/examBoardService";
 import { updateExamEnrollment } from "./services/examEnrollmentService";
 import { useExamBoards } from "./hooks/useExamBoards";
@@ -15,9 +15,9 @@ import GradeModal from "./components/GradeModal";
 import CloseActaModal from "./components/CloseActaModal";
 import CancelActaModal from "./components/CancelActaModal";
 import ExamBoardFormModal from "./components/ExamBoardFormModal";
-import "../users/usersPage.css";
-import "../plans/plansPage.css";
-import "../enrollments/portalCursadasPage.css";
+import "../users/usersPage/usersPage.css";
+import "../plans/plansPage/plansPage.css";
+import "../enrollments/portalCursadasPage/portalCursadasPage.css";
 
 const STATUS_OPTIONS = [
   { value: "open", label: "Abiertas" },

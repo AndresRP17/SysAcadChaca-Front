@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { pageTitleFor } from "../pageTitles";
-import Notice from "../../../shared/ui/Notice";
+import Notice from "../../../shared/ui/Notice/Notice";
 import { useProfileReminder } from "../../profile/hooks/useProfileReminder";
 import Sidebar from "../components/sideBar/Sidebar";
 import Topbar from "../components/topBar/TopBar";

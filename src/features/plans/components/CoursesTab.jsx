@@ -2,9 +2,9 @@ import { useState } from "react";
 import { usePagedCourses } from "../hooks/usePagedCourses";
 import CourseFormModal from "./CourseFormModal";
 import ConfirmModal, { DELETE_NOTE } from "../../../shared/ui/ConfirmModal";
-import ListFilters from "../../../shared/ui/ListFilters";
-import LoadError from "../../../shared/ui/LoadError";
-import Pagination from "../../../shared/ui/Pagination";
+import ListFilters from "../../../shared/ui/ListFilters/ListFilters";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
+import Pagination from "../../../shared/ui/Pagination/Pagination";
 
 export default function CoursesTab() {
   const list = usePagedCourses();

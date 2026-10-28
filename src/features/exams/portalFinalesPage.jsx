@@ -11,10 +11,10 @@ import { useLostRegularity } from "../regularity/useLostRegularity";
 import { lostReasonText } from "../regularity/regularityStatus";
 import { REGULARITY_LOST } from "../regularity/services/regularityService";
 import ConfirmModal from "../../shared/ui/ConfirmModal";
-import LoadError from "../../shared/ui/LoadError";
-import "../users/usersPage.css";
-import "../plans/plansPage.css";
-import "../enrollments/portalCursadasPage.css";
+import LoadError from "../../shared/ui/LoadError/LoadError";
+import "../users/usersPage/usersPage.css";
+import "../plans/plansPage/plansPage.css";
+import "../enrollments/portalCursadasPage/portalCursadasPage.css";
 
 function badgeForEnrollment(enrollment) {
   const result = getResultStatus(enrollment);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import Modal from "../../../shared/ui/Modal";
+import Modal from "../../../shared/ui/Modal/Modal";
 import FieldError from "../../../shared/ui/FieldError";
-import Combobox from "../../../shared/ui/Combobox";
+import Combobox from "../../../shared/ui/Combobox/Combobox";
 import { getErrorMessage, getFieldErrors } from "../../../shared/api/api";
 import { useSubmitLock } from "../../../shared/hooks/useSubmitLock";
 

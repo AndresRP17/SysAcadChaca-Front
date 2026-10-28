@@ -4,7 +4,7 @@ import { usePrograms } from "../../plans/hooks/usePrograms";
 import { getStudyPlans } from "../../plans/services/studyPlanService";
 import { getCurriculumCourses } from "../../plans/services/curriculumCourseService";
 import { getSchedulesForGrid, GRID_SIZE } from "../services/sectionScheduleService";
-import LoadError from "../../../shared/ui/LoadError";
+import LoadError from "../../../shared/ui/LoadError/LoadError";
 import WeekScheduleGrid from "../../../shared/ui/WeekScheduleGrid";
 
 const TERM_OPTIONS = [
