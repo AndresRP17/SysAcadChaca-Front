@@ -31,6 +31,10 @@ const { Temporal } = globalThis;
 const TIMEZONE = "America/Argentina/Buenos_Aires";
 const MONDAY = 1;
 
+// Tiene que ser siempre el mismo objeto: Schedule-X destruye y vuelve a dibujar el calendario entero
+// cada vez que cambia esta prop, y un objeto nuevo en cada render lo hacia con cualquier cambio de estado.
+const CUSTOM_COMPONENTS = { monthAgendaEvent: AgendaEvent, monthGridEvent: GridEvent };
+
 const CALENDARS = {
   scheduled: {
     colorName: "scheduled",
@@ -674,10 +678,7 @@ function CalendarContent({ onRetry }) {
       )}
 
       <div className="calendar-wrapper">
-        <ScheduleXCalendar
-          calendarApp={calendarApp}
-          customComponents={{ monthAgendaEvent: AgendaEvent, monthGridEvent: GridEvent }}
-        />
+        <ScheduleXCalendar calendarApp={calendarApp} customComponents={CUSTOM_COMPONENTS} />
       </div>
     </div>
   );
