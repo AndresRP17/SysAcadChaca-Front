@@ -157,3 +157,75 @@
 .users-form-input {
   font-family: inherit;
 }
+
+
+.equiv-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.equiv-filters .users-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.equiv-filters .users-filter-btn.equiv-btn {
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.equiv-filters .users-filter-btn.equiv-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.equiv-filters .users-filter-btn--active.equiv-btn {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.equiv-filters .equiv-select {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 320px;
+}
+
+.equiv-filters .equiv-combo {
+  flex: 1 1 240px;
+  min-width: 200px;
+  max-width: 320px;
+}
+
+.equiv-filters .users-filter-btn.equiv-btn {
+  padding: 8px 14px;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.equiv-filters .users-filter-btn.equiv-btn:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  border-color: color-mix(in srgb, currentColor 40%, transparent);
+  color: inherit;
+}
+
+.equiv-filters .users-filter-btn--active.equiv-btn,
+.equiv-filters .users-filter-btn--active.equiv-btn:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
