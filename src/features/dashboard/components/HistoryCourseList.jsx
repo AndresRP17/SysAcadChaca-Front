@@ -37,7 +37,7 @@ export default function HistoryCourseList({ courses, regularities = [] }) {
                   {c.courseName} — Comisión {c.sectionName}
                 </p>
                 <p className="dash-list-item-sub">
-                  {c.academicYear} · {c.term}° cuatrimestre
+                  {c.academicYear} · {c.term === 0 ? "Anual" : `${c.term}° cuatrimestre`}
                   {c.finalGrade != null ? ` · nota ${c.finalGrade}` : ""}
                 </p>
                 {lines.map((line) => (

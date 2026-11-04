@@ -13,7 +13,7 @@ function periodKey(section) {
 
 function periodLabel(key) {
   const [year, term] = key.split("-");
-  return `${year} · ${term}º cuatrimestre`;
+  return term === "0" ? `${year} · Anual` : `${year} · ${term}º cuatrimestre`;
 }
 
 const WEEKDAY_LABEL = {
