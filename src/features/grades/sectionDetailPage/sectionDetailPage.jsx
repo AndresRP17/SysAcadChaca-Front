@@ -77,7 +77,7 @@ export default function SectionDetailPage() {
         <div>
           <h1 className="users-title">{section.courseName ?? "Materia"}</h1>
           <p className="users-subtitle">
-            Comisión {section.name} · {section.academicYear} · {section.term}º cuatrimestre · Turno {section.shift}
+            Comisión {section.name} · {section.academicYear} · {section.term === 0 ? "Anual" : `${section.term}º cuatrimestre`} · Turno {section.shift}
           </p>
         </div>
         <span className={`users-badge ${section.closed ? "users-badge--inactive" : "users-badge--active"}`}>

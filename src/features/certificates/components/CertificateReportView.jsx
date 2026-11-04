@@ -73,7 +73,7 @@ export default function CertificateReportView({ certificate, report }) {
                   <div>
                     <p className="dash-list-item-title">{c.courseName} — Comisión {c.sectionName}</p>
                     <p className="dash-list-item-sub">
-                      {c.academicYear} · {c.term}° cuatrimestre{c.finalGrade != null ? ` · nota ${c.finalGrade}` : ""}
+                      {c.academicYear} · {c.term === 0 ? "Anual" : `${c.term}° cuatrimestre`}{c.finalGrade != null ? ` · nota ${c.finalGrade}` : ""}
                     </p>
                   </div>
                   <span className="dash-badge dash-badge--navy">{RESULT_LABELS[c.result] ?? c.result}</span>
