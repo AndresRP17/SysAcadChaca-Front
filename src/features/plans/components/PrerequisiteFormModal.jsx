@@ -51,7 +51,7 @@ export default function PrerequisiteFormModal({ open, mode = "create", initialDa
               : <option value="">Seleccioná una materia...</option>}
             {courseOptions.map((course) => (
               <option key={course.id} value={course.id}>
-                {course.code} - {course.name} ({course.yearNumber}° año, {course.term}° cuat.)
+                {course.code} - {course.name} ({course.yearNumber}° año, {course.term === 0 ? "anual" : `${course.term}° cuat.`})
               </option>
             ))}
           </select>

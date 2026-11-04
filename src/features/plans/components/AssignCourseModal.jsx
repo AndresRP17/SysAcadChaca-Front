@@ -91,6 +91,7 @@ export default function AssignCourseModal({ open, courses, durationYears, onClos
               onChange={(e) => handleChange("term", e.target.value)}
               className="users-form-input"
             >
+              <option value="0">Anual</option>
               <option value="1">1°</option>
               <option value="2">2°</option>
             </select>

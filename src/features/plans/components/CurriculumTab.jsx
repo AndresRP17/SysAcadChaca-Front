@@ -143,7 +143,7 @@ export default function CurriculumTab() {
                     <td className="users-td" data-label="Materia">{cc.courseName}</td>
                     <td className="users-td" data-label="Código">{cc.courseCode}</td>
                     <td className="users-td" data-label="Año">{cc.yearNumber}°</td>
-                    <td className="users-td" data-label="Cuatrimestre">{cc.term}°</td>
+                    <td className="users-td" data-label="Cuatrimestre">{cc.term === 0 ? "Anual" : `${cc.term}°`}</td>
                     <td className="users-td" data-label="Carga horaria">{cc.creditHours} hs</td>
                     <td className="users-td users-td--actions" data-label="Acciones">
                       <button
