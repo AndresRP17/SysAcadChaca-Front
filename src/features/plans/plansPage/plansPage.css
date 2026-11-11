@@ -422,6 +422,20 @@
   color: var(--text-muted);
 }
 
+.corr-card[draggable="true"] {
+  cursor: grab;
+}
+
+.corr-card[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.corr-panel--drop {
+  outline: 2px dashed #60a5fa;
+  outline-offset: -2px;
+  background: rgba(96, 165, 250, 0.08);
+}
+
 .corr-prereq-list {
   list-style: none;
   margin: 0;

@@ -68,6 +68,11 @@ export default function CorrelativesPlanMap({ curriculumCourses, prereqsByCourse
                     aria-pressed={cc.id === selectedId}
                     className={`corr-card ${rel}`}
                     onClick={() => onSelect(cc.id === selectedId ? null : cc.id)}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("text/plain", String(cc.id));
+                      e.dataTransfer.effectAllowed = "copy";
+                    }}
                   >
                     <span className="corr-card-code">{cc.courseCode}</span>
                     <span className="corr-card-name">{cc.courseName}</span>

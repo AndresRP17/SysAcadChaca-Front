@@ -31,6 +31,7 @@ export default function CorrelativesTab() {
   const [prereqFormMode, setPrereqFormMode] = useState("create");
   const [editingPrereq, setEditingPrereq] = useState(null);
   const [prereqToDelete, setPrereqToDelete] = useState(null);
+  const [dropActive, setDropActive] = useState(false); // NUEVO
 
   async function reloadCurriculumCourses(forStudyPlanId) {
     if (!forStudyPlanId) {
@@ -147,6 +148,46 @@ export default function CorrelativesTab() {
         .map((cc) => ({ id: cc.courseId, code: cc.courseCode, name: cc.courseName, yearNumber: cc.yearNumber, term: cc.term }))
     : [];
 
+  // NUEVO: drag and drop de una materia sobre el panel derecho.
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    if (!dropActive) setDropActive(true);
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    setDropActive(false);
+
+    if (!selectedCourse) {
+      setError("Primero elegí la materia a la que querés agregarle una correlativa.");
+      return;
+    }
+
+    const draggedId = e.dataTransfer.getData("text/plain");
+    const dragged = curriculumCourses.find((cc) => String(cc.id) === draggedId);
+    if (!dragged) return;
+
+    if (dragged.id === selectedCourse.id) {
+      setError("Una materia no puede ser correlativa de sí misma.");
+      return;
+    }
+    if (prerequisites.some((p) => p.requiredCourseId === dragged.courseId)) {
+      setError(`"${dragged.courseName}" ya es correlativa de "${selectedCourse.courseName}".`);
+      return;
+    }
+    if (!isStrictlyBefore(dragged, selectedCourse)) {
+      setError(`"${dragged.courseName}" tiene que ser de un cuatrimestre anterior a "${selectedCourse.courseName}".`);
+      return;
+    }
+
+    // Abre el mismo modal de "Agregar correlativa", con la materia ya elegida.
+    setError("");
+    setPrereqFormMode("create");
+    setEditingPrereq({ requiredCourseId: dragged.courseId, conditionType: "CURSADA" });
+    setAddOpen(true);
+  }
+
   return (
     <div>
       {(error || selectorError) && <p className="users-form-error">{error || selectorError}</p>}
@@ -174,7 +215,8 @@ export default function CorrelativesTab() {
       {studyPlanId && !loadingCourses && curriculumCourses.length > 0 && (
         <>
           <p className="corr-hint">
-            Elegí una materia para ver qué necesita para cursarla y qué materias habilita.
+            Elegí una materia para ver qué necesita para cursarla y qué materias habilita. Para agregar una correlativa,
+            arrastrá otra materia al panel de la derecha.
           </p>
           <div className="corr-layout" aria-busy={loadingPrereqs}>
             <CorrelativesPlanMap
@@ -184,7 +226,13 @@ export default function CorrelativesTab() {
               onSelect={setSelectedCurriculumCourseId}
             />
 
-            <aside className="corr-panel" aria-live="polite">
+            <aside
+              className={`corr-panel ${dropActive ? "corr-panel--drop" : ""}`}
+              aria-live="polite"
+              onDragOver={handleDragOver}
+              onDragLeave={() => setDropActive(false)}
+              onDrop={handleDrop}
+            >
               {loadingPrereqs && <p className="users-empty">Cargando correlativas...</p>}
               {!loadingPrereqs && !selectedCourse && <p className="users-empty">Ninguna materia elegida.</p>}
 
